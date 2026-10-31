@@ -43,8 +43,17 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    packagingOptions {
+    packaging {
         jniLibs {
+            pickFirsts += [
+                'lib/**/libbass.so',
+                'lib/**/libbass_ssl.so',
+                'lib/**/libbass_fx.so',
+                'lib/**/libGlossHook.so',
+                'lib/**/libc++_shared.so',
+                'lib/**/*.so',
+                '**/*.so'
+            ]
             excludes += ['META-INF/*']
         }
         resources {

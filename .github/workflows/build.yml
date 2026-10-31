@@ -1,6 +1,8 @@
 name: Build SAMP Mobile 2.11.311 APK
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
