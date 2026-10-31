@@ -1,0 +1,49 @@
+//
+// Created by x1y2z on 01.07.2023.
+//
+
+#pragma once
+
+#include "gta-reversed/game_sa/Core/Pool.h"
+#include "gta-reversed/game_sa/common.h"
+#include "gta-reversed/game_sa/Core/Rect.h"
+
+struct ColDef {
+    CRect  m_Area;
+    /* เพิ่มจาก sasamp-main: ColDef::name */
+    char name[18];
+    int16  m_nModelIdStart;
+    int16  m_nModelIdEnd;
+    uint16 m_nRefCount;
+    bool   m_bActive;
+    bool   m_bCollisionIsRequired;
+    bool   m_bProcedural;
+    bool   m_bInterior;
+
+    static void* operator new(size_t size);
+    static void  operator delete(void* data);
+};
+VALIDATE_SIZE(ColDef, 0x2C);
+
+typedef CPool<ColDef> CColPool;
+
+/*
+รอ MAP 2.11: CColStore::ms_pColPool / ms_pQuadTree / InjectHooks
+static inline CColPool* ms_pColPool;
+static inline CQuadTreeNode* ms_pQuadTree;
+static void InjectHooks();
+*/
+
+class CColStore {
+public:
+    static void Initialise();
+    static int32 AddColSlot(const char* name);
+    static void RequestCollision(const CVector* pos, int32 areaCode);
+    static void AddCollisionNeededAtPosn(const CVector* pos);
+    static void RemoveCol(int32 colSlot);
+
+    static void LoadCollision(CVector pos, bool bIgnorePlayerVeh);
+
+    static void EnsureCollisionIsInMemory(const CVector *pos);
+};
+

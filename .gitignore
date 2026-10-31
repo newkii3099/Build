@@ -1,0 +1,106 @@
+# Gradle and Android build output
+.gradle/
+**/build/
+**/.cxx/
+**/.externalNativeBuild/
+**/captures/
+**/generated/
+**/intermediates/
+**/outputs/
+
+# Android Studio / IntelliJ local state
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Machine-local Android configuration
+local.properties
+lint-cache/
+.kotlin/
+
+# Packaged and compiled Android output
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# CMake / Ninja generated files and native object output
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+compile_commands.json
+.ninja_deps
+.ninja_log
+build.ninja
+rules.ninja
+*.o
+*.obj
+*.lo
+*.d
+*.dep
+*.so.dbg
+
+# Signing credentials and private keys
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+*.der
+app/keys/
+keystore.properties
+signing.properties
+
+# Logs, reports, crash dumps and profiling captures
+*.log
+*.hprof
+*.trace
+*.dump
+*.dmp
+crashlytics-build.properties
+
+# Editor backups and temporary files
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+~$*
+.#*
+
+# Operating-system metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Local AI research and reference workspace
+/AI_AGENT/
+
+# Compressed archives and disk images
+*.zip
+*.zipx
+*.7z
+*.rar
+*.tar
+*.tgz
+*.gz
+*.bz2
+*.xz
+*.zst
+*.lz
+*.lz4
+*.cab
+*.arj
+*.iso
