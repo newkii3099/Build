@@ -1,45 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <!-- باگراندی سەرەکی (هەمان تێکەڵی dark red + gray) -->
+    <!-- Main Background -->
     <item>
         <shape android:shape="rectangle">
-            <corners android:radius="12dp" />
+            <corners android:radius="16dp" />
             <gradient
-                android:type="radial"
-                android:gradientRadius="500dp"
-                android:centerX="0.5"
-                android:centerY="0.4"
-                android:startColor="#430909"
-            android:centerColor="#2C0A0A"
-            android:endColor="#121212"
-            android:useLevel="false" />
+                android:type="linear"
+                android:angle="135"
+                android:startColor="#F0091811"
+                android:centerColor="#E60A1D14"
+                android:endColor="#F2050D09" />
         </shape>
     </item>
 
-    <!-- لایتینگ نرمی سەروو -->
+    <!-- Top Soft Glow -->
     <item>
         <shape android:shape="rectangle">
-            <corners android:radius="12dp" />
+            <corners android:radius="16dp" />
             <gradient
                 android:type="linear"
-                android:startColor="#20FFFFFF"
-                android:centerColor="#10FFFFFF"
+                android:startColor="#2600FFA3"
+                android:centerColor="#1000FFA3"
                 android:endColor="#00000000"
                 android:angle="90" />
         </shape>
     </item>
 
-    <!-- بوردری نازک بۆ ڕەنگی لوکس -->
+    <!-- Thin Glass Border -->
     <item android:top="1dp" android:bottom="1dp" android:left="1dp" android:right="1dp">
         <shape android:shape="rectangle">
-            <corners android:radius="12dp" />
+            <corners android:radius="16dp" />
             <stroke
                 android:width="1dp"
-                android:color="#33FFFFFF" />
-            <corners android:radius="12dp" />
+                android:color="#4034D399" />
             <solid android:color="@android:color/transparent" />
         </shape>
     </item>
-
 </layer-list>

@@ -181,30 +181,44 @@
     <color name="yellow">#fbc02d</color>
     <color name="yellow_active_switch">#ffffba08</color>
     <color name="orange">#ffef4711</color>
-    <color name="primary_red">#8B0000</color>
+    <color name="primary_red">#10B981</color>
     <color name="primary_blue">#1E3A8A</color>
-    <color name="primary_dark">#0F0F0F</color>
+    <color name="primary_dark">#08140E</color>
+
+    <!-- Modern Fresh Mint & Glass Theme Colors -->
+    <color name="mint_accent">#00FFA3</color>
+    <color name="mint_primary">#10B981</color>
+    <color name="mint_dark">#047857</color>
+    <color name="mint_subtle">#3310B981</color>
+    <color name="mint_glow">#4D00FFA3</color>
+    <color name="mint_soft">#A7F3D0</color>
+
+    <color name="glass_bg_deep">#E608140E</color>
+    <color name="glass_card">#990F261B</color>
+    <color name="glass_card_light">#1AFFFFFF</color>
+    <color name="glass_border">#4034D399</color>
+    <color name="glass_border_white">#26FFFFFF</color>
 
     <!-- Background Colors -->
-    <color name="card_dark">#1A1A1A</color>
-    <color name="input_background">#2D2D2D</color>
+    <color name="card_dark">#990F261B</color>
+    <color name="input_background">#3310B981</color>
 
     <!-- Text Colors -->
-    <color name="text_primary">#E0E0E0</color>
-    <color name="text_secondary">#888888</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#A7F3D0</color>
 
     <!-- Switch Colors -->
-    <color name="switch_track">#404040</color>
+    <color name="switch_track">#3310B981</color>
 
-    <color name="health_green">#FF4CAF50</color>
-    <color name="health_green_light">#334CAF50</color>
+    <color name="health_green">#00FFA3</color>
+    <color name="health_green_light">#3300FFA3</color>
 
     <!-- Armour Colors -->
-    <color name="armour_blue">#FF2196F3</color>
-    <color name="armour_blue_light">#332196F3</color>
+    <color name="armour_blue">#38BDF8</color>
+    <color name="armour_blue_light">#3338BDF8</color>
 
     <!-- Wanted Colors -->
-    <color name="wanted_red">#FFF44336</color>
-    <color name="wanted_red_light">#33F44336</color>
-    <color name="dialog_bg_color">#A0FFFFFF</color>
+    <color name="wanted_red">#FF4365</color>
+    <color name="wanted_red_light">#33FF4365</color>
+    <color name="dialog_bg_color">#E608140E</color>
 </resources>
