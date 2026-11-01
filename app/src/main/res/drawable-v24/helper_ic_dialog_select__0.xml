@@ -10,11 +10,11 @@
     xmlns:aapt="http://schemas.android.com/aapt">
 
     <item
-        android:color="#FF0000"
+        android:color="#4038BDF8"
         android:offset="0.0" />
 
     <item
-        android:color="#0000002F"
+        android:color="#0038BDF8"
         android:offset="1.0" />
 
 </gradient>

@@ -204,7 +204,7 @@ public class DialogManager {
             }
         }
 
-        byte[] Str2 = (str != null) ? str.getBytes(java.nio.charset.StandardCharsets.UTF_8) : new byte[0];
+        byte[] Str2 = com.kurdish.roleplay.game.SAMP.encodeForSamp(str);
         Hide();
         sendDialogResponse(i, DialogManager.this.mCurrentDialogId, i2, Str2);
     }

@@ -9,7 +9,7 @@ Button::Button(const std::string& caption, float font_size)
 {
     m_callback = nullptr;
 
-    m_label = new Label(caption, ImColor(1.0f, 1.0f, 1.0f), false, font_size);
+    m_label = new Label(caption, ImColor(15, 23, 42, 235), false, font_size);
     this->addChild(m_label);
 
     m_color = UISettings::buttonColor();
@@ -28,14 +28,31 @@ void Button::performLayout()
 
 void Button::draw(ImGuiRenderer* renderer)
 {
-    // بەتنە راوندید کراوە و outline لابراوە
+    // Modern bright white-cyan translucent glass pill
+    ImColor bgCol = focused() ? m_colorFocused : m_color;
+    ImColor borderCol = focused() ? ImColor(255, 255, 255, 240) : ImColor(56, 189, 248, 190);
+
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
-            focused() ? m_colorFocused : m_color,
+            bgCol,
             true,
-            20.0f // ✅ radius
+            20.0f
     );
+
+    renderer->drawRect(
+            absolutePosition(),
+            absolutePosition() + size(),
+            borderCol,
+            false,
+            20.0f,
+            1.2f
+    );
+
+    if (m_label)
+    {
+        m_label->setColor(focused() ? ImColor(255, 255, 255, 255) : ImColor(15, 23, 42, 235));
+    }
 
     Widget::draw(renderer);
 }
@@ -51,7 +68,7 @@ CButton::CButton(const std::string& caption, float font_size)
 {
     m_callback = nullptr;
 
-    m_label = new Label(caption, ImColor(1.0f, 1.0f, 1.0f), false, font_size);
+    m_label = new Label(caption, ImColor(15, 23, 42, 235), false, font_size);
     this->addChild(m_label);
 
     m_color = UISettings::buttonColor();
@@ -72,14 +89,31 @@ void CButton::draw(ImGuiRenderer* renderer)
 {
     if (!OpenButton) return;
 
-    // راوندید و بێ outline
+    // Modern bright white-cyan translucent glass pill
+    ImColor bgCol = focused() ? m_colorFocused : m_color;
+    ImColor borderCol = focused() ? ImColor(255, 255, 255, 240) : ImColor(56, 189, 248, 190);
+
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
-            focused() ? m_colorFocused : m_color,
+            bgCol,
             true,
             20.0f
     );
+
+    renderer->drawRect(
+            absolutePosition(),
+            absolutePosition() + size(),
+            borderCol,
+            false,
+            20.0f,
+            1.2f
+    );
+
+    if (m_label)
+    {
+        m_label->setColor(focused() ? ImColor(255, 255, 255, 255) : ImColor(15, 23, 42, 235));
+    }
 
     Widget::draw(renderer);
 }
@@ -96,7 +130,7 @@ OButton::OButton(const std::string& caption, float font_size)
 {
     m_callback = nullptr;
 
-    m_label = new Label(caption, ImColor(1.0f, 1.0f, 1.0f), false, font_size);
+    m_label = new Label(caption, ImColor(15, 23, 42, 235), false, font_size);
     this->addChild(m_label);
 
     m_color = UISettings::buttonColor();
@@ -117,23 +151,38 @@ void OButton::draw(ImGuiRenderer* renderer)
 {
     if (OpenButton)
     {
-        // گرتنی پۆزیشنی لادراو
         this->setPosition(ImVec2(-150.0f, -150.0f));
         return;
     }
 
-    // راوندید و بێ outline
+    // Modern bright white-cyan translucent glass pill
+    ImColor bgCol = focused() ? m_colorFocused : m_color;
+    ImColor borderCol = focused() ? ImColor(255, 255, 255, 240) : ImColor(56, 189, 248, 190);
+
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
-            focused() ? m_colorFocused : m_color,
+            bgCol,
             true,
             20.0f
     );
 
+    renderer->drawRect(
+            absolutePosition(),
+            absolutePosition() + size(),
+            borderCol,
+            false,
+            20.0f,
+            1.2f
+    );
+
+    if (m_label)
+    {
+        m_label->setColor(focused() ? ImColor(255, 255, 255, 255) : ImColor(15, 23, 42, 235));
+    }
+
     Widget::draw(renderer);
 
-    // دووبارە پۆزیشنی ئاسایی
     this->setPosition(ImVec2(15.0f, 15.0f));
 }
 

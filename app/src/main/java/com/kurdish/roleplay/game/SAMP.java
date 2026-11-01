@@ -190,12 +190,32 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
         });
     }
 
+    public static byte[] encodeForSamp(String str) {
+        if (str == null) return new byte[0];
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c >= 0x0E01 && c <= 0x0E5B) {
+                // Thai Unicode U+0E01..U+0E5B to CP874 / TIS-620 byte
+                baos.write((byte) (0xA0 + (c - 0x0E00)));
+            } else if (c <= 0x7F) {
+                baos.write((byte) c);
+            } else {
+                try {
+                    byte[] utfBytes = String.valueOf(c).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                    baos.write(utfBytes);
+                } catch (Exception ignored) {}
+            }
+        }
+        return baos.toByteArray();
+    }
+
     private native void onInputEnd(byte[] str);
 
     @Override
     public void OnInputEnd(String str) {
         if (str == null) return;
-        byte[] toReturn = str.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] toReturn = encodeForSamp(str);
 
         try {
             onInputEnd(toReturn);

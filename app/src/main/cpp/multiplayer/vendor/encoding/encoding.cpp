@@ -106,6 +106,34 @@ std::string Encoding::cp2utf(const std::string& s)
     return ns;
 }
 
+std::string Encoding::utf8_to_cp874(const std::string& s)
+{
+    if (s.empty()) return s;
+    std::string out;
+    out.reserve(s.size());
+    size_t i = 0;
+    size_t len = s.size();
+    while (i < len)
+    {
+        unsigned char c1 = (unsigned char)s[i];
+        if (c1 == 0xE0 && i + 2 < len)
+        {
+            unsigned char c2 = (unsigned char)s[i + 1];
+            unsigned char c3 = (unsigned char)s[i + 2];
+            uint32_t unicode = ((c1 & 0x0F) << 12) | ((c2 & 0x3F) << 6) | (c3 & 0x3F);
+            if (unicode >= 0x0E01 && unicode <= 0x0E5B)
+            {
+                out.push_back((char)(0xA0 + (unicode - 0x0E00)));
+                i += 3;
+                continue;
+            }
+        }
+        out.push_back(s[i]);
+        i++;
+    }
+    return out;
+}
+
 std::string Encoding::utf2cp(const std::string& s)
 {
     size_t len = s.size();

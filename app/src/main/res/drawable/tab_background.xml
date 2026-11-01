@@ -1,39 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Main Background -->
+    <!-- Main Frosted Glass Card -->
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="18dp" />
             <gradient
                 android:type="linear"
                 android:angle="135"
-                android:startColor="#F21E1B4B"
-                android:centerColor="#E8160E30"
-                android:endColor="#F5100826" />
+                android:startColor="#FDFEFE"
+                android:centerColor="#F5F9FD"
+                android:endColor="#EBF4FC" />
+            <stroke
+                android:width="1.5dp"
+                android:color="#8038BDF8" />
         </shape>
     </item>
 
-    <!-- Top Soft Purple Glow -->
+    <!-- Top Soft Cyan Highlight -->
     <item>
         <shape android:shape="rectangle">
             <corners android:radius="18dp" />
             <gradient
                 android:type="linear"
-                android:startColor="#33A855F7"
-                android:centerColor="#15EC4899"
+                android:startColor="#2038BDF8"
                 android:endColor="#00000000"
                 android:angle="90" />
-        </shape>
-    </item>
-
-    <!-- Thin Glass Border -->
-    <item android:top="1dp" android:bottom="1dp" android:left="1dp" android:right="1dp">
-        <shape android:shape="rectangle">
-            <corners android:radius="18dp" />
-            <stroke
-                android:width="1.2dp"
-                android:color="#50C084FC" />
-            <solid android:color="@android:color/transparent" />
         </shape>
     </item>
 </layer-list>

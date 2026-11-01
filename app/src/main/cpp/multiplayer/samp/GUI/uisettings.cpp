@@ -64,16 +64,16 @@ ImVec2 UISettings::m_buttonVoiceSize = ImVec2(55.0f, 80.0f);
 
 /* ////////////////// colors ////////////////// */
 
-/* button (NextCity modern floating buttons) */
-ImColor UISettings::m_buttonColor = ImColor(35, 25, 55, 210);
-ImColor UISettings::m_buttonFocusedColor = ImColor(139, 92, 246, 245);
+/* button (NextCity modern white-cyan glass floating buttons) */
+ImColor UISettings::m_buttonColor = ImColor(245, 250, 255, 220);
+ImColor UISettings::m_buttonFocusedColor = ImColor(56, 189, 248, 245);
 
 /* keyboard */
-ImColor UISettings::m_keyboardBackgroundColor = ImColor(12, 45, 75, 185);
+ImColor UISettings::m_keyboardBackgroundColor = ImColor(241, 245, 249, 230);
 
 /* dialog */
-ImColor UISettings::m_dialogBackgroundColor = ImColor(20, 25, 40, 225);
-ImColor UISettings::m_dialogTitleBackgroundColor = ImColor(124, 58, 237, 235);
+ImColor UISettings::m_dialogBackgroundColor = ImColor(248, 250, 252, 235);
+ImColor UISettings::m_dialogTitleBackgroundColor = ImColor(56, 189, 248, 240);
 
 void UISettings::Initialize(const ImVec2& display_size)
 {

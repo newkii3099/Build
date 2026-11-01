@@ -3,6 +3,7 @@
 #include "Network.h"
 #include "samp/GUI/gui.h"
 #include "samp/Audio/AudioStream.h"
+#include "vendor/encoding/encoding.h"
 
 // voice
 #include "samp/Voice/MicroIcon.h"
@@ -982,14 +983,15 @@ void CNetGame::SendDialogResponse(uint16_t wDialogID, uint8_t byteButtonID, uint
 {
 	if (GetGameState() != GAMESTATE_CONNECTED) return;
 
-	uint8_t length = strlen(szInput);
+	std::string encoded = Encoding::utf8_to_cp874(szInput ? szInput : "");
+	uint8_t length = (uint8_t)encoded.length();
 
 	RakNet::BitStream bsSend;
 	bsSend.Write(wDialogID);
 	bsSend.Write(byteButtonID);
 	bsSend.Write(wListBoxItem);
 	bsSend.Write(length);
-	bsSend.Write(szInput, length);
+	bsSend.Write(encoded.c_str(), length);
 	m_pRakClient->RPC(&RPC_DialogResponse, &bsSend, HIGH_PRIORITY, RELIABLE_ORDERED, 0, false, UNASSIGNED_NETWORK_ID, nullptr);
 }
 
@@ -997,11 +999,12 @@ void CNetGame::SendChatMessage(const char* szMsg)
 {
 	if (GetGameState() != GAMESTATE_CONNECTED) return;
 
+	std::string encoded = Encoding::utf8_to_cp874(szMsg ? szMsg : "");
 	RakNet::BitStream bsSend;
-	uint8_t byteTextLen = strlen(szMsg);
+	uint8_t byteTextLen = (uint8_t)encoded.length();
 
 	bsSend.Write(byteTextLen);
-	bsSend.Write(szMsg, byteTextLen);
+	bsSend.Write(encoded.c_str(), byteTextLen);
 
 	m_pRakClient->RPC(&RPC_Chat, &bsSend, HIGH_PRIORITY, RELIABLE, 0, false, UNASSIGNED_NETWORK_ID, NULL);
 }
@@ -1010,11 +1013,12 @@ void CNetGame::SendChatCommand(const char* szCommand)
 {
 	if (GetGameState() != GAMESTATE_CONNECTED) return;
 
+	std::string encoded = Encoding::utf8_to_cp874(szCommand ? szCommand : "");
 	RakNet::BitStream bsParams;
-	int iStrlen = strlen(szCommand);
+	int iStrlen = (int)encoded.length();
 
 	bsParams.Write(iStrlen);
-	bsParams.Write(szCommand, iStrlen);
+	bsParams.Write(encoded.c_str(), iStrlen);
 	m_pRakClient->RPC(&RPC_ServerCommand, &bsParams, HIGH_PRIORITY, RELIABLE, 0, false, UNASSIGNED_NETWORK_ID, NULL);
 }
 // 0.3.7

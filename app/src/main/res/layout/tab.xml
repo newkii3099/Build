@@ -78,8 +78,8 @@
                         android:paddingStart="@dimen/_9sdp"
                         android:paddingBottom="@dimen/_2sdp"
                         android:singleLine="true"
-                        android:textColor="@color/white"
-                        android:textColorHint="@color/progress_gray"
+                        android:textColor="#0F172A"
+                        android:textColorHint="#94A3B8"
                         android:textSize="@dimen/_8sdp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@+id/goSearchButton"
@@ -121,7 +121,7 @@
                     android:fontFamily="@font/montserrat_bold"
                     android:gravity="center_vertical"
                     android:text="ผู้เล่น: 100/1000"
-                    android:textColor="@color/progress_gray"
+                    android:textColor="#0284C7"
                     android:textSize="10sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -134,7 +134,7 @@
                     android:fontFamily="@font/montserrat_bold"
                     android:gravity="center_vertical"
                     android:text="NextCity SA-MP"
-                    android:textColor="@color/progress_gray"
+                    android:textColor="#0284C7"
                     android:textSize="10sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -164,7 +164,7 @@
                 android:includeFontPadding="false"
                 android:paddingStart="@dimen/_5sdp"
                 android:text="ไอดี"
-                android:textColor="#959494"
+                android:textColor="#64748B"
                 android:textSize="@dimen/_7sdp" />
 
             <TextView
@@ -175,7 +175,7 @@
                 android:gravity="center_vertical"
                 android:includeFontPadding="false"
                 android:text="ชื่อผู้เล่น"
-                android:textColor="#959494"
+                android:textColor="#64748B"
                 android:textSize="@dimen/_7sdp" />
 
             <TextView
@@ -186,7 +186,7 @@
                 android:includeFontPadding="false"
                 android:paddingStart="@dimen/_10sdp"
                 android:text="เลเวล"
-                android:textColor="#959494"
+                android:textColor="#64748B"
                 android:textSize="@dimen/_7sdp" />
 
             <TextView
@@ -197,7 +197,7 @@
                 android:fontFamily="@font/din_pro_black"
                 android:includeFontPadding="false"
                 android:text="ปิง"
-                android:textColor="#959494"
+                android:textColor="#64748B"
                 android:textSize="@dimen/_7sdp" />
         </LinearLayout>
 
