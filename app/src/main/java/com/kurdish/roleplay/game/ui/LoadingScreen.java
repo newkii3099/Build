@@ -6,18 +6,17 @@ import android.os.Looper;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ImageView;
-
-import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.kurdish.roleplay.R;
 
 public class LoadingScreen {
 
     private Activity activity;
-    private ConstraintLayout mainLayout;
+    private View mainLayout;
     private ProgressBar progressBar;
     private TextView progressPercent;
     private TextView loadingText;
@@ -33,17 +32,22 @@ public class LoadingScreen {
     public LoadingScreen(Activity activity) {
         this.activity = activity;
 
-        mainLayout = (ConstraintLayout) activity.getLayoutInflater()
-                .inflate(R.layout.loadingscreen, null);
-        activity.addContentView(mainLayout,
-                new ConstraintLayout.LayoutParams(-1, -1));
+        try {
+            mainLayout = activity.getLayoutInflater()
+                    .inflate(R.layout.loadingscreen, null);
+            activity.addContentView(mainLayout,
+                    new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-        initializeViews();
-        setupAnimations();
-        startProgressAnimation();
+            initializeViews();
+            setupAnimations();
+            startProgressAnimation();
+        } catch (Throwable t) {
+            android.util.Log.e("LoadingScreen", "Error initializing LoadingScreen", t);
+        }
     }
 
     private void initializeViews() {
+        if (mainLayout == null) return;
         progressBar = mainLayout.findViewById(R.id.progressBarr);
         progressPercent = mainLayout.findViewById(R.id.progressPercent);
         loadingText = mainLayout.findViewById(R.id.loadingText);
@@ -117,21 +121,25 @@ public class LoadingScreen {
     }
 
     private void onLoadingComplete() {
-        Animation fadeOut = AnimationUtils.loadAnimation(activity, R.anim.fade_out);
-        mainLayout.startAnimation(fadeOut);
+        if (mainLayout == null) return;
+        try {
+            Animation fadeOut = AnimationUtils.loadAnimation(activity, R.anim.fade_out);
+            fadeOut.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) { }
 
-        fadeOut.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) { }
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    hide();
+                }
 
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                hide();
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) { }
-        });
+                @Override
+                public void onAnimationRepeat(Animation animation) { }
+            });
+            mainLayout.startAnimation(fadeOut);
+        } catch (Exception e) {
+            hide();
+        }
     }
 
     public void hide() {
@@ -143,13 +151,17 @@ public class LoadingScreen {
         if (dot2 != null) dot2.clearAnimation();
         if (dot3 != null) dot3.clearAnimation();
 
-        mainLayout.setVisibility(View.GONE);
+        if (mainLayout != null) {
+            mainLayout.setVisibility(View.GONE);
+        }
     }
 
     public void show() {
-        mainLayout.setVisibility(View.VISIBLE);
+        if (mainLayout != null) {
+            mainLayout.setVisibility(View.VISIBLE);
+        }
         progress = 0;
-        progressBar.setProgress(0);
+        if (progressBar != null) progressBar.setProgress(0);
         startProgressAnimation();
     }
 

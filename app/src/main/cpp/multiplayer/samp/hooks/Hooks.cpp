@@ -1475,79 +1475,77 @@ struct stFile
     FILE *f;
 };
 
-char lastFile[123];
+char lastFile[1024];
 
 stFile* NvFOpen(const char *r1)
 {
     LOGI("NvFOpen %s", r1);
-    strcpy(lastFile, r1);
-    static char path[255]{};
-    memset(path, 0, sizeof(path));
+    if (r1 == nullptr) return nullptr;
+    strncpy(lastFile, r1, sizeof(lastFile) - 1);
+    lastFile[sizeof(lastFile) - 1] = '\0';
+
+    char path[1024]{};
 
     if (strstr(r1, "emulated") != NULL)
     {
         // text contains "emulated"
-        sprintf(path, "%s", r1);
+        snprintf(path, sizeof(path), "%s", r1);
     }
     else {
 
-        sprintf(path, "%s%s", g_pszStorage, r1);
+        snprintf(path, sizeof(path), "%s%s", g_pszStorage, r1);
     }
 
     if(!strncmp(r1, "data/script/mainv1.scm", 22))
     {
-        sprintf(path, "%sSAMP/main.scm", g_pszStorage);
+        snprintf(path, sizeof(path), "%sSAMP/main.scm", g_pszStorage);
         FLog("Loading mainv1", path);
         FLog("Loading %s", path);
     }
     // ----------------------------
     if(!strncmp(r1, "data/script/scriptv1.img", 24))
     {
-        sprintf(path, "%sSAMP/script.img", g_pszStorage);
+        snprintf(path, sizeof(path), "%sSAMP/script.img", g_pszStorage);
         FLog("Loading script.img..");
         FLog("Loading %s", path);
     }
     // ----------------------------
     if(!strncmp(r1, "data/peds.ide", 13))
     {
-        sprintf(path, "%sSAMP/peds.ide", g_pszStorage);
+        snprintf(path, sizeof(path), "%sSAMP/peds.ide", g_pszStorage);
         FLog("Loading peds.ide..");
         FLog("Loading %s", path);
     }
     // ----------------------------
     if(!strncmp(r1, "data/vehicles.ide", 17))
     {
-        sprintf(path, "%sSAMP/vehicles.ide", g_pszStorage);
+        snprintf(path, sizeof(path), "%sSAMP/vehicles.ide", g_pszStorage);
         FLog("Loading vehicles.ide..");
         FLog("Loading %s", path);
     }
 
     if (!strncmp(r1, "data/gta.dat", 12))
     {
-        sprintf(path, "%sSAMP/gta.dat", g_pszStorage);
+        snprintf(path, sizeof(path), "%sSAMP/gta.dat", g_pszStorage);
         FLog("Loading gta.dat..");
         FLog("Loading %s", path);
     }
 
     if (!strncmp(r1, "data/handling.cfg", 17))
     {
-        sprintf(path, "%sSAMP/handling.cfg", g_pszStorage);
+        snprintf(path, sizeof(path), "%sSAMP/handling.cfg", g_pszStorage);
         FLog("Loading handling.cfg..");
         FLog("Loading %s", path);
     }
 
     if (!strncmp(r1, "data/weapon.dat", 15))
     {
-        sprintf(path, "%sSAMP/weapon.dat", g_pszStorage);
+        snprintf(path, sizeof(path), "%sSAMP/weapon.dat", g_pszStorage);
         FLog("Loading weapon.dat..");
         FLog("Loading %s", path);
     }
 
-
-
-
-
-    auto *st = (stFile*)malloc(0x10);
+    auto *st = (stFile*)malloc(sizeof(stFile));
     st->isFileExist = false;
 
     FILE *f  = fopen(path, "rb");

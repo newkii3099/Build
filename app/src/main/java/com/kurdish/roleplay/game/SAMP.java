@@ -127,13 +127,24 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
     }
 
 
-    private void showLoadingScreen() { }
+    private void showLoadingScreen() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (mLoadingScreen != null) {
+                    mLoadingScreen.show();
+                }
+            }
+        });
+    }
 
     private void hideLoadingScreen() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mLoadingScreen.hide();
+                if (mLoadingScreen != null) {
+                    mLoadingScreen.hide();
+                }
             }
         });
     }
@@ -221,25 +232,24 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
         Log.i(TAG, "**** onCreate");
         super.onCreate(savedInstanceState);
 
-        mKeyboard   = new CustomKeyboard(this);
-
-        mDialog     = new DialogManager(this);
-
-        mAttachEdit = new AttachEdit(this);
-
-        mLoadingScreen = new LoadingScreen(this);
-
-        mHud = new Hud(this);
-
-        mSpeedometer = new Speedometer(this);
-        mTab = new Tab(this);
-        instance = this;
+        try {
+            mKeyboard   = new CustomKeyboard(this);
+            mDialog     = new DialogManager(this);
+            mAttachEdit = new AttachEdit(this);
+            mLoadingScreen = new LoadingScreen(this);
+            mHud = new Hud(this);
+            mSpeedometer = new Speedometer(this);
+            mTab = new Tab(this);
+            instance = this;
+        } catch (Throwable t) {
+            Log.e(TAG, "Error initializing UI components in SAMP.onCreate", t);
+        }
 
         try {
             initializeSAMP(GameStorage.getGameBasePath(this));
             syncDisplayRefreshRateLimit(true);
-        } catch (UnsatisfiedLinkError e5) {
-            Log.e(TAG, e5.getMessage());
+        } catch (Throwable e5) {
+            Log.e(TAG, "Error initializing native SAMP", e5);
         }
     }
 

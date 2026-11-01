@@ -184,15 +184,12 @@ public abstract class GameActivityBase extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         handler = new Handler();
-        // Resolve storage paths
-        File extDir = getExternalFilesDir(null);
-        if (extDir == null) throw new IllegalStateException("getExternalFilesDir returned null");
-        String storagePath = extDir.getAbsolutePath();
+        // Resolve storage paths (point to Android/media/com.kurdish.roleplay where GTA SA files reside)
+        File gameBaseDir = GameStorage.getGameBaseDirectory(this);
+        String storagePath = gameBaseDir.getAbsolutePath();
 
-        // دۆزینەوەی storageBase بۆ ئەوەی ئیرۆر نەدات
         int androidIdx = storagePath.indexOf("/Android");
-        if (androidIdx < 0) throw new IllegalStateException("Cannot find /Android in path: " + storagePath);
-        String storageBase = storagePath.substring(0, androidIdx);
+        String storageBase = (androidIdx >= 0) ? storagePath.substring(0, androidIdx) : "/storage/emulated/0";
 
         Log.i(TAG, "[!!] onCreate: STORAGE_ROOT = " + storagePath
                 + " STORAGE_ROOT_BASE = " + storageBase);
