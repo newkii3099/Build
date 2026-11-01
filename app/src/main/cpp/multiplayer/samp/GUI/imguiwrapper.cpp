@@ -1,6 +1,7 @@
 #include "samp/main.h"
 #include "imguiwrapper.h"
 #include "uisettings.h"
+#include <unistd.h>
 
 #include "samp/Multiplayer/Multiplayer.h"
 #include "samp/Network/Network.h"
@@ -49,8 +50,9 @@ bool ImGuiWrapper::initialize()
     static const ImWchar ranges[] =
     {
         0x0020, 0x00FF, // Basic Latin + Latin Supplement
-        0x0400, 0x04FF, // Russia
-        0x0E00, 0x0E5B, // Thai
+        0x0400, 0x04FF, // Cyrillic
+        0x0E00, 0x0E7F, // Full Thai (Consonants, Vowels, Tone marks, Numerals)
+        0x0E80, 0x0EFF, // Full Lao (Consonants, Vowels, Tone marks, Numerals)
         0x2DE0, 0x2DFF, // Cyrillic Extended-A
         0xA640, 0xA69F, // Cyrillic Extended-B
         0xF020, 0xF0FF, // Half-width characters
@@ -63,8 +65,50 @@ bool ImGuiWrapper::initialize()
 
     if (font == nullptr)
     {
-        Log::addParameter("font", font);
-        return false;
+        Log::addParameter("Base font failed, fallback to system font: %s", m_fontPath.c_str());
+        font = io.Fonts->AddFontFromFileTTF("/system/fonts/Roboto-Regular.ttf",
+                                            UISettings::fontSize(), &fontCfg, ranges);
+        if (font == nullptr) return false;
+    }
+
+    // Merge Android System Noto Sans Thai Font for sharp modern Thai rendering
+    ImFontConfig mergeCfgThai;
+    mergeCfgThai.MergeMode = true;
+    mergeCfgThai.GlyphExtraSpacing.x = UISettings::outlineSize();
+    static const ImWchar thaiRanges[] = { 0x0E00, 0x0E7F, 0 };
+    const char* thaiFontPaths[] = {
+        "/system/fonts/NotoSansThai-Bold.ttf",
+        "/system/fonts/NotoSansThaiUI-Bold.ttf",
+        "/system/fonts/NotoSansThai-Regular.ttf",
+        "/system/fonts/NotoSansThaiUI-Regular.ttf",
+        nullptr
+    };
+    for (int t = 0; thaiFontPaths[t]; t++) {
+        if (access(thaiFontPaths[t], R_OK) == 0) {
+            io.Fonts->AddFontFromFileTTF(thaiFontPaths[t], UISettings::fontSize(), &mergeCfgThai, thaiRanges);
+            Log::addParameter("Merged Thai system font: %s", thaiFontPaths[t]);
+            break;
+        }
+    }
+
+    // Merge Android System Noto Sans Lao Font for sharp modern Lao rendering
+    ImFontConfig mergeCfgLao;
+    mergeCfgLao.MergeMode = true;
+    mergeCfgLao.GlyphExtraSpacing.x = UISettings::outlineSize();
+    static const ImWchar laoRanges[] = { 0x0E80, 0x0EFF, 0 };
+    const char* laoFontPaths[] = {
+        "/system/fonts/NotoSansLao-Bold.ttf",
+        "/system/fonts/NotoSansLaoUI-Bold.ttf",
+        "/system/fonts/NotoSansLao-Regular.ttf",
+        "/system/fonts/NotoSansLaoUI-Regular.ttf",
+        nullptr
+    };
+    for (int l = 0; laoFontPaths[l]; l++) {
+        if (access(laoFontPaths[l], R_OK) == 0) {
+            io.Fonts->AddFontFromFileTTF(laoFontPaths[l], UISettings::fontSize(), &mergeCfgLao, laoRanges);
+            Log::addParameter("Merged Lao system font: %s", laoFontPaths[l]);
+            break;
+        }
     }
 
     createFontTexture();

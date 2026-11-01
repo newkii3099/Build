@@ -236,7 +236,7 @@ void KeyboardInput::draw(ImGuiRenderer* renderer)
     renderer->drawLine(
             ImVec2(absolutePosition().x, divLinePosY),
             ImVec2(absolutePosition().x + size().x, divLinePosY),
-            ImColor(0xF5, 0x91, 0x32), UISettings::outlineSize()
+            ImColor(0x38, 0xBD, 0xF8), UISettings::outlineSize()
     );
 
     Widget::draw(renderer);
@@ -308,7 +308,7 @@ KeyboardLayout::Row::Key::Key(ExtendedKey extended_key)
 
 void KeyboardLayout::Row::Key::draw(ImGuiRenderer* renderer)
 {
-    if (focused()) renderer->drawRect(absolutePosition(), absolutePosition() + size(), ImColor(0xF5, 0x91, 0x32), true);
+    if (focused()) renderer->drawRect(absolutePosition(), absolutePosition() + size(), ImColor(0x38, 0xBD, 0xF8), true);
 
     switch (m_extendedKey)
     {
@@ -331,12 +331,12 @@ void KeyboardLayout::Row::Key::draw(ImGuiRenderer* renderer)
                     ImVec2(absolutePosition().x + width() * 0.37f, absolutePosition().y + height() * 0.50f),
                     ImVec2(absolutePosition().x + width() * 0.50f, absolutePosition().y + height() * 0.25f),
                     ImVec2(absolutePosition().x + width() * 0.63f, absolutePosition().y + height() * 0.50f),
-                    ImColor(0xF5, 0x91, 0x32), true
+                    ImColor(0x38, 0xBD, 0xF8), true
             );
             renderer->drawRect(
                     ImVec2(absolutePosition().x + width() * 0.44f, absolutePosition().y + height() * 0.50f - 1),
                     ImVec2(absolutePosition().x + width() * 0.56f, absolutePosition().y + height() * 0.68f),
-                    ImColor(0xF5, 0x91, 0x32), true
+                    ImColor(0x38, 0xBD, 0xF8), true
             );
             break;
 

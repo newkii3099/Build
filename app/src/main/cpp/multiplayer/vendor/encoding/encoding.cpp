@@ -2,8 +2,95 @@
 
 constexpr Encoding::Letter Encoding::m_letters[];
 
+static bool isStringValidUTF8(const std::string& s, bool& hasMultibyte)
+{
+    hasMultibyte = false;
+    size_t i = 0;
+    size_t len = s.length();
+    while (i < len)
+    {
+        unsigned char c = (unsigned char)s[i];
+        if (c <= 0x7F) {
+            i++;
+        } else if ((c & 0xE0) == 0xC0) {
+            if (i + 1 >= len) return false;
+            if (((unsigned char)s[i + 1] & 0xC0) != 0x80) return false;
+            hasMultibyte = true;
+            i += 2;
+        } else if ((c & 0xF0) == 0xE0) {
+            if (i + 2 >= len) return false;
+            if (((unsigned char)s[i + 1] & 0xC0) != 0x80) return false;
+            if (((unsigned char)s[i + 2] & 0xC0) != 0x80) return false;
+            hasMultibyte = true;
+            i += 3;
+        } else if ((c & 0xF8) == 0xF0) {
+            if (i + 3 >= len) return false;
+            if (((unsigned char)s[i + 1] & 0xC0) != 0x80) return false;
+            if (((unsigned char)s[i + 2] & 0xC0) != 0x80) return false;
+            if (((unsigned char)s[i + 3] & 0xC0) != 0x80) return false;
+            hasMultibyte = true;
+            i += 4;
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
 std::string Encoding::cp2utf(const std::string& s)
 {
+    if (s.empty()) return s;
+
+    // 1. If string is already valid UTF-8 with multi-byte chars (Thai, Lao, emojis, etc.), preserve it!
+    bool hasMultibyte = false;
+    if (isStringValidUTF8(s, hasMultibyte) && hasMultibyte)
+    {
+        return s;
+    }
+
+    // 2. Check if string contains CP874 / TIS-620 Thai bytes (0xA1 .. 0xFB)
+    bool hasCP874 = false;
+    for (size_t k = 0; k < s.size(); k++)
+    {
+        unsigned char uc = (unsigned char)s[k];
+        if (uc >= 0xA1 && uc <= 0xFB)
+        {
+            hasCP874 = true;
+            break;
+        }
+    }
+
+    if (hasCP874)
+    {
+        std::string ns;
+        ns.reserve(s.size() * 3);
+        for (size_t i = 0; i < s.size(); i++)
+        {
+            unsigned char c = (unsigned char)s[i];
+            if (c <= 0x7F)
+            {
+                ns += (char)c;
+            }
+            else if (c >= 0xA1 && c <= 0xFB)
+            {
+                // CP874 to Unicode Thai offset: 0x0E00 + (c - 0xA0)
+                uint32_t unicode = 0x0E00 + (c - 0xA0);
+                ns += (char)0xE0;
+                ns += (char)(0x80 | ((unicode >> 6) & 0x3F));
+                ns += (char)(0x80 | (unicode & 0x3F));
+            }
+            else
+            {
+                char buf[4];
+                char in[2] = { (char)c, 0 };
+                convert_windows1251_to_utf8(buf, in, strlen(in));
+                ns += std::string(buf);
+            }
+        }
+        return ns;
+    }
+
+    // 3. Fallback to Windows-1251 conversion
     int c, i;
     int len = s.size();
     std::string ns;

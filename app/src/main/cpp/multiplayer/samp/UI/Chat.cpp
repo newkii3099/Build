@@ -186,6 +186,18 @@ bool Chat::commandClient(const std::string& command)
 void Chat::draw(ImGuiRenderer* renderer)
 {
     if (!m_showingChat) return;
+
+    ImVec2 pos = absolutePosition();
+    ImVec2 sz = size();
+    if (this->itemsCount() > 0 && sz.x > 0.0f && sz.y > 0.0f)
+    {
+        // Modern translucent cyan/slate glass card backdrop
+        ImVec2 pMin = ImVec2(pos.x - 6.0f, pos.y - 4.0f);
+        ImVec2 pMax = ImVec2(pos.x + sz.x + 8.0f, pos.y + sz.y + 4.0f);
+        renderer->drawRect(pMin, pMax, ImColor(15, 23, 42, 95), true);
+        renderer->drawRect(pMin, pMax, ImColor(56, 189, 248, 65), false);
+    }
+
     ListBox::draw(renderer);
 }
 

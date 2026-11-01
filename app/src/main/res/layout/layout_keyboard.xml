@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- ⌨️ Modern Floating Input Bar -->
+    <!-- ⌨️ Modern Floating Input Bar (Translucent Sky Blue Glass) -->
     <LinearLayout
         android:id="@+id/main_input"
         android:layout_width="match_parent"
@@ -12,7 +12,7 @@
         android:layout_gravity="bottom"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="8dp"
-        android:background="@drawable/bg_bottom_bar"
+        android:background="@drawable/bg_keyboard_glass"
         android:elevation="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -28,15 +28,15 @@
             android:layout_height="38dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
-            android:background="@drawable/bg_action_card"
+            android:background="@drawable/bg_keyboard_input_glass"
             android:ems="10"
             android:hint="พิมพ์ข้อความหรือคำสั่ง /..."
-            android:textColorHint="#94A3B8"
+            android:textColorHint="#93C5FD"
             android:imeOptions="actionUnspecified|actionGo|actionSend|actionDone|flagNoFullscreen|flagNoExtractUi"
             android:inputType="text"
             android:paddingHorizontal="12dp"
             android:singleLine="true"
-            android:textColor="#0F172A"
+            android:textColor="#FFFFFF"
             android:textSize="13sp" />
 
         <Button
@@ -44,7 +44,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:layout_marginEnd="6dp"
-            android:background="@drawable/ic_buttoncolor"
+            android:background="@drawable/bg_key_sky_glass"
             android:gravity="center"
             android:text="⋁"
             android:textColor="#FFFFFF"
@@ -56,7 +56,7 @@
             android:layout_width="38dp"
             android:layout_height="38dp"
             android:layout_marginEnd="6dp"
-            android:background="@drawable/ic_buttoncolor"
+            android:background="@drawable/bg_key_sky_glass"
             android:gravity="center"
             android:text="⋀"
             android:textColor="#FFFFFF"
@@ -67,7 +67,7 @@
             android:id="@+id/main_but_input_slash"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:background="@drawable/ic_buttoncolor"
+            android:background="@drawable/bg_key_sky_glass"
             android:gravity="center"
             android:text="/"
             android:textColor="#FFFFFF"

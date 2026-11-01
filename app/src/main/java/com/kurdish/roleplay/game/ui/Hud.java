@@ -78,6 +78,15 @@ public class Hud {
         time = hud_layout.findViewById(R.id.realTime);
         hud_camera_butt.setOnClickListener(v -> clickCameraMode());
 
+        View hudKeyboardBtn = hud_layout.findViewById(R.id.hud_keyboard_btn);
+        if (hudKeyboardBtn != null) {
+            hudKeyboardBtn.setOnClickListener(v -> {
+                if (com.kurdish.roleplay.game.SAMP.getInstance() != null) {
+                    com.kurdish.roleplay.game.SAMP.getInstance().showKeyboard();
+                }
+            });
+        }
+
         startUpdatingTime();
         fetchOnline();
 

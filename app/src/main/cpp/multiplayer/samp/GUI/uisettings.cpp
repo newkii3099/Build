@@ -69,7 +69,7 @@ ImColor UISettings::m_buttonColor = ImColor(35, 25, 55, 210);
 ImColor UISettings::m_buttonFocusedColor = ImColor(139, 92, 246, 245);
 
 /* keyboard */
-ImColor UISettings::m_keyboardBackgroundColor = ImColor(15, 23, 42, 190);
+ImColor UISettings::m_keyboardBackgroundColor = ImColor(12, 45, 75, 185);
 
 /* dialog */
 ImColor UISettings::m_dialogBackgroundColor = ImColor(20, 25, 40, 225);

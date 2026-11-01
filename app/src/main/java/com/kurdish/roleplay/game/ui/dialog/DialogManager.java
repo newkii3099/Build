@@ -204,14 +204,9 @@ public class DialogManager {
             }
         }
 
-        try {
-            byte[] Str2 = str.getBytes("windows-1251");
-
-            Hide();
-            sendDialogResponse(i, DialogManager.this.mCurrentDialogId, i2, Str2);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
+        byte[] Str2 = (str != null) ? str.getBytes(java.nio.charset.StandardCharsets.UTF_8) : new byte[0];
+        Hide();
+        sendDialogResponse(i, DialogManager.this.mCurrentDialogId, i2, Str2);
     }
 
     public void loadDialog() {

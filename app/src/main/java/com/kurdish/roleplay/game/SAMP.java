@@ -194,11 +194,8 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
 
     @Override
     public void OnInputEnd(String str) {
-        byte[] toReturn = null;
-
-        try {
-            toReturn = str.getBytes("windows-1251");
-        } catch (UnsupportedEncodingException e) { }
+        if (str == null) return;
+        byte[] toReturn = str.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
         try {
             onInputEnd(toReturn);
@@ -207,14 +204,14 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
         }
     }
 
-    private void showKeyboard() {
+    public void showKeyboard() {
         runOnUiThread(() -> {
             Log.d("AXL", "showKeyboard()");
             mKeyboard.ShowInputLayout();
         });
     }
 
-    private void hideKeyboard() {
+    public void hideKeyboard() {
         runOnUiThread(() -> mKeyboard.HideInputLayout());
     }
 
