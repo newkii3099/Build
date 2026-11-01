@@ -221,4 +221,34 @@
     <color name="wanted_red">#FF4365</color>
     <color name="wanted_red_light">#33FF4365</color>
     <color name="dialog_bg_color">#E608140E</color>
+
+    <!-- Modern NextCity Launcher Theme Colors -->
+    <color name="brand_purple">#8B5CF6</color>
+    <color name="brand_purple_dark">#7C3AED</color>
+    <color name="brand_magenta">#C026D3</color>
+    <color name="brand_pink">#EC4899</color>
+    <color name="brand_purple_light">#F3E8FF</color>
+    <color name="brand_purple_border">#DDD6FE</color>
+
+    <color name="nextcity_card_bg">#F2FFFFFF</color>
+    <color name="nextcity_card_pressed">#E2E8F0</color>
+    <color name="nextcity_card_border">#E2E8F0</color>
+
+    <color name="nextcity_text_title">#0F172A</color>
+    <color name="nextcity_text_body">#334155</color>
+    <color name="nextcity_text_muted">#64748B</color>
+    <color name="nextcity_text_submuted">#94A3B8</color>
+
+    <color name="nextcity_online_green">#16A34A</color>
+    <color name="nextcity_online_green_bg">#DCFCE7</color>
+    <color name="nextcity_online_green_dot">#22C55E</color>
+    <color name="nextcity_badge_red">#EF4444</color>
+
+    <color name="nextcity_bottom_bar_bg">#B30F172A</color>
+    <color name="nextcity_bottom_bar_border">#1AFFFFFF</color>
+    <color name="nextcity_bottom_bar_text">#E2E8F0</color>
+    <color name="nextcity_bottom_bar_highlight">#FBBF24</color>
+
+    <color name="brand_discord">#5865F2</color>
+    <color name="brand_facebook">#1877F2</color>
 </resources>

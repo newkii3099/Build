@@ -12,12 +12,11 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
 
 import com.joom.paranoid.Obfuscate;
 import com.kurdish.roleplay.R;
 import com.kurdish.roleplay.launcher.util.ConfigValidator;
-
-import java.io.File;
 
 @Obfuscate
 public class MainActivity extends AppCompatActivity {
@@ -44,47 +43,49 @@ public class MainActivity extends AppCompatActivity {
 
         ConfigValidator.validateConfigFiles(this);
 
-        View[] buttons = {btnHome, btnSettings, btnWeb};
+        if (btnHome != null && btnSettings != null && btnWeb != null && activeCircle != null) {
+            View[] buttons = {btnHome, btnSettings, btnWeb};
 
-        View.OnClickListener navClick = v -> {
-            if (activeCircle.getVisibility() != View.VISIBLE)
+            View.OnClickListener navClick = v -> {
+                if (activeCircle.getVisibility() != View.VISIBLE)
+                    activeCircle.setVisibility(View.VISIBLE);
+
+                float targetX = v.getX() + (v.getWidth() / 2f) - (activeCircle.getWidth() / 2f);
+
+                activeCircle.animate()
+                        .translationX(targetX)
+                        .setDuration(300)
+                        .setInterpolator(new DecelerateInterpolator())
+                        .start();
+            };
+
+            for (View b : buttons) {
+                b.setOnClickListener(navClick);
+            }
+
+            btnHome.post(() -> {
                 activeCircle.setVisibility(View.VISIBLE);
+                float targetX = btnHome.getX() + (btnHome.getWidth() / 2f) - (activeCircle.getWidth() / 2f);
+                activeCircle.setTranslationX(targetX);
+            });
 
-            float targetX = v.getX() + (v.getWidth() / 2f) - (activeCircle.getWidth() / 2f);
+            btnHome.setOnClickListener(v -> {
+                navClick.onClick(v);
+                openHome();
+            });
 
-            activeCircle.animate()
-                    .translationX(targetX)
-                    .setDuration(300)
-                    .setInterpolator(new DecelerateInterpolator())
-                    .start();
-        };
+            btnSettings.setOnClickListener(v -> {
+                navClick.onClick(v);
+                openSettings();
+            });
 
-        for (View b : buttons) {
-            b.setOnClickListener(navClick);
+            btnWeb.setOnClickListener(v -> {
+                navClick.onClick(v);
+                openWeb();
+            });
+
+            setupSimpleAnimations();
         }
-
-        btnHome.post(() -> {
-            activeCircle.setVisibility(View.VISIBLE);
-            float targetX = btnHome.getX() + (btnHome.getWidth() / 2f) - (activeCircle.getWidth() / 2f);
-            activeCircle.setTranslationX(targetX);
-        });
-
-        btnHome.setOnClickListener(v -> {
-            navClick.onClick(v);
-            openHome();
-        });
-
-        btnSettings.setOnClickListener(v -> {
-            navClick.onClick(v);
-            openSettings();
-        });
-
-        btnWeb.setOnClickListener(v -> {
-            navClick.onClick(v);
-            openWeb();
-        });
-
-        setupSimpleAnimations();
     }
 
     private void showHomeFragment() {
@@ -93,21 +94,21 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    private void openHome() {
+    public void openHome() {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.fragmentContainer, new HomeFragment())
                 .commit();
     }
 
-    private void openSettings() {
+    public void openSettings() {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.fragmentContainer, new SettingsActivity())
                 .commit();
     }
 
-    private void openWeb() {
+    public void openWeb() {
         getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
                 .replace(R.id.fragmentContainer, new WebFragment())
@@ -125,27 +126,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupSimpleAnimations() {
-        final Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.btn_scale_modern);
-        final Animation scaleUp = AnimationUtils.loadAnimation(this, R.anim.btn_release_modern);
+        try {
+            final Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.btn_scale_modern);
+            final Animation scaleUp = AnimationUtils.loadAnimation(this, R.anim.btn_release_modern);
 
-        View.OnTouchListener touchListener = (v, event) -> {
-            switch (event.getAction()) {
-                case android.view.MotionEvent.ACTION_DOWN:
-                    v.startAnimation(scaleDown);
-                    break;
-                case android.view.MotionEvent.ACTION_UP:
-                    v.startAnimation(scaleUp);
-                    break;
-            }
-            return false;
-        };
+            View.OnTouchListener touchListener = (v, event) -> {
+                switch (event.getAction()) {
+                    case android.view.MotionEvent.ACTION_DOWN:
+                        v.startAnimation(scaleDown);
+                        break;
+                    case android.view.MotionEvent.ACTION_UP:
+                        v.startAnimation(scaleUp);
+                        break;
+                }
+                return false;
+            };
 
-        btnHome.setOnTouchListener(touchListener);
-        btnSettings.setOnTouchListener(touchListener);
-        btnWeb.setOnTouchListener(touchListener);
+            if (btnHome != null) btnHome.setOnTouchListener(touchListener);
+            if (btnSettings != null) btnSettings.setOnTouchListener(touchListener);
+            if (btnWeb != null) btnWeb.setOnTouchListener(touchListener);
+        } catch (Exception ignored) {
+        }
     }
+
     @Override
     public void onBackPressed() {
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainer);
+        if (currentFragment != null && !(currentFragment instanceof HomeFragment)) {
+            openHome();
+        } else {
+            super.onBackPressed();
+        }
     }
-
 }

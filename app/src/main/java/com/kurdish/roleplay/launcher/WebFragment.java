@@ -30,6 +30,15 @@ public class WebFragment extends Fragment {
         webView = view.findViewById(R.id.webView);
         setupWebView();
 
+        View btnBack = view.findViewById(R.id.btn_back_web);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).openHome();
+                }
+            });
+        }
+
         return view;
     }
 

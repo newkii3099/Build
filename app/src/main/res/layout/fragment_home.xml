@@ -1,212 +1,1087 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient_modern"
     android:keepScreenOn="true">
 
-    <!-- 🔹 Header (Logo + Brand Name) -->
-    <LinearLayout
-        android:id="@+id/header"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+    <!-- 🌅 Fullscreen Anime City Background -->
+    <ImageView
+        android:id="@+id/imgLauncherBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_launcher" />
 
-        <ImageView
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:layout_marginEnd="12dp"
-            android:src="@drawable/ic_app_logo"
-            android:elevation="6dp" />
+    <!-- 🌌 Subtle Contrast Vignette Overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#15000000" />
 
+    <!-- 📱 Main Responsive Landscape Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="10dp">
+
+        <!-- ============================================================== -->
+        <!-- 🏷️ HEADER BAR                                                  -->
+        <!-- ============================================================== -->
+
+        <!-- Left: NEXTCITY Brand Logo -->
         <LinearLayout
+            android:id="@+id/headerLogoContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="SAMP MOBILE"
-                android:textColor="@color/white"
-                android:textSize="22sp"
-                android:fontFamily="sans-serif-black"
-                android:letterSpacing="0.05"
-                android:textStyle="bold" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="NEXT-GEN MULTIPLAYER"
-                android:textColor="@color/mint_accent"
-                android:textSize="11sp"
-                android:fontFamily="sans-serif-medium"
-                android:letterSpacing="0.15" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- 🌐 Live Server Info Card (Glassmorphism) -->
-    <LinearLayout
-        android:id="@+id/serverInfoCard"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/bg_glass_card"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        app:layout_constraintTop_toBottomOf="@id/header"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- Status Dot -->
-        <View
-            android:layout_width="8dp"
-            android:layout_height="8dp"
-            android:layout_marginEnd="8dp"
-            android:background="@drawable/indicator_circle" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ONLINE"
-            android:textColor="@color/mint_accent"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-bold"
-            android:layout_marginEnd="12dp" />
-
-        <View
-            android:layout_width="1dp"
-            android:layout_height="14dp"
-            android:layout_marginEnd="12dp"
-            android:background="#33FFFFFF" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="141.95.234.17:1417"
-            android:textColor="#E0FFFFFF"
-            android:textSize="11sp"
-            android:fontFamily="sans-serif-medium" />
-    </LinearLayout>
-
-    <!-- 🔸 Center Content / Actions -->
-    <LinearLayout
-        android:id="@+id/bottomInfo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal"
-        android:layout_marginTop="18dp"
-        app:layout_constraintTop_toBottomOf="@id/serverInfoCard"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/placeholderSpace">
-
-        <!-- ▶️ Play Button (Vibrant Mint Pill) -->
-        <FrameLayout
-            android:id="@+id/btnPlay"
-            android:layout_width="150dp"
-            android:layout_height="44dp"
-            android:background="@drawable/btn_play_modern"
-            android:clickable="true"
-            android:focusable="true"
-            android:elevation="8dp"
-            android:layout_marginBottom="18dp">
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="10dp"
+                android:src="@drawable/ic_nextcity_logo"
+                android:elevation="4dp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
+                android:orientation="vertical">
 
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:layout_marginEnd="6dp"
-                    android:src="@drawable/ic_play_arrow"
-                    app:tint="#FFFFFF" />
+                <TextView
+                    android:id="@+id/tvBrandName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NEXTCITY"
+                    android:textColor="#FFFFFF"
+                    android:textSize="22sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.06"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="1"
+                    android:shadowDy="2"
+                    android:shadowRadius="5" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PLAY NOW"
-                    android:textColor="#FFFFFF"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:letterSpacing="0.08"
-                    android:fontFamily="sans-serif-black" />
+                    android:text="PLAY • CONNECT • ENJOY"
+                    android:textColor="#E2E8F0"
+                    android:textSize="9.5sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:letterSpacing="0.20"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="3" />
             </LinearLayout>
-        </FrameLayout>
-
-        <!-- 🌐 Social Icons in Glass Capsule -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_glass_card"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="6dp"
-            android:layout_marginBottom="14dp"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/discordBtn"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginHorizontal="6dp"
-                android:background="@drawable/social_icon_bg"
-                android:padding="5dp"
-                android:src="@drawable/discord_logo" />
-
-            <ImageView
-                android:id="@+id/webBtn"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginHorizontal="6dp"
-                android:background="@drawable/social_icon_bg"
-                android:padding="5dp"
-                android:src="@drawable/internet" />
-
-            <ImageView
-                android:id="@+id/youtubeBtn"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginHorizontal="6dp"
-                android:background="@drawable/social_icon_bg"
-                android:padding="5dp"
-                android:src="@drawable/youtube_logo" />
         </LinearLayout>
 
-        <!-- 🧾 Version Badge -->
-        <TextView
+        <!-- Right: Status Pill & Top Action Buttons -->
+        <LinearLayout
+            android:id="@+id/headerActionsContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/bg_glass_pill"
-            android:text="v2.11.311 · 64-bit ARM"
-            android:textColor="@color/mint_soft"
-            android:textSize="10sp"
-            android:fontFamily="sans-serif-medium"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="3dp" />
-    </LinearLayout>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- ⚫ Placeholder Space for Bottom Navigation -->
-    <View
-        android:id="@+id/placeholderSpace"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:background="@android:color/transparent" />
+            <!-- 🟢 Status Pill (Online players & Version) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_pill_status"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="12dp"
+                android:elevation="2dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <!-- Online dot -->
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/ic_dot_green" />
+
+                <TextView
+                    android:id="@+id/tvOnlineCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ออนไลน์ 12,846 คน"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:textStyle="bold" />
+
+                <!-- Vertical divider -->
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="12dp"
+                    android:layout_marginHorizontal="10dp"
+                    android:background="#33FFFFFF" />
+
+                <!-- Version icon -->
+                <ImageView
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_phone_version" />
+
+                <TextView
+                    android:id="@+id/tvLauncherVersion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="เวอร์ชัน 1.0.0"
+                    android:textColor="#E2E8F0"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-medium" />
+            </LinearLayout>
+
+            <!-- 🔔 Notification Bell Button -->
+            <FrameLayout
+                android:id="@+id/btnNotification"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_circle_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="3dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_bell_clean" />
+
+                <!-- Unread Red Badge -->
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/bg_badge_red" />
+            </FrameLayout>
+
+            <!-- ⚙️ Settings Top Button -->
+            <FrameLayout
+                android:id="@+id/btnSettingsTop"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_circle_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="3dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_settings_clean" />
+            </FrameLayout>
+        </LinearLayout>
+
+        <!-- ============================================================== -->
+        <!-- 🎯 MIDDLE CONTENT AREA (LEFT ACTIONS & RIGHT CARDS)            -->
+        <!-- ============================================================== -->
+
+        <!-- ◀️ LEFT COLUMN: Main Actions -->
+        <LinearLayout
+            android:id="@+id/leftActionsColumn"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="12dp"
+            android:orientation="vertical"
+            android:gravity="top"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/rightCardsColumn"
+            app:layout_constraintTop_toBottomOf="@id/headerLogoContainer"
+            app:layout_constraintBottom_toTopOf="@id/bottomBarContainer">
+
+            <!-- 1. Hero Big Play Button (กดเข้าเกม) -->
+            <LinearLayout
+                android:id="@+id/btnPlay"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/bg_action_hero"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="4dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="14dp"
+                android:layout_marginBottom="6dp">
+
+                <!-- Glowing Play Icon Container -->
+                <FrameLayout
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_marginEnd="10dp"
+                    android:background="@drawable/bg_circle_button">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="1dp"
+                        android:src="@drawable/ic_play_white"
+                        app:tint="#8B5CF6" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="กดเข้าเกม"
+                        android:textColor="#FFFFFF"
+                        android:textSize="15.5sp"
+                        android:fontFamily="sans-serif-black"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.02" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="เริ่มต้นการผจญภัยของคุณ"
+                        android:textColor="#E0E7FF"
+                        android:textSize="9.5sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="#FFFFFF" />
+            </LinearLayout>
+
+            <!-- 2. ติดตามเซิร์ฟเวอร์ -->
+            <LinearLayout
+                android:id="@+id/btnActionServers"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_action_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="2dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:layout_marginBottom="5dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="10dp"
+                    android:src="@drawable/ic_server_database" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ติดตามเซิร์ฟเวอร์"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ดูรายชื่อเซิร์ฟเวอร์ต่างๆ"
+                        android:textColor="@color/nextcity_text_muted"
+                        android:textSize="8.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_chevron_right" />
+            </LinearLayout>
+
+            <!-- 3. ตั้งค่าเกม -->
+            <LinearLayout
+                android:id="@+id/btnActionSettings"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_action_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="2dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:layout_marginBottom="5dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="10dp"
+                    android:src="@drawable/ic_settings_clean" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ตั้งค่าเกม"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ปรับแต่งค่าการเล่น"
+                        android:textColor="@color/nextcity_text_muted"
+                        android:textSize="8.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_chevron_right" />
+            </LinearLayout>
+
+            <!-- 4. เข้าดิสคอร์ด -->
+            <LinearLayout
+                android:id="@+id/btnActionDiscord"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_action_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="2dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:layout_marginBottom="5dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="10dp"
+                    android:src="@drawable/ic_discord_brand" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="เข้าดิสคอร์ด"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="พูดคุยกับชุมชน"
+                        android:textColor="@color/nextcity_text_muted"
+                        android:textSize="8.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_external_link" />
+            </LinearLayout>
+
+            <!-- 5. เฟสบุ๊คแฟนเพจ -->
+            <LinearLayout
+                android:id="@+id/btnActionFacebook"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_action_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="2dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:layout_marginBottom="5dp">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="10dp"
+                    android:src="@drawable/ic_facebook_brand" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="เฟสบุ๊คแฟนเพจ"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ติดตามข่าวสาร"
+                        android:textColor="@color/nextcity_text_muted"
+                        android:textSize="8.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_external_link" />
+            </LinearLayout>
+
+            <!-- 6. ประกาศล่าสุด -->
+            <LinearLayout
+                android:id="@+id/btnActionAnnouncement"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:background="@drawable/bg_action_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:elevation="2dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp">
+
+                <FrameLayout
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_marginEnd="8dp">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_megaphone_clean" />
+
+                    <!-- Red dot badge -->
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/bg_badge_red" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ประกาศล่าสุด"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="อัพเดทข่าวสารสำคัญ"
+                        android:textColor="@color/nextcity_text_muted"
+                        android:textSize="8.5sp" />
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_chevron_right" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ▶️ RIGHT COLUMN: 2 Cards (เซิร์ฟเวอร์ยอดนิยม & ประกาศจากทีมงาน) -->
+        <LinearLayout
+            android:id="@+id/rightCardsColumn"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical"
+            app:layout_constraintStart_toEndOf="@id/leftActionsColumn"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerLogoContainer"
+            app:layout_constraintBottom_toTopOf="@id/bottomBarContainer">
+
+            <!-- ============================================== -->
+            <!-- 🏢 CARD 1: เซิร์ฟเวอร์ยอดนิยม                      -->
+            <!-- ============================================== -->
+            <LinearLayout
+                android:id="@+id/cardPopularServers"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1.3"
+                android:background="@drawable/bg_card_white"
+                android:orientation="vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:elevation="3dp"
+                android:layout_marginBottom="6dp">
+
+                <!-- Card Header -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="6dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="6dp"
+                        android:src="@drawable/ic_server_database" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="เซิร์ฟเวอร์ยอดนิยม"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+
+                    <!-- ดูทั้งหมด ➔ -->
+                    <TextView
+                        android:id="@+id/btnViewAllServers"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_tag_purple"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:text="ดูทั้งหมด ➔"
+                        android:textColor="#7C3AED"
+                        android:textSize="9.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Server List (3 Rows) -->
+                <!-- Row 1: NextCity RP -->
+                <LinearLayout
+                    android:id="@+id/serverItemNextCity"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingVertical="2dp">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="48dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="6dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/thumb_nextcity" />
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="NextCity RP"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textSize="12sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ผู้เล่น 2,845 คน"
+                            android:textColor="@color/nextcity_text_muted"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <!-- Status Pill: 🟢 ออนไลน์ -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_tag_online"
+                        android:paddingHorizontal="7dp"
+                        android:paddingVertical="2dp"
+                        android:text="🟢 ออนไลน์"
+                        android:textColor="#16A34A"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Row 2: Dream Town -->
+                <LinearLayout
+                    android:id="@+id/serverItemDreamTown"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingVertical="2dp">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="48dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="6dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/thumb_dreamtown" />
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Dream Town"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textSize="12sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ผู้เล่น 1,923 คน"
+                            android:textColor="@color/nextcity_text_muted"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <!-- Status Pill: 🟢 ออนไลน์ -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_tag_online"
+                        android:paddingHorizontal="7dp"
+                        android:paddingVertical="2dp"
+                        android:text="🟢 ออนไลน์"
+                        android:textColor="#16A34A"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Row 3: City Life -->
+                <LinearLayout
+                    android:id="@+id/serverItemCityLife"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingVertical="2dp">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="48dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="6dp"
+                        app:cardElevation="0dp">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/thumb_citylife" />
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="City Life"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textSize="12sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ผู้เล่น 1,527 คน"
+                            android:textColor="@color/nextcity_text_muted"
+                            android:textSize="9sp" />
+                    </LinearLayout>
+
+                    <!-- Status Pill: 🟢 ออนไลน์ -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_tag_online"
+                        android:paddingHorizontal="7dp"
+                        android:paddingVertical="2dp"
+                        android:text="🟢 ออนไลน์"
+                        android:textColor="#16A34A"
+                        android:textSize="9sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ============================================== -->
+            <!-- 📢 CARD 2: ประกาศจากทีมงาน                          -->
+            <!-- ============================================== -->
+            <LinearLayout
+                android:id="@+id/cardTeamAnnouncement"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1.05"
+                android:background="@drawable/bg_card_white"
+                android:orientation="vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:elevation="3dp">
+
+                <!-- Header -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="4dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="6dp"
+                        android:src="@drawable/ic_megaphone_clean" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="ประกาศจากทีมงาน"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="12.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+
+                    <!-- ดูทั้งหมด ➔ -->
+                    <TextView
+                        android:id="@+id/btnViewAllNews"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_tag_purple"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="3dp"
+                        android:text="ดูทั้งหมด ➔"
+                        android:textColor="#7C3AED"
+                        android:textSize="9.5sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Announcement Body: Left text + Right 3D Megaphone -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- Left: Avatar + Title + Message + Time -->
+                    <FrameLayout
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/bg_avatar_circle">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_nextcity_logo" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ยินดีต้อนรับสู่ NextCity 🎉"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textSize="12sp"
+                            android:fontFamily="sans-serif-bold"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ขอบคุณที่เข้ามาเล่นกับเรานะครับ ขอให้สนุกกับการเล่นนะครับ ❤️"
+                            android:textColor="@color/nextcity_text_body"
+                            android:textSize="9.5sp"
+                            android:maxLines="2"
+                            android:ellipsize="end" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="🕒 31 ต.ค. 2568 เวลา 14:30 น."
+                            android:textColor="@color/nextcity_text_submuted"
+                            android:textSize="8.5sp" />
+                    </LinearLayout>
+
+                    <!-- Right: 3D Cute Megaphone Illustration -->
+                    <ImageView
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:layout_marginStart="4dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/img_megaphone_3d" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ============================================================== -->
+        <!-- ⚡ BOTTOM FLOATING STATUS & SHORTCUTS CAPSULE BAR               -->
+        <!-- ============================================================== -->
+        <LinearLayout
+            android:id="@+id/bottomBarContainer"
+            android:layout_width="match_parent"
+            android:layout_height="38dp"
+            android:background="@drawable/bg_bottom_bar"
+            android:elevation="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="14dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <!-- Left status: 🟢 สถานะเซิร์ฟเวอร์ : ปกติ | ⚡ พร้อมเข้าเล่น -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:layout_marginEnd="6dp"
+                    android:background="@drawable/ic_dot_green" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="สถานะเซิร์ฟเวอร์ : ปกติ"
+                    android:textColor="#FFFFFF"
+                    android:textSize="10.5sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:textStyle="bold" />
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="12dp"
+                    android:layout_marginHorizontal="10dp"
+                    android:background="#33FFFFFF" />
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_marginEnd="4dp"
+                    android:src="@drawable/ic_flash_lightning" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="พร้อมเข้าเล่น"
+                    android:textColor="#FBBF24"
+                    android:textSize="10.5sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Right Shortcuts: ⭐ รีวิว | 🎁 กิจกรรม | 🏆 จัดอันดับ | 🎧 ติดต่อ -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- ⭐ รีวิวเซิร์ฟเวอร์ -->
+                <LinearLayout
+                    android:id="@+id/navReviews"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="8dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_marginEnd="4dp"
+                        android:src="@drawable/ic_star_shortcut" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="รีวิวเซิร์ฟเวอร์"
+                        android:textColor="#E2E8F0"
+                        android:textSize="10sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 🎁 กิจกรรม -->
+                <LinearLayout
+                    android:id="@+id/navEvents"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="8dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_marginEnd="4dp"
+                        android:src="@drawable/ic_gift_shortcut" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="กิจกรรม"
+                        android:textColor="#E2E8F0"
+                        android:textSize="10sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 🏆 จัดอันดับ -->
+                <LinearLayout
+                    android:id="@+id/navRankings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="8dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_marginEnd="4dp"
+                        android:src="@drawable/ic_trophy_shortcut" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="จัดอันดับ"
+                        android:textColor="#E2E8F0"
+                        android:textSize="10sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+
+                <!-- 🎧 ติดต่อทีมงาน -->
+                <LinearLayout
+                    android:id="@+id/navSupport"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingHorizontal="8dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:layout_marginEnd="4dp"
+                        android:src="@drawable/ic_headset_shortcut" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ติดต่อทีมงาน"
+                        android:textColor="#E2E8F0"
+                        android:textSize="10sp"
+                        android:fontFamily="sans-serif-medium" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>

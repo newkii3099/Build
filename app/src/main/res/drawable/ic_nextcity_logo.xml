@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Stylized modern folded ribbon 'A' / NextCity emblem -->
+    <path
+        android:fillColor="#EC4899"
+        android:pathData="M24 4L6 40h10l8-18 8 18h10L24 4z" />
+    <path
+        android:fillColor="#8B5CF6"
+        android:pathData="M24 4L6 40h10l8-17z" />
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M16 26h16l-3.5 7h-9z" />
+</vector>

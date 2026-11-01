@@ -60,6 +60,15 @@ public class SettingsActivity extends Fragment {
         loadSettings();
         setupListeners();
 
+        View btnBack = view.findViewById(R.id.btn_back_to_home);
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).openHome();
+                }
+            });
+        }
+
         if (getActivity() != null) {
             Intent intent = new Intent(getActivity(), UpdateService.class);
             getActivity().bindService(intent, mConnection, android.content.Context.BIND_AUTO_CREATE);
