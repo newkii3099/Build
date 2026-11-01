@@ -731,7 +731,7 @@
                         android:layout_height="28dp"
                         android:background="@drawable/bg_action_round"
                         android:padding="6dp"
-                        android:src="@drawable/ic_search_clean"
+                        android:src="@drawable/ic_refresh"
                         app:tint="#64748B"
                         android:clickable="true"
                         android:focusable="true" />
