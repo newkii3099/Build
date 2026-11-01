@@ -32,7 +32,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginEnd="10dp"
-                    android:src="@drawable/ic_person_shortcut"
+                    android:src="@drawable/ic_person"
                     app:tint="#8B5CF6" />
 
                 <TextView
@@ -66,7 +66,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="ชื่อนี้จะถูกใช้เพื่อบันทึกข้อมูลตัวละครและเชื่อมต่อเข้าเซิร์ฟเวอร์ SA-MP ทั้งหมด (รองรับตัวอักษรภาษาอังกฤษ ตัวเลข และเครื่องหมาย _)"
-                android:textColor="@color/nextcity_text_desc"
+                android:textColor="@color/nextcity_text_muted"
                 android:textSize="11.5sp"
                 android:lineSpacingExtra="3dp"
                 android:fontFamily="sans-serif"
@@ -86,7 +86,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_person_shortcut"
+                    android:src="@drawable/ic_person"
                     app:tint="#8B5CF6" />
 
                 <EditText
