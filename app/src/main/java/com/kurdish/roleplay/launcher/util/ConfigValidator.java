@@ -62,7 +62,11 @@ public class ConfigValidator {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new SharedPreferenceCore().getString(context, "NICKNAME", "NextCity_Player");
+        String saved = new SharedPreferenceCore().getString(context, "NICKNAME");
+        if (saved != null && !saved.trim().isEmpty()) {
+            return saved.trim();
+        }
+        return "NextCity_Player";
     }
 
     public static void setNickName(Context context, String nickname) {

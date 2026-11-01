@@ -55,21 +55,27 @@ public class LoadingScreen {
     }
 
     private void setupAnimations() {
-        Animation dotAnimation = AnimationUtils.loadAnimation(activity, R.anim.loading_dots);
-        dot1.startAnimation(dotAnimation);
+        try {
+            Animation dotAnimation = AnimationUtils.loadAnimation(activity, R.anim.loading_dots);
+            if (dot1 != null) dot1.startAnimation(dotAnimation);
 
-        Animation dotAnimation2 = AnimationUtils.loadAnimation(activity, R.anim.loading_dots);
-        dotAnimation2.setStartOffset(200);
-        dot2.startAnimation(dotAnimation2);
+            Animation dotAnimation2 = AnimationUtils.loadAnimation(activity, R.anim.loading_dots);
+            dotAnimation2.setStartOffset(200);
+            if (dot2 != null) dot2.startAnimation(dotAnimation2);
 
-        Animation dotAnimation3 = AnimationUtils.loadAnimation(activity, R.anim.loading_dots);
-        dotAnimation3.setStartOffset(400);
-        dot3.startAnimation(dotAnimation3);
+            Animation dotAnimation3 = AnimationUtils.loadAnimation(activity, R.anim.loading_dots);
+            dotAnimation3.setStartOffset(400);
+            if (dot3 != null) dot3.startAnimation(dotAnimation3);
 
-        ImageView loadingIcon = mainLayout.findViewById(R.id.loadingIcon);
-        Animation rotateAnimation =
-                AnimationUtils.loadAnimation(activity, R.anim.rotate_animation);
-        loadingIcon.startAnimation(rotateAnimation);
+            ImageView loadingIcon = mainLayout.findViewById(R.id.loadingIcon);
+            if (loadingIcon != null) {
+                Animation rotateAnimation =
+                        AnimationUtils.loadAnimation(activity, R.anim.rotate_animation);
+                loadingIcon.startAnimation(rotateAnimation);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void startProgressAnimation() {
@@ -97,11 +103,11 @@ public class LoadingScreen {
 
     private void updateLoadingText(int progress) {
         String[] loadingMessages = {
-                "Loading resources...",
-                "Preparing game...",
-                "Initializing systems...",
-                "Almost ready...",
-                "Starting Game..."
+                "กำลังโหลดทรัพยากรตัวเกม...",
+                "กำลังเตรียมข้อมูลระบบ...",
+                "กำลังเชื่อมต่อเข้าสู่เซิร์ฟเวอร์...",
+                "เกือบเสร็จสมบูรณ์แล้ว...",
+                "ยินดีต้อนรับสู่ NextCity!"
         };
 
         int messageIndex = progress / 20;
