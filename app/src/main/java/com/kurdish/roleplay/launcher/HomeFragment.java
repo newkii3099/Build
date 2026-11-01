@@ -26,13 +26,23 @@ import com.kurdish.roleplay.R;
 import com.kurdish.roleplay.game.SAMP;
 import com.kurdish.roleplay.launcher.util.ConfigValidator;
 import com.kurdish.roleplay.launcher.util.RemoteConfigManager;
+import com.kurdish.roleplay.launcher.util.SampQueryAPI;
 
 public class HomeFragment extends Fragment {
+
+    public static final String LOCKED_SERVER_HOST = "168.222.20.88";
+    public static final int LOCKED_SERVER_PORT = 7777;
 
     private Animation scaleDown;
     private Animation scaleUp;
     private TextView tvHeaderPlayerNick;
     private TextView tvPlayerNickSubtitle;
+
+    private TextView tvServerLiveStatus;
+    private TextView tvServerHostname;
+    private TextView tvServerRealPlayers;
+    private TextView tvServerRealPing;
+    private SampQueryAPI.ServerInfo lastServerInfo;
 
     @Nullable
     @Override
@@ -59,11 +69,13 @@ public class HomeFragment extends Fragment {
         View btnActionFacebook = view.findViewById(R.id.btnActionFacebook);
         View btnActionAnnouncement = view.findViewById(R.id.btnActionAnnouncement);
 
-        // ▶️ Right Column Cards & Buttons
-        View btnViewAllServers = view.findViewById(R.id.btnViewAllServers);
+        // ▶️ Right Column Cards & Live Server Card
+        tvServerLiveStatus = view.findViewById(R.id.tvServerLiveStatus);
+        tvServerHostname = view.findViewById(R.id.tvServerHostname);
+        tvServerRealPlayers = view.findViewById(R.id.tvServerRealPlayers);
+        tvServerRealPing = view.findViewById(R.id.tvServerRealPing);
+        View btnRefreshServerStats = view.findViewById(R.id.btnRefreshServerStats);
         View serverItemNextCity = view.findViewById(R.id.serverItemNextCity);
-        View serverItemDreamTown = view.findViewById(R.id.serverItemDreamTown);
-        View serverItemCityLife = view.findViewById(R.id.serverItemCityLife);
 
         View cardTeamAnnouncement = view.findViewById(R.id.cardTeamAnnouncement);
         View btnViewAllNews = view.findViewById(R.id.btnViewAllNews);
@@ -127,20 +139,21 @@ public class HomeFragment extends Fragment {
             });
         }
 
-        // 5. Servers Section
-        View.OnClickListener showServersListener = v -> showServerBrowserDialog();
-        if (btnActionServers != null) btnActionServers.setOnClickListener(showServersListener);
-        if (btnViewAllServers != null) btnViewAllServers.setOnClickListener(showServersListener);
+        // 5. Dedicated Server Section (Locked to 168.222.20.88:7777, Live Query)
+        if (btnRefreshServerStats != null) {
+            btnRefreshServerStats.setOnClickListener(v -> {
+                Toast.makeText(getContext(), "กำลังรีเฟรชข้อมูลเซิร์ฟเวอร์...", Toast.LENGTH_SHORT).show();
+                fetchRealServerStats();
+            });
+        }
 
+        View.OnClickListener showServerStatusListener = v -> showServerStatusDialog();
+        if (btnActionServers != null) btnActionServers.setOnClickListener(showServerStatusListener);
         if (serverItemNextCity != null) {
-            serverItemNextCity.setOnClickListener(v -> showServerDetailDialog("NextCity RP", "2,845 / 3,000 คน", "141.95.234.17:1417", "18 ms"));
+            serverItemNextCity.setOnClickListener(showServerStatusListener);
         }
-        if (serverItemDreamTown != null) {
-            serverItemDreamTown.setOnClickListener(v -> showServerDetailDialog("Dream Town", "1,923 / 2,000 คน", "141.95.234.17:1418", "24 ms"));
-        }
-        if (serverItemCityLife != null) {
-            serverItemCityLife.setOnClickListener(v -> showServerDetailDialog("City Life", "1,527 / 2,000 คน", "141.95.234.17:1419", "21 ms"));
-        }
+
+        fetchRealServerStats();
 
         // 6. Announcements Section
         View.OnClickListener showAnnouncementListener = v -> showAnnouncementDialog();
@@ -268,36 +281,75 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void showServerBrowserDialog() {
-        showModernDialog(
-                "🌐 เซิร์ฟเวอร์ทั้งหมดในเครือ NextCity",
-                R.drawable.ic_server_database,
-                "เลือกเซิร์ฟเวอร์ที่คุณต้องการเข้าเล่น:\n\n" +
-                        "1. NextCity RP (Main Server)\n" +
-                        "   • ผู้เล่น: 2,845 คน · ปิง: 18ms\n" +
-                        "   • IP: 141.95.234.17:1417 (ออนไลน์)\n\n" +
-                        "2. Dream Town (Roleplay & Casual)\n" +
-                        "   • ผู้เล่น: 1,923 คน · ปิง: 24ms\n" +
-                        "   • IP: 141.95.234.17:1418 (ออนไลน์)\n\n" +
-                        "3. City Life (Economy & Gang War)\n" +
-                        "   • ผู้เล่น: 1,527 คน · ปิง: 21ms\n" +
-                        "   • IP: 141.95.234.17:1419 (ออนไลน์)",
-                "กดเข้าเกมทันที",
-                this::launchGame
-        );
+    private void fetchRealServerStats() {
+        if (tvServerLiveStatus != null) {
+            tvServerLiveStatus.setText("กำลังตรวจสอบ...");
+            tvServerLiveStatus.setTextColor(Color.parseColor("#D97706"));
+        }
+
+        new Thread(() -> {
+            SampQueryAPI.ServerInfo info = SampQueryAPI.queryServer(LOCKED_SERVER_HOST, LOCKED_SERVER_PORT, 3000);
+            lastServerInfo = info;
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    if (!isAdded()) return;
+                    if (info.isOnline) {
+                        if (tvServerLiveStatus != null) {
+                            tvServerLiveStatus.setText("🟢 ออนไลน์");
+                            tvServerLiveStatus.setTextColor(Color.parseColor("#16A34A"));
+                        }
+                        if (tvServerHostname != null) {
+                            String hn = (info.hostname != null) ? info.hostname.trim() : "";
+                            tvServerHostname.setText(hn.isEmpty() ? "NextCity Roleplay" : hn);
+                        }
+                        if (tvServerRealPlayers != null) {
+                            tvServerRealPlayers.setText(info.players + " / " + info.maxPlayers + " คน");
+                        }
+                        if (tvServerRealPing != null) {
+                            tvServerRealPing.setText(info.ping + " ms");
+                            if (info.ping < 60) {
+                                tvServerRealPing.setTextColor(Color.parseColor("#059669"));
+                            } else if (info.ping < 120) {
+                                tvServerRealPing.setTextColor(Color.parseColor("#D97706"));
+                            } else {
+                                tvServerRealPing.setTextColor(Color.parseColor("#DC2626"));
+                            }
+                        }
+                    } else {
+                        if (tvServerLiveStatus != null) {
+                            tvServerLiveStatus.setText("🔴 ออฟไลน์");
+                            tvServerLiveStatus.setTextColor(Color.parseColor("#DC2626"));
+                        }
+                        if (tvServerRealPlayers != null) {
+                            tvServerRealPlayers.setText("ไม่สามารถติดต่อเซิร์ฟเวอร์");
+                        }
+                        if (tvServerRealPing != null) {
+                            tvServerRealPing.setText("-");
+                            tvServerRealPing.setTextColor(Color.parseColor("#94A3B8"));
+                        }
+                    }
+                });
+            }
+        }).start();
     }
 
-    private void showServerDetailDialog(String serverName, String players, String ip, String ping) {
+    private void showServerStatusDialog() {
+        String statusText = (lastServerInfo != null && lastServerInfo.isOnline) ? "🟢 ออนไลน์ (ปกติ)" : "🔴 ไม่สามารถติดต่อได้";
+        String playersText = (lastServerInfo != null && lastServerInfo.isOnline) ? (lastServerInfo.players + " / " + lastServerInfo.maxPlayers + " คน") : "ไม่สามารถติดต่อได้";
+        String pingText = (lastServerInfo != null && lastServerInfo.isOnline) ? (lastServerInfo.ping + " ms") : "-";
+        String hostName = (lastServerInfo != null && !lastServerInfo.hostname.isEmpty()) ? lastServerInfo.hostname : "NextCity Roleplay";
+
         showModernDialog(
-                "🏢 " + serverName,
+                "🏢 " + hostName,
                 R.drawable.ic_server_database,
-                "สถานะเซิร์ฟเวอร์: 🟢 ออนไลน์ (ปกติ)\n\n" +
-                        "• จำนวนผู้เล่นปัจจุบัน: " + players + "\n" +
-                        "• IP เชื่อมต่อ: " + ip + "\n" +
-                        "• ค่าความหน่วง (Ping): " + ping + "\n" +
+                "ข้อมูลเซิร์ฟเวอร์ทางการ NextCity:\n\n" +
+                        "• สถานะ: " + statusText + "\n" +
+                        "• ที่อยู่ IP: " + LOCKED_SERVER_HOST + ":" + LOCKED_SERVER_PORT + "\n" +
+                        "• ผู้เล่นออนไลน์จริง: " + playersText + "\n" +
+                        "• ค่าความหน่วง (Ping): " + pingText + "\n" +
                         "• เวอร์ชันระบบ: SAMP Mobile 2.11 (64-bit)\n\n" +
-                        "พร้อมสำหรับการเล่นเกมของคุณแล้ว!",
-                "เข้าเล่นเซิร์ฟเวอร์นี้",
+                        "กดปุ่มด้านล่างเพื่อเข้าเล่นเกม!",
+                "กดเข้าเล่นเกม",
                 this::launchGame
         );
     }
@@ -372,6 +424,7 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         refreshPlayerNickname();
+        fetchRealServerStats();
     }
 
     private void refreshPlayerNickname() {

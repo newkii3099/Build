@@ -25,8 +25,6 @@ public class ConfigValidator {
                     StringBuilder sb = new StringBuilder();
                     sb.append("[client]\n");
                     sb.append("name=NextCity_Player\n");
-                    sb.append("host=141.95.234.17\n");
-                    sb.append("port=1417\n");
                     sb.append("password=\n");
                     sb.append("version=0.3.7\n\n");
                     sb.append("[gui]\n");

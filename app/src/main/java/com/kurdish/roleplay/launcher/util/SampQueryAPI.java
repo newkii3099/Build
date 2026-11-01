@@ -1,169 +1,137 @@
 package com.kurdish.roleplay.launcher.util;
 
-import java.io.IOException;
+import android.util.Log;
+
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Random;
 import java.util.StringTokenizer;
 
-/* renamed from: g5.b */
 public final class SampQueryAPI {
 
-    /* renamed from: a */
-    public DatagramSocket f7277a = null;
+    private static final String TAG = "SampQueryAPI";
 
-    /* renamed from: b */
-    public InetAddress f7278b = null;
-
-    /* renamed from: c */
-    public String f7279c = "";
-
-    /* renamed from: d */
-    public int f7280d;
-
-    /* renamed from: e */
-    public Random f7281e = new Random();
-
-    /* renamed from: f */
-    public boolean f7282f = true;
-
-    public SampQueryAPI(String str, int i) {
-        try {
-            InetAddress byName = InetAddress.getByName(str);
-            this.f7278b = byName;
-            this.f7279c = byName.getHostAddress();
-        } catch (UnknownHostException unused) {
-            this.f7282f = false;
-        }
-        try {
-            DatagramSocket datagramSocket = new DatagramSocket();
-            this.f7277a = datagramSocket;
-            datagramSocket.setSoTimeout(2000);
-        } catch (SocketException unused2) {
-            this.f7282f = false;
-        }
-        this.f7280d = i;
+    public static class ServerInfo {
+        public boolean isOnline = false;
+        public int players = 0;
+        public int maxPlayers = 0;
+        public String hostname = "";
+        public String gamemode = "";
+        public String language = "";
+        public int ping = -1;
     }
 
-    /* renamed from: a */
-    public static String m5851a(int i, ByteBuffer byteBuffer) throws UnsupportedEncodingException {
-        byte[] bArr = new byte[i];
-        for (int i2 = 0; i2 < i; i2++) {
-            try {
-                bArr[i2] = byteBuffer.get();
-            } catch (Exception unused) {
+    public static ServerInfo queryServer(String host, int port, int timeoutMs) {
+        ServerInfo info = new ServerInfo();
+        DatagramSocket socket = null;
+        try {
+            InetAddress address = InetAddress.getByName(host);
+            socket = new DatagramSocket();
+            socket.setSoTimeout(timeoutMs > 0 ? timeoutMs : 2500);
+
+            // Construct 11-byte SAMP query packet: 'S','A','M','P' + 4 bytes IP + 2 bytes port + opcode
+            byte[] sendBuffer = new byte[11];
+            sendBuffer[0] = 'S';
+            sendBuffer[1] = 'A';
+            sendBuffer[2] = 'M';
+            sendBuffer[3] = 'P';
+
+            String ipStr = address.getHostAddress();
+            StringTokenizer tokenizer = new StringTokenizer(ipStr, ".");
+            sendBuffer[4] = (byte) Integer.parseInt(tokenizer.nextToken());
+            sendBuffer[5] = (byte) Integer.parseInt(tokenizer.nextToken());
+            sendBuffer[6] = (byte) Integer.parseInt(tokenizer.nextToken());
+            sendBuffer[7] = (byte) Integer.parseInt(tokenizer.nextToken());
+            sendBuffer[8] = (byte) (port & 0xFF);
+            sendBuffer[9] = (byte) ((port >> 8) & 0xFF);
+            sendBuffer[10] = 'i'; // Info query
+
+            DatagramPacket sendPacket = new DatagramPacket(sendBuffer, sendBuffer.length, address, port);
+
+            long startTime = System.currentTimeMillis();
+            socket.send(sendPacket);
+
+            byte[] recvBuffer = new byte[2048];
+            DatagramPacket recvPacket = new DatagramPacket(recvBuffer, recvBuffer.length);
+            socket.receive(recvPacket);
+            long endTime = System.currentTimeMillis();
+
+            info.ping = (int) (endTime - startTime);
+
+            int len = recvPacket.getLength();
+            if (len >= 11) {
+                ByteBuffer buffer = ByteBuffer.wrap(recvBuffer, 0, len);
+                buffer.order(ByteOrder.LITTLE_ENDIAN);
+                buffer.position(11); // Skip 11 header bytes
+
+                if (buffer.remaining() >= 1) {
+                    boolean password = buffer.get() != 0;
+                }
+                if (buffer.remaining() >= 4) {
+                    info.players = buffer.getShort() & 0xFFFF;
+                    info.maxPlayers = buffer.getShort() & 0xFFFF;
+                }
+
+                if (buffer.remaining() >= 4) {
+                    int hostLen = buffer.getInt();
+                    if (hostLen > 0 && buffer.remaining() >= hostLen) {
+                        byte[] strBytes = new byte[hostLen];
+                        buffer.get(strBytes);
+                        info.hostname = decodeString(strBytes);
+                    }
+                }
+
+                if (buffer.remaining() >= 4) {
+                    int modeLen = buffer.getInt();
+                    if (modeLen > 0 && buffer.remaining() >= modeLen) {
+                        byte[] strBytes = new byte[modeLen];
+                        buffer.get(strBytes);
+                        info.gamemode = decodeString(strBytes);
+                    }
+                }
+
+                if (buffer.remaining() >= 4) {
+                    int langLen = buffer.getInt();
+                    if (langLen > 0 && buffer.remaining() >= langLen) {
+                        byte[] strBytes = new byte[langLen];
+                        buffer.get(strBytes);
+                        info.language = decodeString(strBytes);
+                    }
+                }
+
+                info.isOnline = true;
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "Query server " + host + ":" + port + " failed: " + e.getMessage());
+            info.isOnline = false;
+        } finally {
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
             }
         }
-        return new String(bArr, "windows-1251");
+        return info;
     }
 
-    /* renamed from: b */
-    public final String[] mo7164b() {
-        byte[] bArr;
-        DatagramPacket datagramPacket;
-        DatagramSocket datagramSocket = this.f7277a;
-        String[] strArr = new String[6];
+    private static String decodeString(byte[] bytes) {
+        if (bytes == null || bytes.length == 0) return "";
         try {
-            DatagramPacket c = mo7165c("i");
-            if (datagramSocket != null) {
-                try {
-                    datagramSocket.send(c);
-                } catch (IOException unused) {
-                }
+            String utf8 = new String(bytes, "UTF-8");
+            if (!utf8.contains("\uFFFD")) {
+                return utf8;
             }
-            if (datagramSocket == null) {
-                bArr = new byte[3072];
-            } else {
-                datagramPacket = new DatagramPacket(new byte[3072], 3072);
-                try {
-                    datagramSocket.receive(datagramPacket);
-                } catch (IOException unused2) {
-                }
-                bArr = datagramPacket.getData();
-            }
-            ByteBuffer wrap = ByteBuffer.wrap(bArr);
-            wrap.order(ByteOrder.LITTLE_ENDIAN);
-            wrap.position(11);
-            if (wrap.get() == 0) {
-                strArr[0] = "0";
-            } else {
-                strArr[0] = "1";
-            }
-            strArr[1] = String.valueOf((int) wrap.getShort());
-            strArr[2] = String.valueOf((int) wrap.getShort());
-            strArr[3] = m5851a(wrap.getInt(), wrap);
-            strArr[4] = m5851a(wrap.getInt(), wrap);
-            strArr[5] = m5851a(wrap.getInt(), wrap);
-            return strArr;
-        } catch (Exception unused4) {
-            return null;
-        }
-    }
+        } catch (UnsupportedEncodingException ignored) { }
 
-    /* renamed from: c */
-    public final DatagramPacket mo7165c(String str) {
-        int i = this.f7280d;
         try {
-            byte[] bytes = ("SAMPzalupa" + str).getBytes("windows-1251");
-            StringTokenizer stringTokenizer = new StringTokenizer(this.f7279c, ".");
-            bytes[4] = (byte) Integer.parseInt(stringTokenizer.nextToken());
-            bytes[5] = (byte) Integer.parseInt(stringTokenizer.nextToken());
-            bytes[6] = (byte) Integer.parseInt(stringTokenizer.nextToken());
-            bytes[7] = (byte) Integer.parseInt(stringTokenizer.nextToken());
-            bytes[8] = (byte) (i & 255);
-            bytes[9] = (byte) ((i >> 8) & 255);
-            return new DatagramPacket(bytes, bytes.length, this.f7278b, i);
-        } catch (Exception unused) {
-            return null;
-        }
-    }
+            return new String(bytes, "TIS-620"); // Thai
+        } catch (UnsupportedEncodingException ignored) { }
 
-    /* renamed from: d */
-    public boolean mo7166d() {
-        DatagramSocket datagramSocket;
-        DatagramPacket datagramPacket;
-        byte[] data;
-        if (!this.f7282f || (datagramSocket = this.f7277a) == null) {
-            return false;
-        }
-        byte[] bArr = new byte[4];
-        this.f7281e.nextBytes(bArr);
-        bArr[0] = (byte) (((bArr[0] % 100) + 110) & 255);
-        bArr[1] = (byte) (bArr[1] % Byte.MIN_VALUE);
-        bArr[2] = (byte) (bArr[2] % Byte.MIN_VALUE);
-        bArr[3] = (byte) ((bArr[3] % 50) & 255);
-        byte[] bArr2 = null;
         try {
-            DatagramPacket c = mo7165c("p".concat(new String(bArr, "windows-1251")));
-            if (datagramSocket != null) {
-                try {
-                    datagramSocket.send(c);
-                } catch (IOException unused) {
-                }
-            }
-            if (datagramSocket == null) {
-                data = new byte[3072];
-            } else {
-                datagramPacket = new DatagramPacket(new byte[3072], 3072);
-                try {
-                    datagramSocket.receive(datagramPacket);
-                } catch (IOException unused2) {
-                }
-                data = datagramPacket.getData();
-            }
-            bArr2 = data;
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        if (bArr2[10] == 112 && bArr2[11] == bArr[0] && bArr2[12] == bArr[1] && bArr2[13] == bArr[2] && bArr2[14] == bArr[3]) {
-            return true;
-        }
-        return false;
+            return new String(bytes, "windows-1251");
+        } catch (UnsupportedEncodingException ignored) { }
+
+        return new String(bytes);
     }
 }
