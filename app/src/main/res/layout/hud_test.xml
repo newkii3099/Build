@@ -228,7 +228,7 @@
                     android:layout_width="13dp"
                     android:layout_height="13dp"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/eat"
+                    android:src="@drawable/satiety"
                     app:layout_constraintBottom_toBottomOf="@id/hud_progress_eat"
                     app:layout_constraintEnd_toEndOf="@id/hud_progress_eat"
                     app:layout_constraintStart_toStartOf="@id/hud_progress_eat"
