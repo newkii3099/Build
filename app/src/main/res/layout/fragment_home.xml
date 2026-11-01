@@ -146,6 +146,37 @@
                     android:fontFamily="sans-serif-medium" />
             </LinearLayout>
 
+            <!-- 👤 Quick Nickname Pill -->
+            <LinearLayout
+                android:id="@+id/btnQuickNickname"
+                android:layout_width="wrap_content"
+                android:layout_height="28dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_pill_blur"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="10dp"
+                android:elevation="2dp">
+
+                <ImageView
+                    android:layout_width="13dp"
+                    android:layout_height="13dp"
+                    android:layout_marginEnd="5dp"
+                    android:src="@drawable/ic_person_shortcut"
+                    app:tint="#8B5CF6" />
+
+                <TextView
+                    android:id="@+id/tvHeaderPlayerNick"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="NextCity_Player"
+                    android:textColor="#E2E8F0"
+                    android:textSize="11sp"
+                    android:fontFamily="sans-serif-bold" />
+            </LinearLayout>
+
             <!-- 🔔 Notification Bell Button -->
             <FrameLayout
                 android:id="@+id/btnNotification"
@@ -258,9 +289,10 @@
                         android:letterSpacing="0.02" />
 
                     <TextView
+                        android:id="@+id/tvPlayerNickSubtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="เริ่มต้นการผจญภัยของคุณ"
+                        android:text="ชื่อตัวละคร: NextCity_Player"
                         android:textColor="#E0E7FF"
                         android:textSize="9.5sp"
                         android:fontFamily="sans-serif-medium" />

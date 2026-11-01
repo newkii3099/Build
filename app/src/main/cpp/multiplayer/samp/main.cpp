@@ -307,7 +307,13 @@ void DoInitStuff()
 		}
 		InitFPSFix(fpsLimit);
 
-		pNetGame = new CNetGame("gta-irz.com", 7777, "Luca_Runky", "");
+		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "141.95.234.17";
+		int iPort = (pSettings && pSettings->Get().iPort > 0) ? pSettings->Get().iPort : 1417;
+		const char* szNick = (pSettings && pSettings->Get().szNickName[0] != '\0') ? pSettings->Get().szNickName : "NextCityPlayer";
+		const char* szPass = (pSettings) ? pSettings->Get().szPassword : "";
+
+		FLog("Starting CNetGame with Host: %s:%d, NickName: %s", szHost, iPort, szNick);
+		pNetGame = new CNetGame(szHost, iPort, szNick, szPass);
 		bNetworkInited = true;
 
         FLog("DoInitStuff end");

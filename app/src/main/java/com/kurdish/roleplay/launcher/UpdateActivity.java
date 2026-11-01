@@ -80,12 +80,12 @@ public class UpdateActivity extends AppCompatActivity{
             if (msg.what == 4) {
                 UpdateActivity.UpdateStatus valueOf = UpdateActivity.UpdateStatus.valueOf(msg.getData().getString("status", ""));
                 if (valueOf == UpdateStatus.DownloadGameData) {
-                    ((TextView)findViewById(R.id.installation_text)).setText("Updating game data...");
+                    ((TextView)findViewById(R.id.installation_text)).setText("กำลังดาวน์โหลดข้อมูลเกม...");
                     Log.d("Dev Hama", "statusname = " + valueOf);
                     long j = msg.getData().getLong("total");
                     long j2 = msg.getData().getLong("current");
                     ((TextView) findViewById(R.id.fileName)).setText(msg.getData().getString("filename"));
-                    ((TextView) findViewById(R.id.fileCount)).setText(j2/1048576 + "MB/" + j/1048576+"MB");
+                    ((TextView) findViewById(R.id.fileCount)).setText((j2/1048576) + " MB / " + (j/1048576) + " MB");
                     ProgressBar progressBar = findViewById(R.id.download_progress);
                     progressBar.setIndeterminate(false);
                     Log.d("UpdateActivity", (int) (j/1048576) + "/" + (int) (j2/1048576));
@@ -102,7 +102,7 @@ public class UpdateActivity extends AppCompatActivity{
                     progressBar.setMax((int) (j)/1048576);
                     progressBar.setProgress((int) (j2)/1048576);
                 } else if (valueOf == UpdateStatus.DownloadGame) {
-                    ((TextView)findViewById(R.id.installation_text)).setText("Updating game...");
+                    ((TextView)findViewById(R.id.installation_text)).setText("กำลังอัปเดตข้อมูลตัวเกม...");
                     Log.d("Dev Hama", "statusname = " + valueOf);
                     long j = msg.getData().getLong("total");
                     long j2 = msg.getData().getLong("current");
@@ -146,7 +146,7 @@ public class UpdateActivity extends AppCompatActivity{
             }
             else if (msg.what == 1) {
                 Log.i("UpdateActivity", "UpdateService.UPDATE_GAME");
-                ((TextView)findViewById(R.id.installation_text)).setText("Installation...");
+                ((TextView)findViewById(R.id.installation_text)).setText("กำลังติดตั้งข้อมูลเกม...");
                 ProgressBar progressBar = (ProgressBar) UpdateActivity.this.findViewById(R.id.download_progress);
                 progressBar.setIndeterminate(true);
                 startActivity(new Intent(UpdateActivity.this, MainActivity.class));

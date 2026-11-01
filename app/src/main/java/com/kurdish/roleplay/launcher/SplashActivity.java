@@ -189,17 +189,16 @@ public class SplashActivity extends AppCompatActivity {
 
         if (!Util.isNetworkConnected(Config.currentContext)) {
 
-            builder.setMessage("There is no internet connection.\n" +
-                            "Please exit, connect to the internet and reenter the launcher")
+            builder.setMessage("ไม่มีการเชื่อมต่ออินเทอร์เน็ต\nกรุณาเชื่อมต่ออินเทอร์เน็ตแล้วเปิดตัวเกมใหม่อีกครั้ง")
                     .setCancelable(false)
-                    .setPositiveButton("Ok", (dialog, id) -> {
+                    .setPositiveButton("ตกลง", (dialog, id) -> {
                         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(false);
                         finishAndRemoveTask();
                         System.exit(0);
                         dialog.dismiss();
                     });
             AlertDialog alert = builder.create();
-            alert.setTitle("Info");
+            alert.setTitle("แจ้งเตือน");
             alert.show();
             return;
         }

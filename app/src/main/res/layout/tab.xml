@@ -71,7 +71,7 @@
                         android:autofillHints="no"
                         android:background="@drawable/players_list_border_search"
                         android:fontFamily="@font/din_pro_medium"
-                        android:hint="Search"
+                        android:hint="ค้นหาผู้เล่น..."
                         android:imeOptions="actionGo|actionSend|actionDone|flagNoFullscreen|flagNoExtractUi"
                         android:importantForAutofill="no"
                         android:inputType="text"
@@ -120,7 +120,7 @@
                     android:layout_marginEnd="56dp"
                     android:fontFamily="@font/montserrat_bold"
                     android:gravity="center_vertical"
-                    android:text="Players: 100/1000"
+                    android:text="ผู้เล่น: 100/1000"
                     android:textColor="@color/progress_gray"
                     android:textSize="10sp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -133,7 +133,7 @@
                     android:layout_marginEnd="212dp"
                     android:fontFamily="@font/montserrat_bold"
                     android:gravity="center_vertical"
-                    android:text="Kurdish RolePlay"
+                    android:text="NextCity SA-MP"
                     android:textColor="@color/progress_gray"
                     android:textSize="10sp"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -163,7 +163,7 @@
                 android:gravity="center_vertical"
                 android:includeFontPadding="false"
                 android:paddingStart="@dimen/_5sdp"
-                android:text="Id"
+                android:text="ไอดี"
                 android:textColor="#959494"
                 android:textSize="@dimen/_7sdp" />
 
@@ -174,7 +174,7 @@
                 android:fontFamily="@font/din_pro_black"
                 android:gravity="center_vertical"
                 android:includeFontPadding="false"
-                android:text="Name"
+                android:text="ชื่อผู้เล่น"
                 android:textColor="#959494"
                 android:textSize="@dimen/_7sdp" />
 
@@ -185,7 +185,7 @@
                 android:fontFamily="@font/din_pro_black"
                 android:includeFontPadding="false"
                 android:paddingStart="@dimen/_10sdp"
-                android:text="Level"
+                android:text="เลเวล"
                 android:textColor="#959494"
                 android:textSize="@dimen/_7sdp" />
 
@@ -196,7 +196,7 @@
                 android:layout_weight="2"
                 android:fontFamily="@font/din_pro_black"
                 android:includeFontPadding="false"
-                android:text="Ping"
+                android:text="ปิง"
                 android:textColor="#959494"
                 android:textSize="@dimen/_7sdp" />
         </LinearLayout>

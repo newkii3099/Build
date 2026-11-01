@@ -1,77 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- ⌨️ Modern Floating Input Bar -->
     <LinearLayout
         android:id="@+id/main_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="#65FFFFFF"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_bottom_bar"
+        android:elevation="8dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingLeft="@dimen/_10sdp"
-        android:paddingRight="@dimen/_10sdp"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <com.kurdish.roleplay.launcher.util.CustomEditText
             android:id="@+id/main_et_input"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/_15sdp"
-            android:layout_weight="0.7"
+            android:layout_width="0dp"
+            android:layout_height="38dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_action_card"
             android:ems="10"
+            android:hint="พิมพ์ข้อความหรือคำสั่ง /..."
+            android:textColorHint="#94A3B8"
             android:imeOptions="actionUnspecified|actionGo|actionSend|actionDone|flagNoFullscreen|flagNoExtractUi"
             android:inputType="text"
+            android:paddingHorizontal="12dp"
             android:singleLine="true"
-            android:textColor="#000000"
-            android:textSize="14sp" />
+            android:textColor="#0F172A"
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/main_but_input_prev"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/_5sdp"
-            android:layout_weight="0.1"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginEnd="6dp"
             android:background="@drawable/ic_buttoncolor"
             android:gravity="center"
-            android:minWidth="@dimen/_25sdp"
-            android:minHeight="@dimen/_27sdp"
-            android:text="&#x22C1;"
+            android:text="⋁"
+            android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/main_but_input_next"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/_5sdp"
-            android:layout_weight="0.1"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:layout_marginEnd="6dp"
             android:background="@drawable/ic_buttoncolor"
             android:gravity="center"
-            android:minWidth="@dimen/_25sdp"
-            android:minHeight="@dimen/_27sdp"
-            android:text="&#x22C0;"
+            android:text="⋀"
+            android:textColor="#FFFFFF"
             android:textSize="14sp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/main_but_input_slash"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginRight="@dimen/_5sdp"
-            android:layout_weight="0.1"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
             android:background="@drawable/ic_buttoncolor"
             android:gravity="center"
-            android:minWidth="@dimen/_25sdp"
-            android:minHeight="@dimen/_27sdp"
             android:text="/"
-            android:textSize="14sp"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
             android:textStyle="bold" />
     </LinearLayout>
 

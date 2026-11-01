@@ -18,15 +18,13 @@ CSettings::CSettings()
 
 	if(reader.ParseError() < 0)
 	{
-		FLog("Error: can't load %s", buff);
-		std::terminate();
-		return;
+		FLog("Warning: can't load %s, using defaults", buff);
 	}
 
 	// client
 	size_t length = 0;
 	char fallbackName[0x7F];
-	sprintf(fallbackName, "__android_%d%d", rand() % 1000, rand() % 1000);
+	sprintf(fallbackName, "NextCity_%d", rand() % 1000);
 	length = reader.Get("client", "name", fallbackName).copy(m_Settings.szNickName, 24);
 	m_Settings.szNickName[length] = '\0';
 	length = reader.Get("client", "host", "141.95.234.17").copy(m_Settings.szHost, MAX_SETTINGS_STRING);

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,12 +24,15 @@ import androidx.fragment.app.Fragment;
 
 import com.kurdish.roleplay.R;
 import com.kurdish.roleplay.game.SAMP;
+import com.kurdish.roleplay.launcher.util.ConfigValidator;
 import com.kurdish.roleplay.launcher.util.RemoteConfigManager;
 
 public class HomeFragment extends Fragment {
 
     private Animation scaleDown;
     private Animation scaleUp;
+    private TextView tvHeaderPlayerNick;
+    private TextView tvPlayerNickSubtitle;
 
     @Nullable
     @Override
@@ -43,9 +47,12 @@ public class HomeFragment extends Fragment {
         // 🎯 Header Actions
         View btnNotification = view.findViewById(R.id.btnNotification);
         View btnSettingsTop = view.findViewById(R.id.btnSettingsTop);
+        View btnQuickNickname = view.findViewById(R.id.btnQuickNickname);
+        tvHeaderPlayerNick = view.findViewById(R.id.tvHeaderPlayerNick);
 
         // ◀️ Left Column Actions
         View btnPlay = view.findViewById(R.id.btnPlay);
+        tvPlayerNickSubtitle = view.findViewById(R.id.tvPlayerNickSubtitle);
         View btnActionServers = view.findViewById(R.id.btnActionServers);
         View btnActionSettings = view.findViewById(R.id.btnActionSettings);
         View btnActionDiscord = view.findViewById(R.id.btnActionDiscord);
@@ -76,6 +83,13 @@ public class HomeFragment extends Fragment {
         attachTouchAnimation(btnActionAnnouncement);
         attachTouchAnimation(btnNotification);
         attachTouchAnimation(btnSettingsTop);
+        attachTouchAnimation(btnQuickNickname);
+
+        // 0. Quick Nickname Edit
+        if (btnQuickNickname != null) {
+            btnQuickNickname.setOnClickListener(v -> showChangeNicknameDialog());
+        }
+        refreshPlayerNickname();
 
         // 1. Play Button Click -> Launch SAMP Game
         if (btnPlay != null) {
@@ -349,6 +363,75 @@ public class HomeFragment extends Fragment {
         }
         if (btnClose != null) {
             btnClose.setOnClickListener(v -> dialog.dismiss());
+        }
+
+        dialog.show();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        refreshPlayerNickname();
+    }
+
+    private void refreshPlayerNickname() {
+        if (getContext() == null) return;
+        String nick = ConfigValidator.getNickName(getContext());
+        if (tvHeaderPlayerNick != null) {
+            tvHeaderPlayerNick.setText(nick);
+        }
+        if (tvPlayerNickSubtitle != null) {
+            tvPlayerNickSubtitle.setText("ชื่อตัวละคร: " + nick);
+        }
+    }
+
+    private void showChangeNicknameDialog() {
+        if (getContext() == null) return;
+
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_change_nickname);
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+
+        EditText etNick = dialog.findViewById(R.id.etDialogNickname);
+        View btnClose = dialog.findViewById(R.id.dialogNickCloseBtn);
+        View btnCancel = dialog.findViewById(R.id.btnDialogNickCancel);
+        View btnSave = dialog.findViewById(R.id.btnDialogNickSave);
+
+        String currentNick = ConfigValidator.getNickName(getContext());
+        if (etNick != null) {
+            etNick.setText(currentNick);
+            etNick.setSelection(currentNick.length());
+        }
+
+        if (btnClose != null) {
+            btnClose.setOnClickListener(v -> dialog.dismiss());
+        }
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> dialog.dismiss());
+        }
+        if (btnSave != null) {
+            btnSave.setOnClickListener(v -> {
+                if (etNick != null) {
+                    String newName = etNick.getText().toString().trim();
+                    if (newName.isEmpty()) {
+                        Toast.makeText(getContext(), "กรุณากรอกชื่อตัวละคร", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (newName.length() < 3 || newName.length() > 24) {
+                        Toast.makeText(getContext(), "ชื่อต้องมีความยาวระหว่าง 3 - 24 ตัวอักษร", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    ConfigValidator.setNickName(requireContext(), newName);
+                    refreshPlayerNickname();
+                    Toast.makeText(getContext(), "เปลี่ยนชื่อตัวละครเป็น " + newName + " เรียบร้อยแล้ว", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                }
+            });
         }
 
         dialog.show();

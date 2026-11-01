@@ -1,442 +1,426 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient"
-    android:padding="20dp"
-    android:fillViewport="true">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <!-- 🌅 Anime Coastal City Background -->
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center">
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/bg_launcher" />
 
-        <!-- Header -->
+    <!-- 🌌 Dark Translucent Overlay -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#4D000000" />
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="14dp"
+        android:fillViewport="true">
 
-        <!-- Header with Back Button -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:orientation="vertical">
 
+            <!-- 🏷️ Top Navigation Bar with Back Button -->
             <LinearLayout
-                android:id="@+id/btn_back_to_home"
-                android:layout_width="wrap_content"
-                android:layout_height="38dp"
-                android:background="@drawable/bg_action_card"
-                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:gravity="center_vertical"
-                android:paddingHorizontal="14dp"
-                android:clickable="true"
-                android:focusable="true">
-
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_marginEnd="6dp"
-                    android:src="@drawable/ic_back"
-                    app:tint="@color/nextcity_text_title" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="กลับหน้าหลัก"
-                    android:textColor="@color/nextcity_text_title"
-                    android:textSize="12sp"
-                    android:fontFamily="sans-serif-bold"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="45dp"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:letterSpacing="0.08"
-                android:text="ตั้งค่าเกม (Settings)"
-                android:textColor="@color/white"
-                android:textSize="19sp"
-                android:textStyle="bold" />
-
-            <!-- Spacer to keep title centered -->
-            <View
-                android:layout_width="110dp"
-                android:layout_height="1dp" />
-        </LinearLayout>
-
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp"
-            android:layout_gravity="center"
-            android:translationZ="3dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="@drawable/card_gradient_red">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Main Settings"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp"
-                    android:gravity="center"
-                    android:drawablePadding="6dp" />
-
-                <!-- Nickname -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
-                    app:boxBackgroundMode="outline"
-                    app:boxBackgroundColor="@android:color/transparent"
-                    app:boxStrokeColor="@color/white"
-                    app:boxCornerRadiusBottomEnd="12dp"
-                    app:boxCornerRadiusBottomStart="12dp"
-                    app:boxCornerRadiusTopEnd="12dp"
-                    app:boxCornerRadiusTopStart="12dp"
-                    app:hintTextColor="#FFFFFF"
-                    app:startIconDrawable="@drawable/ic_person"
-                    app:startIconTint="@android:color/white"
-                    app:endIconMode="clear_text"
-                    app:endIconTint="@android:color/white">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/settings_nickname"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Nick_Name"
-                        android:textColor="@android:color/white"
-                        android:textColorHint="#FFFFFF"
-                        android:textSize="14sp"
-                        android:padding="12dp" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Android Keyboard Switch -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="10dp"
-                    android:gravity="center_vertical"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:background="@drawable/setting_item_background"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_keyboard"
-                        android:color="@color/white"
-                        android:layout_marginEnd="12dp" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Android Keyboard"
-                        android:textColor="@android:color/white"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/keyboard_switch"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:trackTint="@color/switch_track"
-                        app:thumbTint="@color/white"
-                        android:scaleX="1.1"
-                        android:scaleY="1.1" />
-
-                </LinearLayout>
-
-                <!-- Auto Aim Switch -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="10dp"
-                    android:gravity="center_vertical"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:background="@drawable/setting_item_background"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_voice"
-                        android:color="@color/white"
-                        android:layout_marginEnd="12dp" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Voice Chat"
-                        android:textColor="@android:color/white"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/voice_switch"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:trackTint="@color/switch_track"
-                        app:thumbTint="@color/white"
-                        android:scaleX="1.1"
-                        android:scaleY="1.1" />
-
-                </LinearLayout>
-
-                <!-- FPS Display Switch -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="10dp"
-                    android:gravity="center_vertical"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:background="@drawable/setting_item_background"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_fps"
-                        android:color="@color/white"
-                        android:layout_marginEnd="12dp" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Show FPS"
-                        android:textColor="@android:color/white"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <androidx.appcompat.widget.SwitchCompat
-                        android:id="@+id/fps_switch"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:trackTint="@color/switch_track"
-                        app:thumbTint="@color/white"
-                        android:scaleX="1.1"
-                        android:scaleY="1.1" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <!-- Card 3: Performance -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="6dp"
-            app:cardBackgroundColor="@color/card_dark"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="8dp"
-            android:layout_gravity="center"
-            android:translationZ="3dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp"
-                android:background="@drawable/card_gradient_red">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Performance"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp"
-                    android:gravity="center" />
-
-                <!-- FPS Limit -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginBottom="20dp"
-                    android:padding="12dp"
-                    android:background="@drawable/setting_item_background">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="10dp">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_speed"
-                            android:color="@color/white"
-                            android:layout_marginEnd="10dp" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="FPS"
-                            android:textColor="@android:color/white"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/fps_count"
-                            android:layout_width="45dp"
-                            android:layout_height="28dp"
-                            android:background="@drawable/value_indicator"
-                            android:gravity="center"
-                            android:text="60"
-                            android:textColor="@android:color/white"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                    </LinearLayout>
-
-                    <SeekBar
-                        android:id="@+id/fps_seekbar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:max="3"
-                        android:progress="1"
-                        android:progressTint="@color/white"
-                        android:thumbTint="@color/white"
-                        android:splitTrack="false"
-                        android:elevation="3dp" />
-
-                </LinearLayout>
-
-                <!-- Message Count -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="12dp"
-                    android:background="@drawable/setting_item_background">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginBottom="10dp">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_message"
-                            android:color="@color/white"
-                            android:layout_marginEnd="10dp" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Message Count"
-                            android:textColor="@android:color/white"
-                            android:textSize="15sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/messages_count"
-                            android:layout_width="45dp"
-                            android:layout_height="28dp"
-                            android:background="@drawable/value_indicator"
-                            android:gravity="center"
-                            android:text="9"
-                            android:textColor="@android:color/white"
-                            android:textSize="13sp"
-                            android:textStyle="bold" />
-
-                    </LinearLayout>
-
-                    <SeekBar
-                        android:id="@+id/messages_seekbar"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:max="3"
-                        android:progress="1"
-                        android:progressTint="@color/white"
-                        android:thumbTint="@color/white"
-                        android:splitTrack="false"
-                        android:elevation="3dp" />
-
-
-                </LinearLayout>
-
-
-            </LinearLayout>
-
-
-        </androidx.cardview.widget.CardView>
-
-        <LinearLayout
-            android:id="@+id/btn_reinstall_cache"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp"
-            android:layout_marginBottom="10dp"
-            android:background="@drawable/setting_item_background"
-            android:clickable="true"
-            android:focusable="true">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical">
+                android:layout_marginBottom="14dp">
+
+                <!-- ⬅️ Back Button -->
+                <LinearLayout
+                    android:id="@+id/btn_back_to_home"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_action_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:elevation="3dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="6dp"
+                        android:src="@drawable/ic_back"
+                        app:tint="@color/nextcity_text_title" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-bold"
+                        android:text="กลับหน้าหลัก"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Reinstall Cache"
-                    android:textColor="@android:color/white"
-                    android:textSize="15sp"
-                    android:textStyle="bold" />
+                    android:gravity="center"
+                    android:letterSpacing="0.04"
+                    android:text="การตั้งค่าเกม (Settings)"
+                    android:textColor="#FFFFFF"
+                    android:textSize="18sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textStyle="bold"
+                    android:shadowColor="#80000000"
+                    android:shadowDx="1"
+                    android:shadowDy="2"
+                    android:shadowRadius="4" />
 
+                <!-- Placeholder to balance Back Button -->
+                <View
+                    android:layout_width="110dp"
+                    android:layout_height="1dp" />
             </LinearLayout>
 
+            <!-- ============================================== -->
+            <!-- ⚙️ CARD 1: การตั้งค่าทั่วไป (General Settings)     -->
+            <!-- ============================================== -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#F8FAFC">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="การตั้งค่าทั่วไป (General Settings)"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- 👤 Nickname Input -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        app:boxBackgroundMode="outline"
+                        app:boxBackgroundColor="#FFFFFF"
+                        app:boxStrokeColor="#7C3AED"
+                        app:boxCornerRadiusBottomEnd="12dp"
+                        app:boxCornerRadiusBottomStart="12dp"
+                        app:boxCornerRadiusTopEnd="12dp"
+                        app:boxCornerRadiusTopStart="12dp"
+                        app:hintTextColor="#7C3AED"
+                        app:startIconDrawable="@drawable/ic_person"
+                        app:startIconTint="#7C3AED"
+                        app:endIconMode="clear_text">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/settings_nickname"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="ชื่อตัวละครในเกม (Nick_Name เช่น Alex_Rider)"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textColorHint="@color/nextcity_text_muted"
+                            android:textSize="13sp"
+                            android:padding="12dp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- ⌨️ Android Keyboard Switch -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/bg_action_card">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_keyboard"
+                            android:layout_marginEnd="10dp"
+                            app:tint="#7C3AED" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="ใช้แป้นพิมพ์ Android ปกติ (Android Keyboard)"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textSize="12.5sp"
+                            android:fontFamily="sans-serif-bold" />
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/keyboard_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:thumbTint="#7C3AED"
+                            app:trackTint="#DDD6FE" />
+                    </LinearLayout>
+
+                    <!-- 🎙️ Voice Chat Switch -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/bg_action_card">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_voice"
+                            android:layout_marginEnd="10dp"
+                            app:tint="#7C3AED" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="ระบบเสียงพูดคุยในเกม (Voice Chat)"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textSize="12.5sp"
+                            android:fontFamily="sans-serif-bold" />
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/voice_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:thumbTint="#7C3AED"
+                            app:trackTint="#DDD6FE" />
+                    </LinearLayout>
+
+                    <!-- ⚡ FPS Display Switch -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/bg_action_card">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_fps"
+                            android:layout_marginEnd="10dp"
+                            app:tint="#7C3AED" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="แสดงค่าความลื่นไหล (FPS Counter)"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textSize="12.5sp"
+                            android:fontFamily="sans-serif-bold" />
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/fps_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:thumbTint="#7C3AED"
+                            app:trackTint="#DDD6FE" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ============================================== -->
+            <!-- 🚀 CARD 2: ประสิทธิภาพ (Performance)           -->
+            <!-- ============================================== -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                app:cardCornerRadius="18dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#F8FAFC">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="ประสิทธิภาพและการแสดงผล (Performance)"
+                        android:textColor="@color/nextcity_text_title"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-bold"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <!-- FPS Limit Slider -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="12dp"
+                        android:padding="12dp"
+                        android:background="@drawable/bg_action_card">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:src="@drawable/ic_speed"
+                                android:layout_marginEnd="8dp"
+                                app:tint="#7C3AED" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="จำกัดอัตราเฟรมเรต (FPS Limit)"
+                                android:textColor="@color/nextcity_text_title"
+                                android:textSize="12.5sp"
+                                android:fontFamily="sans-serif-bold" />
+
+                            <TextView
+                                android:id="@+id/fps_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_tag_purple"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="3dp"
+                                android:text="60 FPS"
+                                android:textColor="#7C3AED"
+                                android:textSize="11sp"
+                                android:fontFamily="sans-serif-bold"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <SeekBar
+                            android:id="@+id/fps_seekbar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="3"
+                            android:progress="1"
+                            android:progressTint="#7C3AED"
+                            android:thumbTint="#7C3AED"
+                            android:splitTrack="false" />
+                    </LinearLayout>
+
+                    <!-- Message Count Slider -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp"
+                        android:background="@drawable/bg_action_card">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="8dp">
+
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:src="@drawable/ic_message"
+                                android:layout_marginEnd="8dp"
+                                app:tint="#7C3AED" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="จำนวนบรรทัดข้อความแชท (Chat Lines)"
+                                android:textColor="@color/nextcity_text_title"
+                                android:textSize="12.5sp"
+                                android:fontFamily="sans-serif-bold" />
+
+                            <TextView
+                                android:id="@+id/messages_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_tag_purple"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="3dp"
+                                android:text="9 แถว"
+                                android:textColor="#7C3AED"
+                                android:textSize="11sp"
+                                android:fontFamily="sans-serif-bold"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <SeekBar
+                            android:id="@+id/messages_seekbar"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:max="3"
+                            android:progress="1"
+                            android:progressTint="#7C3AED"
+                            android:thumbTint="#7C3AED"
+                            android:splitTrack="false" />
+                    </LinearLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- 🔄 Reinstall Cache Button -->
+            <LinearLayout
+                android:id="@+id/btn_reinstall_cache"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_action_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:elevation="3dp"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔄 ตรวจสอบและดาวน์โหลดไฟล์แคชเกมใหม่ (Reinstall Cache)"
+                    android:textColor="#EF4444"
+                    android:textSize="12.5sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Placeholder Space -->
+            <View
+                android:id="@+id/placeholderSpace"
+                android:layout_width="match_parent"
+                android:layout_height="40dp" />
+
         </LinearLayout>
-
-        <View
-            android:id="@+id/placeholderSpace"
-            android:layout_width="match_parent"
-            android:layout_height="80dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:background="@android:color/transparent" />
-
-    </LinearLayout>
-
-</ScrollView>
+    </ScrollView>
+</FrameLayout>

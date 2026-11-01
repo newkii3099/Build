@@ -3,6 +3,8 @@ package com.kurdish.roleplay.launcher.util;
 import android.content.Context;
 import android.content.res.AssetManager;
 
+import org.ini4j.Wini;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -13,16 +15,18 @@ public class ConfigValidator {
     public static void validateConfigFiles(Context context) {
         File file = GameStorage.getSettingsFile(context);
         if (!file.exists() || file.length() == 0) {
-            file.getParentFile().mkdirs();
+            if (file.getParentFile() != null) {
+                file.getParentFile().mkdirs();
+            }
             boolean copied = copyAsset(context.getAssets(), "settings.ini", file.toString());
             if (!copied) {
                 try {
                     FileOutputStream fos = new FileOutputStream(file);
                     StringBuilder sb = new StringBuilder();
                     sb.append("[client]\n");
-                    sb.append("name=AndroidUser\n");
-                    sb.append("host=127.0.0.1\n");
-                    sb.append("port=7777\n");
+                    sb.append("name=NextCity_Player\n");
+                    sb.append("host=141.95.234.17\n");
+                    sb.append("port=1417\n");
                     sb.append("password=\n");
                     sb.append("version=0.3.7\n\n");
                     sb.append("[gui]\n");
@@ -39,11 +43,43 @@ public class ConfigValidator {
                 }
             }
         }
-        /*File file2 = new File(externalFilesDir, "gta_sa.set");
-        if (!file2.exists()) {
-            file2.getParentFile().mkdirs();
-            copyAsset(context.getAssets(), "gta_sa.set", file2.toString());
-        }*/
+    }
+
+    public static String getNickName(Context context) {
+        if (context == null) return "NextCity_Player";
+        try {
+            File file = GameStorage.getSettingsFile(context);
+            if (!file.exists()) {
+                validateConfigFiles(context);
+            }
+            if (file.exists()) {
+                Wini wini = new Wini(file);
+                String name = wini.get("client", "name");
+                if (name != null && !name.trim().isEmpty()) {
+                    return name.trim();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new SharedPreferenceCore().getString(context, "NICKNAME", "NextCity_Player");
+    }
+
+    public static void setNickName(Context context, String nickname) {
+        if (context == null || nickname == null || nickname.trim().isEmpty()) return;
+        String trimmed = nickname.trim();
+        new SharedPreferenceCore().setString(context, "NICKNAME", trimmed);
+        try {
+            File file = GameStorage.getSettingsFile(context);
+            if (!file.exists()) {
+                validateConfigFiles(context);
+            }
+            Wini wini = new Wini(file);
+            wini.put("client", "name", trimmed);
+            wini.store();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     static boolean copyAsset(AssetManager assetManager, String str, String str2) {

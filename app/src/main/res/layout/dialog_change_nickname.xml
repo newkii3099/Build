@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#66000000"
+    android:padding="20dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="440dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="10dp"
+        app:cardBackgroundColor="#F8FAFC">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Dialog Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="10dp"
+                    android:src="@drawable/ic_person_shortcut"
+                    app:tint="#8B5CF6" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="เปลี่ยนชื่อตัวละคร (Nickname)"
+                    android:textColor="@color/nextcity_text_title"
+                    android:textSize="15.5sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/dialogNickCloseBtn"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:background="@drawable/bg_circle_button"
+                    android:padding="6dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:src="@drawable/hud_icon_close" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="#E2E8F0"
+                android:layout_marginBottom="14dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="ชื่อนี้จะถูกใช้เพื่อบันทึกข้อมูลตัวละครและเชื่อมต่อเข้าเซิร์ฟเวอร์ SA-MP ทั้งหมด (รองรับตัวอักษรภาษาอังกฤษ ตัวเลข และเครื่องหมาย _)"
+                android:textColor="@color/nextcity_text_desc"
+                android:textSize="11.5sp"
+                android:lineSpacingExtra="3dp"
+                android:fontFamily="sans-serif"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Input Box -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="46dp"
+                android:background="@drawable/bg_action_card"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="12dp"
+                android:layout_marginBottom="16dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic_person_shortcut"
+                    app:tint="#8B5CF6" />
+
+                <EditText
+                    android:id="@+id/etDialogNickname"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:hint="กรอกชื่อตัวละคร (เช่น Somchai_NextCity)"
+                    android:textColor="#0F172A"
+                    android:textColorHint="#94A3B8"
+                    android:textSize="13sp"
+                    android:fontFamily="sans-serif-medium"
+                    android:singleLine="true"
+                    android:maxLines="1"
+                    android:inputType="textPersonName|textNoSuggestions" />
+            </LinearLayout>
+
+            <!-- Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="end">
+
+                <Button
+                    android:id="@+id/btnDialogNickCancel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_action_card"
+                    android:text="ยกเลิก"
+                    android:textColor="#64748B"
+                    android:textSize="12sp"
+                    android:fontFamily="sans-serif-bold"
+                    android:layout_marginEnd="10dp"
+                    android:paddingHorizontal="16dp" />
+
+                <Button
+                    android:id="@+id/btnDialogNickSave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_action_hero"
+                    android:text="บันทึกชื่อ"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12.5sp"
+                    android:fontFamily="sans-serif-black"
+                    android:textStyle="bold"
+                    android:paddingHorizontal="20dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</FrameLayout>

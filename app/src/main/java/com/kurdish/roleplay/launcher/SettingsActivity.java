@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment;
 
 import com.joom.paranoid.Obfuscate;
 import com.kurdish.roleplay.R;
+import com.kurdish.roleplay.launcher.util.ConfigValidator;
 import com.kurdish.roleplay.launcher.util.GameStorage;
 import com.kurdish.roleplay.launcher.util.SharedPreferenceCore;
 
@@ -155,16 +156,17 @@ public class SettingsActivity extends Fragment {
     private void loadSettings() {
         try {
             if (getActivity() != null) {
+                ConfigValidator.validateConfigFiles(getActivity());
                 File file = GameStorage.getSettingsFile(getActivity());
                 if (file.exists()) {
                     mWini = new Wini(file);
-                    String name = mWini.get("client", "name");
-                    if (name != null && mNickName != null) {
-                        mNickName.setText(name);
-                    }
+                }
+                String name = ConfigValidator.getNickName(getActivity());
+                if (name != null && mNickName != null) {
+                    mNickName.setText(name);
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -181,19 +183,9 @@ public class SettingsActivity extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                String text = charSequence.toString();
-                if (getActivity() != null) {
-                    File file = GameStorage.getSettingsFile(getActivity());
-                    if(file.exists()) {
-                        try {
-                            if(mWini != null) {
-                                mWini.put("client", "name", text);
-                                mWini.store();
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
+                String text = charSequence.toString().trim();
+                if (getActivity() != null && !text.isEmpty()) {
+                    ConfigValidator.setNickName(getActivity(), text);
                 }
             }
 
