@@ -4,29 +4,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- ⌨️ Modern Floating Input Bar (Translucent Sky Blue Glass) -->
+    <!-- ⌨️ Compact Chat Input Bar (Aligned with Chatbox width & position) -->
     <LinearLayout
         android:id="@+id/main_input"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
         android:background="@drawable/bg_keyboard_glass"
-        android:elevation="8dp"
+        android:elevation="10dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="12dp"
-        android:paddingVertical="6dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        android:paddingHorizontal="8dp"
+        android:paddingVertical="5dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <com.kurdish.roleplay.launcher.util.CustomEditText
             android:id="@+id/main_et_input"
             android:layout_width="0dp"
-            android:layout_height="38dp"
-            android:layout_marginEnd="8dp"
+            android:layout_height="36dp"
+            android:layout_marginEnd="6dp"
             android:layout_weight="1"
             android:background="@drawable/bg_keyboard_input_glass"
             android:ems="10"
@@ -34,44 +30,44 @@
             android:textColorHint="#80FFFFFF"
             android:imeOptions="actionUnspecified|actionGo|actionSend|actionDone|flagNoFullscreen|flagNoExtractUi"
             android:inputType="text"
-            android:paddingHorizontal="12dp"
+            android:paddingHorizontal="10dp"
             android:singleLine="true"
             android:textColor="#FFFFFF"
             android:textSize="13sp" />
 
         <Button
             android:id="@+id/main_but_input_prev"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:layout_marginEnd="6dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginEnd="4dp"
             android:background="@drawable/bg_key_sky_glass"
             android:gravity="center"
             android:text="⋁"
             android:textColor="#FFFFFF"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/main_but_input_next"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
-            android:layout_marginEnd="6dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginEnd="4dp"
             android:background="@drawable/bg_key_sky_glass"
             android:gravity="center"
             android:text="⋀"
             android:textColor="#FFFFFF"
-            android:textSize="14sp"
+            android:textSize="13sp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/main_but_input_slash"
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_width="34dp"
+            android:layout_height="34dp"
             android:background="@drawable/bg_key_sky_glass"
             android:gravity="center"
             android:text="/"
             android:textColor="#FFFFFF"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
     </LinearLayout>
 

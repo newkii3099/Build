@@ -5,12 +5,14 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+
+import com.kurdish.roleplay.game.SAMP;
 
 import org.json.JSONObject;
 
@@ -25,13 +27,39 @@ public class ChatWebView {
     private boolean ready = false;
     private final ArrayList<String> pending = new ArrayList<>();
 
+    public class ChatJsInterface {
+        @JavascriptInterface
+        public void openChatInput() {
+            activity.runOnUiThread(() -> {
+                if (activity instanceof SAMP) {
+                    ((SAMP) activity).showKeyboard();
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void onToggleChat(boolean collapsed) {
+            activity.runOnUiThread(() -> {
+                DisplayMetrics dm = activity.getResources().getDisplayMetrics();
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) web.getLayoutParams();
+                if (lp != null) {
+                    if (collapsed) {
+                        lp.width = (int) (dm.density * 68);
+                        lp.height = (int) (dm.density * 36);
+                    } else {
+                        lp.width = (int) (dm.widthPixels * 0.46f);
+                        lp.height = (int) (dm.heightPixels * 0.40f);
+                    }
+                    web.setLayoutParams(lp);
+                }
+            });
+        }
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     public ChatWebView(Activity a) {
         activity = a;
-        // dispatchTouchEvent -> false: touches fall through to the game surface below
-        web = new WebView(a) {
-            @Override public boolean dispatchTouchEvent(MotionEvent e) { return false; }
-        };
+        web = new WebView(a);
         web.setBackgroundColor(Color.TRANSPARENT);
         web.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         web.setFocusable(false);
@@ -47,6 +75,8 @@ public class ChatWebView {
         s.setAllowContentAccess(false);
         s.setDomStorageEnabled(false);
         s.setCacheMode(WebSettings.LOAD_NO_CACHE);
+
+        web.addJavascriptInterface(new ChatJsInterface(), "Android");
 
         web.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView v, String url) {

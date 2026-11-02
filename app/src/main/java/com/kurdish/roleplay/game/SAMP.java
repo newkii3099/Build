@@ -296,6 +296,7 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
             mTab = new Tab(this);
             mChatWeb = new com.kurdish.roleplay.game.ui.ChatWebView(this);
             instance = this;
+            mHeightProvider = new HeightProvider(this).init(getWindow().getDecorView()).setHeightListener(this);
         } catch (Throwable t) {
             Log.e(TAG, "Error initializing UI components in SAMP.onCreate", t);
         }
@@ -368,9 +369,18 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
     @Override
     public void onDestroy() {
         Log.i(TAG, "**** onDestroy");
+        if (mHeightProvider != null) {
+            try {
+                mHeightProvider.dismiss();
+            } catch (Throwable ignored) { }
+        }
         super.onDestroy();
     }
 
     @Override
-    public void onHeightChanged(int orientation, int height) { }
+    public void onHeightChanged(int orientation, int height) {
+        if (mKeyboard != null) {
+            mKeyboard.onHeightChanged(height);
+        }
+    }
 }

@@ -46,6 +46,7 @@ public class CustomKeyboard {
     private int mCurrentHistoryMessage = 0;
 
     private Runnable mAnimTask = null;
+    private int mLastKeyboardHeight = 0;
 
     public boolean IsShowing()
     {
@@ -64,6 +65,9 @@ public class CustomKeyboard {
         mButtonSlash = layout.findViewById(R.id.main_but_input_slash);
         mButtonHistoryPrev = layout.findViewById(R.id.main_but_input_prev);
         mButtonHistoryNext = layout.findViewById(R.id.main_but_input_next);
+
+        // Position & size directly matching the chatbox width and left margin, placed under chatbox
+        updateInputLayoutPosition(0);
 
         mInputHistory = new ArrayList<String>();
 
@@ -135,16 +139,40 @@ public class CustomKeyboard {
         HideInputLayout();
     }
 
+    public void updateInputLayoutPosition(int keyboardHeight)
+    {
+        if (mInputLayout == null) return;
+        mLastKeyboardHeight = keyboardHeight;
+        android.util.DisplayMetrics dm = mContext.getResources().getDisplayMetrics();
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) mInputLayout.getLayoutParams();
+        if (params != null) {
+            params.width = (int) (dm.widthPixels * 0.46f);
+            params.leftMargin = (int) (dm.widthPixels * 0.16f);
+
+            // Default top: directly below the chatbox (top 2% + chat height 40% = 42%)
+            int defaultTop = (int) (dm.heightPixels * 0.42f) + (int) (dm.density * 4);
+            int inputHeight = mInputLayout.getHeight() > 0 ? mInputLayout.getHeight() : (int) (dm.density * 46);
+
+            if (keyboardHeight > 0) {
+                int keyboardTop = dm.heightPixels - keyboardHeight;
+                int maxTop = keyboardTop - inputHeight - (int) (dm.density * 4);
+                params.topMargin = Math.max(0, Math.min(defaultTop, maxTop));
+            } else {
+                params.topMargin = defaultTop;
+            }
+            mInputLayout.setLayoutParams(params);
+        }
+    }
+
     public void onHeightChanged(int height)
     {
-        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mInputLayout.getLayoutParams();
-        params.setMargins(0, 0 , 0, height);
-        mInputLayout.setLayoutParams(params);
+        updateInputLayoutPosition(height);
     }
 
     public void ShowInputLayout()
     {
         mIsShowing = true;
+        updateInputLayoutPosition(mLastKeyboardHeight);
 
         mInputLayout.setVisibility(View.INVISIBLE);
 

@@ -2,69 +2,175 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
-/* optional offline fonts: put Prompt-Regular.ttf / NotoSansLao-Regular.ttf in assets/chat/fonts/ */
 @font-face{font-family:'ChatTh';src:url('fonts/Prompt-Regular.ttf');font-weight:400}
 @font-face{font-family:'ChatLo';src:url('fonts/NotoSansLao-Regular.ttf');font-weight:400}
-:root{--ink:#f4f1ea;--dim:#ffffffa6;--accent:#4ade80;--lv:#fbbf24}
-html,body{margin:0;height:100%;background:transparent;overflow:hidden;pointer-events:none;-webkit-user-select:none;user-select:none}
+:root{--ink:#f4f1ea;--dim:#ffffffd9;--accent:#4ade80;--lv:#fbbf24}
+html,body{margin:0;padding:0;width:100%;height:100%;background:transparent;overflow:hidden;-webkit-user-select:none;user-select:none}
 body{font-family:'ChatTh','ChatLo','Noto Sans Lao','Noto Sans Thai',sans-serif;color:var(--ink)}
-#chat{
-  position:absolute;left:0;right:0;bottom:0;max-height:100%;
-  display:flex;flex-direction:column;justify-content:flex-end;gap:3px;
-  padding:6px 9px;border-radius:12px;box-sizing:border-box;
-  background:linear-gradient(90deg,rgba(10,12,16,.46),rgba(10,12,16,.06));
-  border:1px solid rgba(255,255,255,.10);
+
+#header{
+  position:absolute;top:0;left:0;height:26px;
+  display:flex;align-items:center;z-index:99;
 }
-.msg{font-size:13px;line-height:1.5;text-shadow:0 1px 3px #000;word-break:break-word;animation:in .2s ease-out;transition:opacity .8s}
-.msg.old{opacity:.4}
-.tag{display:inline-block;padding:0 7px;margin-right:6px;border-radius:6px;font-size:11px;
-     color:var(--accent);background:#22c55e26;border:1px solid #22c55e44;vertical-align:1px}
-.name{font-weight:600}
+.btn-toggle{
+  background:rgba(15,23,42,0.65);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:6px;
+  color:#fff;
+  font-family:inherit;
+  font-size:11px;
+  font-weight:500;
+  padding:2px 7px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.5);
+  text-shadow:0 1px 2px #000;
+  transition:background .15s,transform .1s;
+}
+.btn-toggle:active{transform:scale(0.95);background:rgba(30,41,59,0.90)}
+
+#chat{
+  position:absolute;left:0;right:0;top:28px;bottom:0;
+  display:flex;flex-direction:column;justify-content:flex-start;gap:2px;
+  padding:2px 4px;box-sizing:border-box;
+  background:transparent;border:none;
+  overflow:hidden;cursor:pointer;
+}
+
+body.collapsed #chat{
+  display:none !important;
+}
+
+.msg{
+  font-size:13px;line-height:1.45;
+  color:var(--ink);
+  text-shadow:0 1px 2px #000, 0 0 3px #000, 0 0 1px #000;
+  word-break:break-word;
+  animation:in .15s ease-out;
+}
+.tag{
+  display:inline-block;padding:0 6px;margin-right:5px;border-radius:5px;font-size:11px;
+  color:var(--accent);background:#22c55e33;border:1px solid #22c55e55;vertical-align:1px;
+}
+.name{font-weight:600;text-shadow:0 1px 2px #000, 0 0 3px #000}
 .lv{color:var(--lv);font-size:11px;margin:0 4px 0 3px}
 .sys .text{color:var(--dim)}
-@keyframes in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+@keyframes in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
-<div id="chat"></div>
-<script>
-var chat=document.getElementById('chat'), MAX=8, FADE_MS=12000;
-function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+<div id="header">
+  <button id="toggle-btn" class="btn-toggle" title="พับปิด/เปิดแชท">💬 ▴ ซ่อน</button>
+</div>
+<div id="chat" title="แตะเพื่อพิมพ์แชท"></div>
 
-/* SA-MP {RRGGBB} color codes -> spans */
-function samp(s,base){
-  var out='<span style="color:'+base+'">', parts=s.split(/(\{[0-9a-fA-F]{6}\})/);
-  for(var i=0;i<parts.length;i++){
-    var m=parts[i].match(/^\{([0-9a-fA-F]{6})\}$/);
-    out += m ? '</span><span style="color:#'+m[1]+'">' : esc(parts[i]);
+<script>
+var chat = document.getElementById('chat');
+var toggleBtn = document.getElementById('toggle-btn');
+var isCollapsed = false;
+var MAX = 9;
+
+var lastToggle = 0;
+function doToggle(e) {
+  if (e) { e.stopPropagation(); }
+  var now = Date.now();
+  if (now - lastToggle < 350) return;
+  lastToggle = now;
+  isCollapsed = !isCollapsed;
+  document.body.classList.toggle('collapsed', isCollapsed);
+  toggleBtn.innerHTML = isCollapsed ? '💬 ▾ เปิด' : '💬 ▴ ซ่อน';
+  toggleBtn.title = isCollapsed ? 'เปิดแชท' : 'ซ่อนแชท';
+  if (window.Android && window.Android.onToggleChat) {
+    window.Android.onToggleChat(isCollapsed);
   }
-  return out+'</span>';
+}
+toggleBtn.addEventListener('click', doToggle);
+toggleBtn.addEventListener('touchend', function(e){
+  e.preventDefault();
+  doToggle(e);
+});
+
+var lastOpen = 0;
+var touchStartX = 0, touchStartY = 0, isTouchDrag = false;
+chat.addEventListener('touchstart', function(e){
+  if (e.touches && e.touches.length > 0) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }
+  isTouchDrag = false;
+}, {passive: true});
+
+chat.addEventListener('touchmove', function(e){
+  if (e.touches && e.touches.length > 0) {
+    var dx = Math.abs(e.touches[0].clientX - touchStartX);
+    var dy = Math.abs(e.touches[0].clientY - touchStartY);
+    if (dx > 10 || dy > 10) isTouchDrag = true;
+  }
+}, {passive: true});
+
+function doOpenChat(e) {
+  if (isCollapsed || isTouchDrag) return;
+  var now = Date.now();
+  if (now - lastOpen < 400) return;
+  lastOpen = now;
+  if (window.Android && window.Android.openChatInput) {
+    window.Android.openChatInput();
+  }
+}
+chat.addEventListener('click', doOpenChat);
+chat.addEventListener('touchend', function(e){
+  if (!isTouchDrag && !isCollapsed) {
+    e.preventDefault();
+    doOpenChat(e);
+  }
+});
+
+function esc(s){
+  return s.replace(/[&<>"]/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+  });
 }
 
-/* server lines like ".::[ • TAG • ]::. NAME (ID:105)(Lv.12): text" -> badge + name + level */
-var RE=/^\s*\.::\[\s*[•·]?\s*(.+?)\s*[•·]?\s*\]::\.\s*(\S+?)\s*\(ID:(\d+)\)\s*\(Lv\.(\d+)\)\s*:\s*(.*)$/;
+/* SA-MP {RRGGBB} color codes -> spans */
+function samp(s, base){
+  var out = '<span style="color:' + base + '">';
+  var parts = s.split(/(\{[0-9a-fA-F]{6}\})/);
+  for(var i = 0; i < parts.length; i++){
+    var m = parts[i].match(/^\{([0-9a-fA-F]{6})\}$/);
+    out += m ? '</span><span style="color:#' + m[1] + '">' : esc(parts[i]);
+  }
+  return out + '</span>';
+}
 
-window.addMsg=function(m){
-  var el=document.createElement('div'), html='';
-  var plain=(m.text||'').replace(/\{[0-9a-fA-F]{6}\}/g,'');
-  var r=RE.exec(plain);
+var RE = /^\s*\.::\[\s*[•·]?\s*(.+?)\s*[•·]?\s*\]::\.\s*(\S+?)\s*\(ID:(\d+)\)\s*\(Lv\.(\d+)\)\s*:\s*(.*)$/;
+
+window.addMsg = function(m){
+  var el = document.createElement('div'), html = '';
+  var plain = (m.text || '').replace(/\{[0-9a-fA-F]{6}\}/g, '');
+  var r = RE.exec(plain);
   if(r){
     var rawText = m.text || '';
     var colonIdx = rawText.indexOf(':');
     var msgContent = colonIdx !== -1 ? rawText.slice(colonIdx + 1).replace(/^\s+/, '') : r[5];
-    html='<span class="tag">'+esc(r[1])+'</span><span class="name" style="color:'+(m.textColor||'#fff')+'">'+esc(r[2])+
-         '</span><span class="lv">Lv.'+r[4]+'</span><span class="text">: '+samp(msgContent, m.textColor||'#f4f1ea')+'</span>';
+    html = '<span class="tag">' + esc(r[1]) + '</span><span class="name" style="color:' + (m.textColor || '#fff') + '">' + esc(r[2]) +
+           '</span><span class="lv">Lv.' + r[4] + '</span><span class="text">: ' + samp(msgContent, m.textColor || '#f4f1ea') + '</span>';
   } else if(m.name){
-    html='<span class="name" style="color:'+(m.color||'#fff')+'">'+esc(m.name)+'</span><span class="text">: '+samp(m.text||'','#f4f1ea')+'</span>';
+    html = '<span class="name" style="color:' + (m.color || '#fff') + '">' + esc(m.name) + '</span><span class="text">: ' + samp(m.text || '', '#f4f1ea') + '</span>';
   } else {
-    html='<span class="text">'+samp(m.text||'',m.textColor||'#f4f1ea')+'</span>';
+    html = '<span class="text">' + samp(m.text || '', m.textColor || '#f4f1ea') + '</span>';
   }
-  el.className='msg'+(m.system?' sys':''); el.innerHTML=html;
+  el.className = 'msg' + (m.system ? ' sys' : '');
+  el.innerHTML = html;
+
   chat.appendChild(el);
-  while(chat.children.length>MAX) chat.removeChild(chat.firstChild);
-  setTimeout(function(){el.classList.add('old')},FADE_MS);
+  while(chat.children.length > MAX){
+    chat.removeChild(chat.firstChild);
+  }
+  chat.scrollTop = chat.scrollHeight;
 };
 </script>
 </body>
