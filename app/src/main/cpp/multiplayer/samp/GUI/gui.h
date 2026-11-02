@@ -24,7 +24,6 @@
 #include "samp/GUI/widgets/ButtonPanel.h"
 #include "samp/GUI/widgets/PlayerTabList.h"
 #include "samp/GUI/widgets/Voicebutton.h"
-#include "samp/GUI/widgets/DevEditor.h"
 
 #include "samp/UI/Dialog.h"
 
@@ -55,7 +54,6 @@ public:
     ButtonPanel* buttonpanel() const { return m_buttonPanel; }
     PlayerTabList* playertablist() const { return m_playerTabList; }
     VoiceButton* voicebutton() const { return m_voiceButton; }
-    DevEditor* deveditor() const { return m_devEditor; }
 
     static const ImColor fixcolor(uint32_t color) {
         return ImColor(
@@ -123,7 +121,6 @@ private:
     ButtonPanel* m_buttonPanel;
     PlayerTabList* m_playerTabList;
     VoiceButton* m_voiceButton;
-    DevEditor* m_devEditor;
     Label* label;
     Label* label2;
     Label* label3;

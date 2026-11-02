@@ -334,17 +334,6 @@ void ClientMessage(RPCParameters *rpcParams)
 		szMsg[dwStrLen] = '\0';
 		Log::addParameter("szMsg", szMsg);
 
-		// ตรวจสอบสัญญาณยืนยันสิทธิ์แอดมินระดับ 129+ จากเซิร์ฟเวอร์เพื่อเปิด/ปิด DevStudio
-		if (strstr(szMsg, "$DEVED_AUTH_129_OK$") != nullptr)
-		{
-			if (pUI && pUI->deveditor())
-			{
-				pUI->deveditor()->setAdminVerified(true);
-				pUI->deveditor()->toggle();
-			}
-			return;
-		}
-
 		if (pUI) pUI->chat()->addClientMessage(Encoding::cp2utf(szMsg), UI::fixcolor(dwColor));
 	}
 }

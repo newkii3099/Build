@@ -1,4 +1,4 @@
-name: Build SAMP Mobile 2.11.324 APK
+name: Build SAMP Mobile 2.11.325 APK
 
 on:
   push:
@@ -39,12 +39,12 @@ jobs:
       - name: Rename APK for Clarity
         run: |
           mkdir -p release-artifacts
-          cp app/build/outputs/apk/debug/*.apk release-artifacts/SAMP-Mobile-2.11.324-4king.apk || cp app/build/outputs/apk/debug/*.apk release-artifacts/ || true
+          cp app/build/outputs/apk/debug/*.apk release-artifacts/SAMP-Mobile-2.11.325-4king.apk || cp app/build/outputs/apk/debug/*.apk release-artifacts/ || true
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: SAMP-Mobile-2.11.324-Debug-APK
+          name: SAMP-Mobile-2.11.325-Debug-APK
           path: release-artifacts/*.apk
           retention-days: 30
 
@@ -52,11 +52,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: "SAMP Mobile v2.11.324 (4King DevStudio)"
+          name: "SAMP Mobile v2.11.325 (4King Native UI Edition)"
           body: |
-            ### 🚀 SAMP Mobile 2.11.324
+            ### 🚀 SAMP Mobile 2.11.325
             - **Server IP**: `82.26.104.84:7777`
-            - **In-Game DevEditor**: Visual TextDraw Editor & 3D Object Map Editor (Admin Level 129+)
-            - **Admin Command**: `/adminlogin phureejaa` หรือ `/rcon login phureejaa`
-            - **Editor Toggle**: `/dev` หรือ `/editor`
+            - **Native Server-side UI**: Cleaned client ImGui overlay in favor of Pawno native Dialogs & GTA SA in-game objects/textdraws.
           files: release-artifacts/*.apk

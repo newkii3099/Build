@@ -85,8 +85,6 @@ bool UI::initialize()
     m_playerTabList->setMaxSize(UISettings::dialogMaxSize());
     m_playerTabList->setVisible(false);
 
-    m_devEditor = new DevEditor();
-
     label = new Label(" ", ImColor(1.0f, 1.0f, 1.0f), true, UISettings::fontSize() / 2);
     pUI->addChild(label);
 
@@ -153,10 +151,6 @@ void UI::drawList()
     if (pGPS) pGPS->DoPathDraw();
 
     draw(renderer());
-
-    if (m_devEditor) {
-        m_devEditor->renderImGui();
-    }
 
     if (pNetGame && pNetGame->GetMenuPool())
         pNetGame->GetMenuPool()->Render(renderer());
