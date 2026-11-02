@@ -10,6 +10,7 @@ public:
 	bool selected();
 
 	bool selectable() { return m_selectable; }
+	virtual void setAlpha(float alpha) {}
 
 private:
 	int m_index;
@@ -29,6 +30,7 @@ public:
 
 	int itemsCount() { return m_panel->itemsCount(); }
 	int activeItemIndex() const { return m_panel->activeItemIndex(); }
+	Panel* panel() const { return m_panel; }
 
 public:
 	class Panel : public Widget

@@ -139,6 +139,7 @@ void ImGuiRenderer::drawTextInline(const ImVec2& pos, const ImColor& color,
 
 			ImVec4 col;
 			if (processInlineHexColor(text_cur + 1, text_cur + 7, col)) {
+				col.w = color.Value.w;
 				color_cur = col;
 			}
 
