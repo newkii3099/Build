@@ -30,7 +30,7 @@ import com.kurdish.roleplay.launcher.util.SampQueryAPI;
 
 public class HomeFragment extends Fragment {
 
-    public static final String LOCKED_SERVER_HOST = "gta-irz.com";
+    public static final String LOCKED_SERVER_HOST = "82.26.104.84";
     public static final int LOCKED_SERVER_PORT = 7777;
 
     private Animation scaleDown;

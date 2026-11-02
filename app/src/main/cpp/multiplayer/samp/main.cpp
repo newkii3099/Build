@@ -307,8 +307,8 @@ void DoInitStuff()
 		}
 		InitFPSFix(fpsLimit);
 
-		const char* szHost = "gta-irz.com";
-		int iPort = 7777;
+		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "82.26.104.84";
+		int iPort = (pSettings && pSettings->Get().iPort > 0) ? pSettings->Get().iPort : 7777;
 		const char* szNick = (pSettings && pSettings->Get().szNickName[0] != '\0') ? pSettings->Get().szNickName : "NextCityPlayer";
 		const char* szPass = (pSettings) ? pSettings->Get().szPassword : "";
 
