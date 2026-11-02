@@ -30,7 +30,6 @@ public:
 
 	int itemsCount() { return m_panel->itemsCount(); }
 	int activeItemIndex() const { return m_panel->activeItemIndex(); }
-	Panel* panel() const { return m_panel; }
 
 public:
 	class Panel : public Widget
@@ -57,6 +56,8 @@ public:
 		int m_activeItemIndex;
 		int m_itemsCount;
 	};
+
+	Panel* panel() const { return m_panel; }
 
 private:
 	bool m_headed;
