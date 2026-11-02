@@ -19,6 +19,10 @@ import com.kurdish.roleplay.game.ui.dialog.DialogManager;
 import com.kurdish.roleplay.game.ui.tab.Tab;
 import com.kurdish.roleplay.launcher.util.GameStorage;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
@@ -35,6 +39,7 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
 
     private AttachEdit mAttachEdit;
     private LoadingScreen mLoadingScreen;
+    private com.kurdish.roleplay.game.ui.ChatWebView mChatWeb;
     Tab mTab = null;
     Hud mHud = null;
     Speedometer mSpeedometer = null;
@@ -244,10 +249,42 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
     }
 
 
+    // called from native (CJavaWrapper::AddChatMessage)
+    public void addChatMessage(byte[] nick, byte[] text, int nickRgb, int textRgb) {
+        if (mChatWeb != null) mChatWeb.addMessage(nick, text, nickRgb, textRgb);
+    }
+
+    private void copyAssetIfMissing(String assetPath, File destFile) {
+        if (destFile.exists() && destFile.length() > 0) return;
+        try {
+            File parent = destFile.getParentFile();
+            if (parent != null && !parent.exists()) parent.mkdirs();
+            try (InputStream in = getAssets().open(assetPath);
+                 OutputStream out = new FileOutputStream(destFile)) {
+                byte[] buf = new byte[8192];
+                int len;
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
+                }
+            }
+            Log.i(TAG, "Copied asset " + assetPath + " to " + destFile.getAbsolutePath());
+        } catch (Throwable t) {
+            Log.w(TAG, "Failed to copy asset " + assetPath + ": " + t.getMessage());
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "**** onCreate");
         super.onCreate(savedInstanceState);
+
+        try {
+            File sampFonts = new File(GameStorage.getSampDirectory(this), "fonts");
+            copyAssetIfMissing("Fonts/NotoSansLao-Regular.ttf", new File(sampFonts, "NotoSansLao-Regular.ttf"));
+            copyAssetIfMissing("Fonts/NotoSansLao-Regular.ttf", new File(getFilesDir(), "NotoSansLao-Regular.ttf"));
+        } catch (Throwable t) {
+            Log.w(TAG, "Error copying Lao font asset", t);
+        }
 
         try {
             mKeyboard   = new CustomKeyboard(this);
@@ -257,6 +294,7 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
             mHud = new Hud(this);
             mSpeedometer = new Speedometer(this);
             mTab = new Tab(this);
+            mChatWeb = new com.kurdish.roleplay.game.ui.ChatWebView(this);
             instance = this;
         } catch (Throwable t) {
             Log.e(TAG, "Error initializing UI components in SAMP.onCreate", t);

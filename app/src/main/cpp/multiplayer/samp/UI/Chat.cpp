@@ -23,6 +23,16 @@ extern CSettings* pSettings;
 extern CJavaWrapper* pJavaWrapper;
 
 Chat* pChat = nullptr;
+
+// true once the HTML (WebView) chat has accepted a message -> native chat list stops drawing
+static bool g_webChatActive = false;
+
+static uint32_t toRgb(const ImColor& c)
+{
+    return ((uint32_t)(c.Value.x * 255.0f + 0.5f) << 16) |
+           ((uint32_t)(c.Value.y * 255.0f + 0.5f) << 8)  |
+            (uint32_t)(c.Value.z * 255.0f + 0.5f);
+}
 std::string Chat::sDevTagNick = "";
 
 // ============================================================================
@@ -517,6 +527,7 @@ void Chat::addMessage(const std::string& message, const ImColor& color)
     entry.timestamp = time(nullptr);
 
     addHistoryEntry(entry);
+    if (pJavaWrapper) g_webChatActive = pJavaWrapper->AddChatMessage("", message, 0xFFFFFF, toRgb(color));
 }
 
 void Chat::addChatMessage(const std::string& message, const std::string& nick, const ImColor& nick_color)
@@ -534,6 +545,7 @@ void Chat::addChatMessage(const std::string& message, const std::string& nick, c
     entry.timestamp = time(nullptr);
 
     addHistoryEntry(entry);
+    if (pJavaWrapper) g_webChatActive = pJavaWrapper->AddChatMessage(nick, message, toRgb(nick_color), 0xFFFFFF);
 }
 
 void Chat::addInfoMessage(const std::string& format, ...)
@@ -654,6 +666,7 @@ bool Chat::commandClient(const std::string& command)
 void Chat::draw(ImGuiRenderer* renderer)
 {
     if (!m_showingChat) return;
+    if (g_webChatActive) return; // HTML chat overlay is drawing instead
 
     // 1. Calculate Auto-Fade (Smooth exponential transition to idle alpha)
     double now = ImGui::GetTime();

@@ -58,6 +58,8 @@ CJavaWrapper::CJavaWrapper(JNIEnv *env, jobject activity)
     s_hideEditObject = env->GetMethodID(clas, "hideEditObject", "()V");
 
     s_showTabWindow = env->GetMethodID(clas, "showTabWindow", "()V");
+    s_addChatMessage = env->GetMethodID(clas, "addChatMessage", "([B[BII)V");
+    if (env->ExceptionCheck()) env->ExceptionClear();
     s_setTabStat = env->GetMethodID(clas, "setTabStat", "(ILjava/lang/String;II)V");
 
     s_updateHudInfo = env->GetMethodID(clas, "updateHudInfo", "(IIIIIIIIII)V");
@@ -220,6 +222,27 @@ void CJavaWrapper::UpdateSpeedInfo(int speed, int fuel, int hp, int mileage, int
     }
 
     env->CallVoidMethod(this->activity, this->s_updateSpeedInfo, speed, fuel, hp, mileage, engine, light, belt, lock);
+}
+
+bool CJavaWrapper::AddChatMessage(const std::string& nick, const std::string& text, uint32_t nickRgb, uint32_t textRgb)
+{
+    if (!s_addChatMessage) return false;
+    JNIEnv* env = GetEnv();
+    if (!env) return false;
+
+    jbyteArray jNick = as_byte_array((unsigned char*)nick.data(), (int)nick.size());
+    jbyteArray jText = as_byte_array((unsigned char*)text.data(), (int)text.size());
+    if (!jNick || !jText) {
+        if (jNick) env->DeleteLocalRef(jNick);
+        if (jText) env->DeleteLocalRef(jText);
+        return false;
+    }
+    env->CallVoidMethod(activity, s_addChatMessage, jNick, jText, (jint)nickRgb, (jint)textRgb);
+    env->DeleteLocalRef(jNick);
+    env->DeleteLocalRef(jText);
+
+    if (env->ExceptionCheck()) { env->ExceptionClear(); return false; }
+    return true;
 }
 
 void CJavaWrapper::ShowTabWindow()

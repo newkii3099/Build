@@ -1,4 +1,4 @@
-name: Build SAMP Mobile 2.11.311 APK
+name: Build SAMP Mobile 2.11.321 APK
 
 on:
   push:
@@ -35,6 +35,6 @@ jobs:
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: SAMP-Mobile-2.11.311-Debug-APK
+          name: SAMP-Mobile-2.11.321-Debug-APK
           path: app/build/outputs/apk/debug/*.apk
           retention-days: 30

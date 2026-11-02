@@ -90,21 +90,24 @@ bool ImGuiWrapper::initialize()
         }
     }
 
-    // Merge Android System Noto Sans Lao Font for sharp modern Lao rendering
+    // Merge Android System Noto Sans Lao Font for sharp modern Lao rendering (with assets fallback)
     ImFontConfig mergeCfgLao;
     mergeCfgLao.MergeMode = true;
     static const ImWchar laoRanges[] = { 0x0E80, 0x0EFF, 0 };
+    std::string sampLaoFont = BuildStoragePath("SAMP/fonts/NotoSansLao-Regular.ttf");
     const char* laoFontPaths[] = {
         "/system/fonts/NotoSansLao-Bold.ttf",
         "/system/fonts/NotoSansLaoUI-Bold.ttf",
         "/system/fonts/NotoSansLao-Regular.ttf",
         "/system/fonts/NotoSansLaoUI-Regular.ttf",
+        sampLaoFont.c_str(),
+        "/data/data/com.kurdish.roleplay/files/NotoSansLao-Regular.ttf",
         nullptr
     };
     for (int l = 0; laoFontPaths[l]; l++) {
         if (access(laoFontPaths[l], R_OK) == 0) {
             io.Fonts->AddFontFromFileTTF(laoFontPaths[l], UISettings::fontSize(), &mergeCfgLao, laoRanges);
-            Log::addParameter("Merged Lao system font: %s", laoFontPaths[l]);
+            Log::addParameter("Merged Lao font: %s", laoFontPaths[l]);
             break;
         }
     }

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+/* optional offline fonts: put Prompt-Regular.ttf / NotoSansLao-Regular.ttf in assets/chat/fonts/ */
+@font-face{font-family:'ChatTh';src:url('fonts/Prompt-Regular.ttf');font-weight:400}
+@font-face{font-family:'ChatLo';src:url('fonts/NotoSansLao-Regular.ttf');font-weight:400}
+:root{--ink:#f4f1ea;--dim:#ffffffa6;--accent:#4ade80;--lv:#fbbf24}
+html,body{margin:0;height:100%;background:transparent;overflow:hidden;pointer-events:none;-webkit-user-select:none;user-select:none}
+body{font-family:'ChatTh','ChatLo','Noto Sans Lao','Noto Sans Thai',sans-serif;color:var(--ink)}
+#chat{
+  position:absolute;left:0;right:0;bottom:0;max-height:100%;
+  display:flex;flex-direction:column;justify-content:flex-end;gap:3px;
+  padding:6px 9px;border-radius:12px;box-sizing:border-box;
+  background:linear-gradient(90deg,rgba(10,12,16,.46),rgba(10,12,16,.06));
+  border:1px solid rgba(255,255,255,.10);
+}
+.msg{font-size:13px;line-height:1.5;text-shadow:0 1px 3px #000;word-break:break-word;animation:in .2s ease-out;transition:opacity .8s}
+.msg.old{opacity:.4}
+.tag{display:inline-block;padding:0 7px;margin-right:6px;border-radius:6px;font-size:11px;
+     color:var(--accent);background:#22c55e26;border:1px solid #22c55e44;vertical-align:1px}
+.name{font-weight:600}
+.lv{color:var(--lv);font-size:11px;margin:0 4px 0 3px}
+.sys .text{color:var(--dim)}
+@keyframes in{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="chat"></div>
+<script>
+var chat=document.getElementById('chat'), MAX=8, FADE_MS=12000;
+function esc(s){return s.replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+/* SA-MP {RRGGBB} color codes -> spans */
+function samp(s,base){
+  var out='<span style="color:'+base+'">', parts=s.split(/(\{[0-9a-fA-F]{6}\})/);
+  for(var i=0;i<parts.length;i++){
+    var m=parts[i].match(/^\{([0-9a-fA-F]{6})\}$/);
+    out += m ? '</span><span style="color:#'+m[1]+'">' : esc(parts[i]);
+  }
+  return out+'</span>';
+}
+
+/* server lines like ".::[ • TAG • ]::. NAME (ID:105)(Lv.12): text" -> badge + name + level */
+var RE=/^\s*\.::\[\s*[•·]?\s*(.+?)\s*[•·]?\s*\]::\.\s*(\S+?)\s*\(ID:(\d+)\)\s*\(Lv\.(\d+)\)\s*:\s*(.*)$/;
+
+window.addMsg=function(m){
+  var el=document.createElement('div'), html='';
+  var plain=(m.text||'').replace(/\{[0-9a-fA-F]{6}\}/g,'');
+  var r=RE.exec(plain);
+  if(r){
+    var rawText = m.text || '';
+    var colonIdx = rawText.indexOf(':');
+    var msgContent = colonIdx !== -1 ? rawText.slice(colonIdx + 1).replace(/^\s+/, '') : r[5];
+    html='<span class="tag">'+esc(r[1])+'</span><span class="name" style="color:'+(m.textColor||'#fff')+'">'+esc(r[2])+
+         '</span><span class="lv">Lv.'+r[4]+'</span><span class="text">: '+samp(msgContent, m.textColor||'#f4f1ea')+'</span>';
+  } else if(m.name){
+    html='<span class="name" style="color:'+(m.color||'#fff')+'">'+esc(m.name)+'</span><span class="text">: '+samp(m.text||'','#f4f1ea')+'</span>';
+  } else {
+    html='<span class="text">'+samp(m.text||'',m.textColor||'#f4f1ea')+'</span>';
+  }
+  el.className='msg'+(m.system?' sys':''); el.innerHTML=html;
+  chat.appendChild(el);
+  while(chat.children.length>MAX) chat.removeChild(chat.firstChild);
+  setTimeout(function(){el.classList.add('old')},FADE_MS);
+};
+</script>
+</body>
+</html>

@@ -8,6 +8,7 @@ public:
 	static std::string cp2utf(const std::string& s);
 	static std::string utf2cp(const std::string& s);
 	static std::string utf8_to_cp874(const std::string& s);
+	static std::string trimIncompleteUtf8Tail(const std::string& s);
 
 	static void convert_windows1251_to_utf8(char* windows1251, const char* utf8, unsigned int len);
 

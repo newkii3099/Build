@@ -30,6 +30,7 @@ list(FILTER MULTIPLAYER_SOURCES EXCLUDE REGEX ".*__dup_[0-9A-Fa-f]+\\.(c|cc|cpp|
 list(FILTER MULTIPLAYER_SOURCES EXCLUDE REGEX ".*/samp/Multiplayer/(CFPSFix|Patches|Hooks)\\.cpp$")
 list(FILTER MULTIPLAYER_SOURCES EXCLUDE REGEX ".*/gta-reversed/game_sa/MobileSettings\\.cpp$")
 list(FILTER MULTIPLAYER_SOURCES EXCLUDE REGEX ".*/samp/Multiplayer/MobileMenu\\.cpp$")
+list(FILTER MULTIPLAYER_SOURCES EXCLUDE REGEX ".*/test_.*\\.(c|cc|cpp|cxx)$")
 
 # Keep target/output name as `samp` because Java/native loader expects libsamp.so.
 add_library(samp SHARED ${MULTIPLAYER_SOURCES})

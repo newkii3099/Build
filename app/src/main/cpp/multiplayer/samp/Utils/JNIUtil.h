@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <cstdint>
 
 #include "samp/main.h"
 
@@ -23,6 +25,7 @@ public:
     void HideLoadingScreen();
 
     void ShowTabWindow();
+    bool AddChatMessage(const std::string& nick, const std::string& text, uint32_t nickRgb, uint32_t textRgb);
     void SetTabStat(int id, char* name, int score, int ping);
 
     
@@ -40,10 +43,12 @@ public:
 	void exitGame();
 
     jbyteArray as_byte_array(unsigned char* buf, int len) {
-        JNIEnv* p;
-        javaVM->GetEnv((void**)&p, JNI_VERSION_1_6);
+        JNIEnv* p = GetEnv();
+        if (!p) return nullptr;
 		jbyteArray array = p->NewByteArray (len);
-		p->SetByteArrayRegion (array, 0, len, reinterpret_cast<jbyte*>(buf));
+		if (len > 0 && buf != nullptr) {
+			p->SetByteArrayRegion (array, 0, len, reinterpret_cast<jbyte*>(buf));
+		}
 		return array;
 	}
 
@@ -63,6 +68,7 @@ public:
 	jmethodID s_showEditObject;
 	jmethodID s_hideEditObject;
     jmethodID s_showTabWindow;
+    jmethodID s_addChatMessage;
     jmethodID s_setTabStat;
     jmethodID s_showHud;
     jmethodID s_hideHud;

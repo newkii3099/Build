@@ -12,6 +12,10 @@
 #include <sys/cachectl.h>
 #include <sys/mman.h>
 
+#ifndef PAGE_SIZE
+#define PAGE_SIZE 4096
+#endif
+
 #ifdef __aarch64__
 #define __64BIT
     #define DETHUMB(_a)

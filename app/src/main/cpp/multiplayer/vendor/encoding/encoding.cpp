@@ -37,55 +37,170 @@ static bool isStringValidUTF8(const std::string& s, bool& hasMultibyte)
     return true;
 }
 
+std::string Encoding::trimIncompleteUtf8Tail(const std::string& s)
+{
+    if (s.empty()) return s;
+    size_t len = s.size();
+
+    // Look backwards up to 3 bytes from the end to find if an incomplete multibyte sequence starts there
+    for (size_t back = 1; back <= 3 && back <= len; back++)
+    {
+        unsigned char c = (unsigned char)s[len - back];
+        if (c <= 0x7F) {
+            // ASCII byte - complete character, cannot be part of a multibyte sequence
+            break;
+        }
+        if ((c & 0xC0) == 0xC0) {
+            // Found a UTF-8 leading byte!
+            size_t expected = 0;
+            if ((c & 0xE0) == 0xC0) expected = 2;       // 2-byte sequence (110xxxxx)
+            else if ((c & 0xF0) == 0xE0) expected = 3;  // 3-byte sequence (1110xxxx)
+            else if ((c & 0xF8) == 0xF0) expected = 4;  // 4-byte sequence (11110xxx)
+            else {
+                // Invalid lead byte (>= 0xF8)
+                break;
+            }
+
+            if (back < expected) {
+                // Incomplete tail: expected 'expected' bytes but only 'back' bytes remain until end
+                return s.substr(0, len - back);
+            } else {
+                // Sequence is complete
+                break;
+            }
+        }
+        // (c & 0xC0) == 0x80: continuation byte, keep scanning backwards to find its lead byte
+    }
+    return s;
+}
+
 std::string Encoding::cp2utf(const std::string& s)
 {
     if (s.empty()) return s;
 
     // 1. If string is already valid UTF-8 with multi-byte chars (Thai, Lao, emojis, etc.), preserve it!
+    // Trimming incomplete tail handles Lao/Thai messages truncated by network length limits.
+    std::string trimmed = trimIncompleteUtf8Tail(s);
     bool hasMultibyte = false;
-    if (isStringValidUTF8(s, hasMultibyte) && hasMultibyte)
+    if (isStringValidUTF8(trimmed, hasMultibyte) && hasMultibyte)
     {
-        return s;
+        return trimmed;
     }
 
-    // 2. Check if string contains CP874 / TIS-620 Thai bytes (0xA1 .. 0xFB)
-    bool hasCP874 = false;
+    // 2. Check if string contains CP874 / TIS-620 Thai bytes (0xA1 .. 0xFB) or UTF-8 Thai/Lao
+    bool hasCP874OrUtf8 = false;
+    bool hasNonAscii = false;
     for (size_t k = 0; k < s.size(); k++)
     {
         unsigned char uc = (unsigned char)s[k];
-        if (uc >= 0xA1 && uc <= 0xFB)
+        if (uc > 0x7F)
         {
-            hasCP874 = true;
-            break;
+            hasNonAscii = true;
+            if ((uc >= 0xA1 && uc <= 0xFB) || uc == 0xE0)
+            {
+                hasCP874OrUtf8 = true;
+                break;
+            }
         }
     }
 
-    if (hasCP874)
+    if (!hasNonAscii) return s;
+
+    // Mixed mode: decode sequence-by-sequence.
+    // If a valid Thai/Lao UTF-8 sequence (U+0E00..U+0EFF -> 0xE0 0xB8..0xBB 0x80..0xBF)
+    // or valid general UTF-8 sequence is encountered, keep it as UTF-8.
+    // Single-byte CP874 characters (0xA1..0xFB) are converted to UTF-8.
+    if (hasCP874OrUtf8)
     {
         std::string ns;
         ns.reserve(s.size() * 3);
-        for (size_t i = 0; i < s.size(); i++)
+        size_t i = 0;
+        size_t len = s.size();
+
+        while (i < len)
         {
             unsigned char c = (unsigned char)s[i];
+
+            // A. ASCII byte
             if (c <= 0x7F)
             {
-                ns += (char)c;
+                ns.push_back((char)c);
+                i++;
+                continue;
             }
-            else if (c >= 0xA1 && c <= 0xFB)
+
+            // B. Valid 3-byte Thai/Lao UTF-8 sequence (U+0E00 .. U+0EFF):
+            // Byte 1: 0xE0
+            // Byte 2: 0xB8 .. 0xBB (Thai: 0xB8, 0xB9; Lao: 0xBA, 0xBB)
+            // Byte 3: 0x80 .. 0xBF
+            if (c == 0xE0)
             {
-                // CP874 to Unicode Thai offset: 0x0E00 + (c - 0xA0)
+                if (i + 2 < len)
+                {
+                    unsigned char c2 = (unsigned char)s[i + 1];
+                    unsigned char c3 = (unsigned char)s[i + 2];
+                    if (c2 >= 0xB8 && c2 <= 0xBB && (c3 & 0xC0) == 0x80)
+                    {
+                        ns.push_back((char)c);
+                        ns.push_back((char)c2);
+                        ns.push_back((char)c3);
+                        i += 3;
+                        continue;
+                    }
+                }
+                else
+                {
+                    // Incomplete Thai/Lao sequence at end of string:
+                    // If followed by Lao/Thai byte 2 (0xB8..0xBB) but truncated before byte 3,
+                    // discard incomplete tail to avoid corrupting into CP874 "เบ"
+                    if (i + 1 < len)
+                    {
+                        unsigned char c2 = (unsigned char)s[i + 1];
+                        if (c2 >= 0xB8 && c2 <= 0xBB)
+                        {
+                            i = len;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        // Lone 0xE0 at end
+                        i = len;
+                        break;
+                    }
+                }
+            }
+
+            // C. 4-byte multi-byte UTF-8 sequences (e.g. emojis)
+            if ((c & 0xF8) == 0xF0 && i + 3 < len)
+            {
+                if (((unsigned char)s[i + 1] & 0xC0) == 0x80 &&
+                    ((unsigned char)s[i + 2] & 0xC0) == 0x80 &&
+                    ((unsigned char)s[i + 3] & 0xC0) == 0x80)
+                {
+                    ns.append(s, i, 4);
+                    i += 4;
+                    continue;
+                }
+            }
+
+            // D. CP874 / TIS-620 Thai byte (0xA1 .. 0xFB)
+            if (c >= 0xA1 && c <= 0xFB)
+            {
                 uint32_t unicode = 0x0E00 + (c - 0xA0);
-                ns += (char)0xE0;
-                ns += (char)(0x80 | ((unicode >> 6) & 0x3F));
-                ns += (char)(0x80 | (unicode & 0x3F));
+                ns.push_back((char)0xE0);
+                ns.push_back((char)(0x80 | ((unicode >> 6) & 0x3F)));
+                ns.push_back((char)(0x80 | (unicode & 0x3F)));
+                i++;
+                continue;
             }
-            else
-            {
-                char buf[4];
-                char in[2] = { (char)c, 0 };
-                convert_windows1251_to_utf8(buf, in, strlen(in));
-                ns += std::string(buf);
-            }
+
+            // E. Fallback for other characters (e.g. Windows-1251)
+            char buf[4];
+            char in[2] = { (char)c, 0 };
+            convert_windows1251_to_utf8(buf, in, strlen(in));
+            ns += std::string(buf);
+            i++;
         }
         return ns;
     }
