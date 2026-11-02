@@ -532,7 +532,7 @@ uint32_t GetTickCount()
 
 void FLog(const char* fmt, ...)
 {
-	char buffer[0xFF];
+	char buffer[1024];
 	memset(buffer, 0, sizeof(buffer));
 
 	va_list arg;
@@ -541,6 +541,17 @@ void FLog(const char* fmt, ...)
 	va_end(arg);
 
 	LOGI("%s", buffer);
+
+	static FILE* flLog = nullptr;
+	if (flLog == nullptr && g_pszStorage != nullptr)
+	{
+		std::string logPath = BuildStoragePath("samp_log.txt");
+		flLog = fopen(logPath.c_str(), "a");
+	}
+	if (flLog != nullptr)
+	{
+		fprintf(flLog, "%s\n", buffer);
+	}
 	return;
 }
 

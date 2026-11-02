@@ -1485,44 +1485,49 @@ stFile* NvFOpen(const char *r1)
 
     char path[1024]{};
 
-    // 1. If absolute path, try it directly
+    // If absolute path
     if (r1[0] == '/' || strstr(r1, "emulated") != nullptr)
     {
         snprintf(path, sizeof(path), "%s", r1);
     }
     else
     {
-        // 2. Primary: Check exact path in game storage (allows custom data/gta.dat, models, maps to take effect)
         snprintf(path, sizeof(path), "%s%s", g_pszStorage, r1);
     }
 
-    FILE *f = fopen(path, "rb");
-
-    // 3. Fallback: If not found in primary path, check SAMP/ folder overrides
-    if (!f && r1[0] != '/')
+    // SA-MP Network & Multiplayer file redirects (MANDATORY)
+    // GTA SA hardcodes data/script/mainv1.scm (singleplayer campaign 3MB).
+    // SAMP requires its own network script (SAMP/main.scm 96KB) & ide definitions.
+    if (!strncmp(r1, "data/script/mainv1.scm", 22) || !strncmp(r1, "data/script/main.scm", 20))
     {
-        char sampPath[1024]{};
-        if (!strncmp(r1, "data/script/mainv1.scm", 22) || !strncmp(r1, "data/script/main.scm", 20)) {
-            snprintf(sampPath, sizeof(sampPath), "%sSAMP/main.scm", g_pszStorage);
-        } else if (!strncmp(r1, "data/script/scriptv1.img", 24) || !strncmp(r1, "data/script/script.img", 22)) {
-            snprintf(sampPath, sizeof(sampPath), "%sSAMP/script.img", g_pszStorage);
-        } else if (!strncmp(r1, "data/peds.ide", 13)) {
-            snprintf(sampPath, sizeof(sampPath), "%sSAMP/peds.ide", g_pszStorage);
-        } else if (!strncmp(r1, "data/vehicles.ide", 17)) {
-            snprintf(sampPath, sizeof(sampPath), "%sSAMP/vehicles.ide", g_pszStorage);
-        } else if (!strncmp(r1, "data/gta.dat", 12)) {
-            snprintf(sampPath, sizeof(sampPath), "%sSAMP/gta.dat", g_pszStorage);
-        } else if (!strncmp(r1, "data/handling.cfg", 17)) {
-            snprintf(sampPath, sizeof(sampPath), "%sSAMP/handling.cfg", g_pszStorage);
-        } else if (!strncmp(r1, "data/weapon.dat", 15)) {
-            snprintf(sampPath, sizeof(sampPath), "%sSAMP/weapon.dat", g_pszStorage);
-        }
-
-        if (sampPath[0] != '\0') {
-            f = fopen(sampPath, "rb");
-        }
+        snprintf(path, sizeof(path), "%sSAMP/main.scm", g_pszStorage);
+    }
+    else if (!strncmp(r1, "data/script/scriptv1.img", 24) || !strncmp(r1, "data/script/script.img", 22))
+    {
+        snprintf(path, sizeof(path), "%sSAMP/script.img", g_pszStorage);
+    }
+    else if (!strncmp(r1, "data/peds.ide", 13))
+    {
+        snprintf(path, sizeof(path), "%sSAMP/peds.ide", g_pszStorage);
+    }
+    else if (!strncmp(r1, "data/vehicles.ide", 17))
+    {
+        snprintf(path, sizeof(path), "%sSAMP/vehicles.ide", g_pszStorage);
+    }
+    else if (!strncmp(r1, "data/gta.dat", 12))
+    {
+        snprintf(path, sizeof(path), "%sSAMP/gta.dat", g_pszStorage);
+    }
+    else if (!strncmp(r1, "data/handling.cfg", 17))
+    {
+        snprintf(path, sizeof(path), "%sSAMP/handling.cfg", g_pszStorage);
+    }
+    else if (!strncmp(r1, "data/weapon.dat", 15))
+    {
+        snprintf(path, sizeof(path), "%sSAMP/weapon.dat", g_pszStorage);
     }
 
+    FILE *f = fopen(path, "rb");
     if (f)
     {
         auto *st = (stFile*)malloc(sizeof(stFile));

@@ -32,11 +32,13 @@ bool CWidget__IsTouched_hook(uintptr_t *thiz, CVector2D *pVecOut) {
 
 void (*CWidgetButton__Update)(CWidgetButton* thiz);
 void CWidgetButton__Update_hook(CWidgetButton* thiz) {
-    if (CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_RADAR]) {
-        CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_RADAR]->m_fTapHoldTime = 1.0;
-    }
-    if (CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_PHONE]) {
-        CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_PHONE]->m_bEnabled = false; // voice
+    if (CTouchInterface::m_pWidgets) {
+        if (CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_RADAR]) {
+            CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_RADAR]->m_fTapHoldTime = 1.0;
+        }
+        if (CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_PHONE]) {
+            CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_PHONE]->m_bEnabled = false; // voice
+        }
     }
 
     // Auto-heal any button coordinates that were corrupted by the old -10000 offset
@@ -46,7 +48,7 @@ void CWidgetButton__Update_hook(CWidgetButton* thiz) {
 
     if(pNetGame) {
         CPlayerPed *pPlayerPed = pGame->FindPlayerPed();
-        if (pPlayerPed) {
+        if (pPlayerPed && CTouchInterface::m_pWidgets) {
             bool isDriver = pPlayerPed->m_pPed->IsADriver();
             const auto pVehicle = pPlayerPed->GetCurrentVehicle();
             if (pVehicle && isDriver &&
@@ -60,7 +62,8 @@ void CWidgetButton__Update_hook(CWidgetButton* thiz) {
             }
         }
 
-        if(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_ENTER_CAR] &&
+        if(CTouchInterface::m_pWidgets &&
+           CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_ENTER_CAR] &&
            CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_ENTER_CAR]->IsTouched(nullptr))
         {
             if (bNeedEnterVehicleDriver == false) {
@@ -105,7 +108,7 @@ void CWidgetButtonEnterCar__Draw_hook(uintptr_t *thiz) {
 void (*CWidgetButton__Enabled)(CWidgetButton* thiz, bool bEnabled);
 void CWidgetButton__Enabled_hook(CWidgetButton* thiz, bool bEnabled) {
 
-    if(pNetGame) {
+    if(pNetGame && CTouchInterface::m_pWidgets) {
         CPlayerPed *pPlayerPed = pGame->FindPlayerPed();
         if (pPlayerPed) {
             bool bSwimming = pPlayerPed->m_pPed->physicalFlags.bSubmergedInWater;
