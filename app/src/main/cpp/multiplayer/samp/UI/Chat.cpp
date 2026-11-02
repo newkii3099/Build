@@ -684,47 +684,36 @@ void Chat::draw(ImGuiRenderer* renderer)
         }
     }
 
-    // 3. Draw Modern Glass chat card backdrop
+    // 3. Transparent chat background (No card backdrop, no blue borders)
     ImVec2 pos = absolutePosition();
     ImVec2 sz = size();
-    if (this->itemsCount() > 0 && sz.x > 0.0f && sz.y > 0.0f)
-    {
-        ImVec2 pMin = ImVec2(pos.x - 8.0f, pos.y - 6.0f);
-        ImVec2 pMax = ImVec2(pos.x + sz.x + 10.0f, pos.y + sz.y + 6.0f);
-        renderer->drawRect(pMin, pMax, ImColor(15, 23, 42, (int)(125.0f * m_currentAlpha)), true, 12.0f);
-        renderer->drawRect(pMin, pMax, ImColor(56, 189, 248, (int)(90.0f * m_currentAlpha)), false, 12.0f, 1.2f);
-    }
 
     // 4. Draw messages
     ListBox::draw(renderer);
 
-    // 5. Draw Modern Glass Tabs (CHAT / SMS) underneath the chat box
+    // 5. Clean Minimalist Transparent Tabs (CHAT / SMS) underneath the chat box
     float scaleX = (UISettings::scaleFactor().x > 0.0f) ? UISettings::scaleFactor().x : 1.0f;
     float scaleY = (UISettings::scaleFactor().y > 0.0f) ? UISettings::scaleFactor().y : 1.0f;
-    float tabH = 22.0f * scaleY;
-    float tabW = 60.0f * scaleX;
-    float tabY = pos.y + sz.y + 10.0f;
+    float tabH = 20.0f * scaleY;
+    float tabW = 55.0f * scaleX;
+    float tabY = pos.y + sz.y + 6.0f;
 
     m_tabChatMin = ImVec2(pos.x, tabY);
     m_tabChatMax = ImVec2(pos.x + tabW, tabY + tabH);
 
-    m_tabSmsMin = ImVec2(pos.x + tabW + 8.0f, tabY);
-    m_tabSmsMax = ImVec2(pos.x + tabW * 2.0f + 8.0f, tabY + tabH);
+    m_tabSmsMin = ImVec2(pos.x + tabW + 6.0f, tabY);
+    m_tabSmsMax = ImVec2(pos.x + tabW * 2.0f + 6.0f, tabY + tabH);
 
     // CHAT Tab
     bool isChatActive = (m_activeTab == TAB_CHAT);
     ImColor chatBg = isChatActive
-        ? ImColor(56, 189, 248, (int)(190.0f * m_currentAlpha))
-        : ImColor(15, 23, 42, (int)(120.0f * m_currentAlpha));
-    ImColor chatBorder = isChatActive
-        ? ImColor(255, 255, 255, (int)(220.0f * m_currentAlpha))
-        : ImColor(56, 189, 248, (int)(75.0f * m_currentAlpha));
+        ? ImColor(255, 255, 255, (int)(45.0f * m_currentAlpha))
+        : ImColor(0, 0, 0, (int)(30.0f * m_currentAlpha));
     ImColor chatTextCol = isChatActive
-        ? ImColor(15, 23, 42, (int)(250.0f * m_currentAlpha))
-        : ImColor(186, 230, 253, (int)(220.0f * m_currentAlpha));
+        ? ImColor(255, 255, 255, (int)(255.0f * m_currentAlpha))
+        : ImColor(170, 170, 170, (int)(180.0f * m_currentAlpha));
 
     renderer->drawRect(m_tabChatMin, m_tabChatMax, chatBg, true, tabH / 2.0f);
-    renderer->drawRect(m_tabChatMin, m_tabChatMax, chatBorder, false, tabH / 2.0f, 1.2f);
 
     float fontSize = UISettings::fontSize() / 2.2f;
     std::string chatLabel = "CHAT";
@@ -738,17 +727,13 @@ void Chat::draw(ImGuiRenderer* renderer)
     // SMS Tab
     bool isSmsActive = (m_activeTab == TAB_SMS);
     ImColor smsBg = isSmsActive
-        ? ImColor(56, 189, 248, (int)(190.0f * m_currentAlpha))
-        : ImColor(15, 23, 42, (int)(120.0f * m_currentAlpha));
-    ImColor smsBorder = isSmsActive
-        ? ImColor(255, 255, 255, (int)(220.0f * m_currentAlpha))
-        : (m_unreadSms ? ImColor(245, 158, 11, (int)(220.0f * m_currentAlpha)) : ImColor(56, 189, 248, (int)(75.0f * m_currentAlpha)));
+        ? ImColor(255, 255, 255, (int)(45.0f * m_currentAlpha))
+        : ImColor(0, 0, 0, (int)(30.0f * m_currentAlpha));
     ImColor smsTextCol = isSmsActive
-        ? ImColor(15, 23, 42, (int)(250.0f * m_currentAlpha))
-        : (m_unreadSms ? ImColor(251, 191, 36, (int)(250.0f * m_currentAlpha)) : ImColor(186, 230, 253, (int)(220.0f * m_currentAlpha)));
+        ? ImColor(255, 255, 255, (int)(255.0f * m_currentAlpha))
+        : (m_unreadSms ? ImColor(251, 191, 36, (int)(250.0f * m_currentAlpha)) : ImColor(170, 170, 170, (int)(180.0f * m_currentAlpha)));
 
     renderer->drawRect(m_tabSmsMin, m_tabSmsMax, smsBg, true, tabH / 2.0f);
-    renderer->drawRect(m_tabSmsMin, m_tabSmsMax, smsBorder, false, tabH / 2.0f, m_unreadSms ? 1.8f : 1.2f);
 
     std::string smsLabel = m_unreadSms ? "SMS •" : "SMS";
     ImVec2 smsLabelSz = renderer->calculateTextSize(smsLabel, fontSize);

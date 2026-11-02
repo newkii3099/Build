@@ -31,7 +31,7 @@
             android:background="@drawable/bg_keyboard_input_glass"
             android:ems="10"
             android:hint="พิมพ์ข้อความหรือคำสั่ง /..."
-            android:textColorHint="#93C5FD"
+            android:textColorHint="#80FFFFFF"
             android:imeOptions="actionUnspecified|actionGo|actionSend|actionDone|flagNoFullscreen|flagNoExtractUi"
             android:inputType="text"
             android:paddingHorizontal="12dp"

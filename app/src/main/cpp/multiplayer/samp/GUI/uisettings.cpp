@@ -15,7 +15,7 @@ ImVec2 UISettings::m_scaleFactor = ImVec2(1.0f, 1.0f);
 
 /* font */
 float UISettings::m_fontSize = 30.0f;//26.0f;//24.0f;
-float UISettings::m_outlineSize = 2.0f;
+float UISettings::m_outlineSize = 1.0f;
 
 /* ////////////////// pos & size ////////////////// */
 

@@ -74,7 +74,6 @@ bool ImGuiWrapper::initialize()
     // Merge Android System Noto Sans Thai Font for sharp modern Thai rendering
     ImFontConfig mergeCfgThai;
     mergeCfgThai.MergeMode = true;
-    mergeCfgThai.GlyphExtraSpacing.x = UISettings::outlineSize();
     static const ImWchar thaiRanges[] = { 0x0E00, 0x0E7F, 0 };
     const char* thaiFontPaths[] = {
         "/system/fonts/NotoSansThai-Bold.ttf",
@@ -94,7 +93,6 @@ bool ImGuiWrapper::initialize()
     // Merge Android System Noto Sans Lao Font for sharp modern Lao rendering
     ImFontConfig mergeCfgLao;
     mergeCfgLao.MergeMode = true;
-    mergeCfgLao.GlyphExtraSpacing.x = UISettings::outlineSize();
     static const ImWchar laoRanges[] = { 0x0E80, 0x0EFF, 0 };
     const char* laoFontPaths[] = {
         "/system/fonts/NotoSansLao-Bold.ttf",
