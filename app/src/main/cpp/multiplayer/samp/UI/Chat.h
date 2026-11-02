@@ -51,7 +51,7 @@ public:
 
     static std::string sDevTagNick;
 
-    void toggleVisibility() { m_showingChat = !m_showingChat; }
+    void toggleVisibility();
     bool isVisible() const { return m_showingChat; }
 
     void switchTab(int tab);
@@ -80,11 +80,13 @@ private:
     float m_currentAlpha = 1.0f;
     double m_lastActivityTime = 0.0;
 
-    // Tab button touch rectangles
+    // Tab & Toggle button touch rectangles
     ImVec2 m_tabChatMin = ImVec2(0.0f, 0.0f);
     ImVec2 m_tabChatMax = ImVec2(0.0f, 0.0f);
     ImVec2 m_tabSmsMin = ImVec2(0.0f, 0.0f);
     ImVec2 m_tabSmsMax = ImVec2(0.0f, 0.0f);
+    ImVec2 m_toggleMin = ImVec2(0.0f, 0.0f);
+    ImVec2 m_toggleMax = ImVec2(0.0f, 0.0f);
 
     class MessageItem : public ListBoxItem
     {

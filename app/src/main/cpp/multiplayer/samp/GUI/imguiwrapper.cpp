@@ -60,8 +60,27 @@ bool ImGuiWrapper::initialize()
         0
     };
 
-    ImFont* font = io.Fonts->AddFontFromFileTTF(m_fontPath.c_str(),
+    // Base font: Prioritize Prompt-Regular.ttf (matching HTML font styling)
+    std::string sampPromptFont = BuildStoragePath("SAMP/fonts/Prompt-Regular.ttf");
+    const char* baseFontCandidates[] = {
+        sampPromptFont.c_str(),
+        "/data/data/com.kurdish.roleplay/files/Prompt-Regular.ttf",
+        m_fontPath.c_str(),
+        "/system/fonts/Roboto-Regular.ttf",
+        nullptr
+    };
+
+    ImFont* font = nullptr;
+    for (int b = 0; baseFontCandidates[b]; b++) {
+        if (access(baseFontCandidates[b], R_OK) == 0) {
+            font = io.Fonts->AddFontFromFileTTF(baseFontCandidates[b],
                                                 UISettings::fontSize(), &fontCfg, ranges);
+            if (font != nullptr) {
+                Log::addParameter("Loaded base font: %s", baseFontCandidates[b]);
+                break;
+            }
+        }
+    }
 
     if (font == nullptr)
     {

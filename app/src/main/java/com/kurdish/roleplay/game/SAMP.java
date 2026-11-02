@@ -282,8 +282,12 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
             File sampFonts = new File(GameStorage.getSampDirectory(this), "fonts");
             copyAssetIfMissing("Fonts/NotoSansLao-Regular.ttf", new File(sampFonts, "NotoSansLao-Regular.ttf"));
             copyAssetIfMissing("Fonts/NotoSansLao-Regular.ttf", new File(getFilesDir(), "NotoSansLao-Regular.ttf"));
+            copyAssetIfMissing("Fonts/Prompt-Regular.ttf", new File(sampFonts, "Prompt-Regular.ttf"));
+            copyAssetIfMissing("Fonts/Prompt-Regular.ttf", new File(getFilesDir(), "Prompt-Regular.ttf"));
+            copyAssetIfMissing("chat/fonts/Prompt-Regular.ttf", new File(sampFonts, "Prompt-Regular.ttf"));
+            copyAssetIfMissing("chat/fonts/Prompt-Regular.ttf", new File(getFilesDir(), "Prompt-Regular.ttf"));
         } catch (Throwable t) {
-            Log.w(TAG, "Error copying Lao font asset", t);
+            Log.w(TAG, "Error copying font assets", t);
         }
 
         try {
@@ -294,7 +298,6 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
             mHud = new Hud(this);
             mSpeedometer = new Speedometer(this);
             mTab = new Tab(this);
-            mChatWeb = new com.kurdish.roleplay.game.ui.ChatWebView(this);
             instance = this;
             mHeightProvider = new HeightProvider(this).init(getWindow().getDecorView()).setHeightListener(this);
         } catch (Throwable t) {

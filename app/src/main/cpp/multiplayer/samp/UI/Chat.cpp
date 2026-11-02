@@ -23,16 +23,6 @@ extern CSettings* pSettings;
 extern CJavaWrapper* pJavaWrapper;
 
 Chat* pChat = nullptr;
-
-// true once the HTML (WebView) chat has accepted a message -> native chat list stops drawing
-static bool g_webChatActive = false;
-
-static uint32_t toRgb(const ImColor& c)
-{
-    return ((uint32_t)(c.Value.x * 255.0f + 0.5f) << 16) |
-           ((uint32_t)(c.Value.y * 255.0f + 0.5f) << 8)  |
-            (uint32_t)(c.Value.z * 255.0f + 0.5f);
-}
 std::string Chat::sDevTagNick = "";
 
 // ============================================================================
@@ -516,8 +506,6 @@ void Chat::rebuildVisibleItems()
 
 void Chat::addMessage(const std::string& message, const ImColor& color)
 {
-    if (!m_showingChat) return;
-
     ChatEntry entry;
     entry.type = ChatEntry::TYPE_NORMAL;
     entry.message = message;
@@ -527,13 +515,10 @@ void Chat::addMessage(const std::string& message, const ImColor& color)
     entry.timestamp = time(nullptr);
 
     addHistoryEntry(entry);
-    if (pJavaWrapper) g_webChatActive = pJavaWrapper->AddChatMessage("", message, 0xFFFFFF, toRgb(color));
 }
 
 void Chat::addChatMessage(const std::string& message, const std::string& nick, const ImColor& nick_color)
 {
-    if (!m_showingChat) return;
-
     ChatEntry entry;
     entry.type = ChatEntry::TYPE_PLAYER;
     entry.message = message;
@@ -545,7 +530,6 @@ void Chat::addChatMessage(const std::string& message, const std::string& nick, c
     entry.timestamp = time(nullptr);
 
     addHistoryEntry(entry);
-    if (pJavaWrapper) g_webChatActive = pJavaWrapper->AddChatMessage(nick, message, toRgb(nick_color), 0xFFFFFF);
 }
 
 void Chat::addInfoMessage(const std::string& format, ...)
@@ -575,8 +559,18 @@ void Chat::addClientMessage(const std::string& message, const ImColor& color)
     addMessage(message, color);
 }
 
+void Chat::toggleVisibility()
+{
+    m_showingChat = !m_showingChat;
+    if (m_showingChat)
+    {
+        rebuildVisibleItems();
+    }
+}
+
 void Chat::touchPopEvent()
 {
+    if (!m_showingChat) return;
     if (pUI && pUI->playertablist() && pUI->playertablist()->visible()) return;
     markActivity();
     pUI->keyboard()->show(this);
@@ -585,6 +579,19 @@ void Chat::touchPopEvent()
 void Chat::touchEvent(const ImVec2& pos, TouchType type)
 {
     markActivity();
+
+    // Check touches on Toggle button (works both when expanded and when collapsed)
+    if (pos.x >= m_toggleMin.x && pos.x <= m_toggleMax.x &&
+        pos.y >= m_toggleMin.y && pos.y <= m_toggleMax.y)
+    {
+        if (type == TouchType::pop)
+        {
+            toggleVisibility();
+        }
+        return;
+    }
+
+    if (!m_showingChat) return;
 
     // Check touches on CHAT / SMS tabs
     if (pos.x >= m_tabChatMin.x && pos.x <= m_tabChatMax.x &&
@@ -665,48 +672,50 @@ bool Chat::commandClient(const std::string& command)
 
 void Chat::draw(ImGuiRenderer* renderer)
 {
-    if (!m_showingChat) return;
-    if (g_webChatActive) return; // HTML chat overlay is drawing instead
+    float scaleX = (UISettings::scaleFactor().x > 0.0f) ? UISettings::scaleFactor().x : 1.0f;
+    float scaleY = (UISettings::scaleFactor().y > 0.0f) ? UISettings::scaleFactor().y : 1.0f;
+    float fontSize = UISettings::fontSize() / 2.2f;
 
-    // 1. Calculate Auto-Fade (Smooth exponential transition to idle alpha)
-    double now = ImGui::GetTime();
-    float targetAlpha = 1.0f;
-    if (pUI && pUI->keyboard() && pUI->keyboard()->visible())
+    if (!m_showingChat)
     {
-        markActivity();
-        targetAlpha = 1.0f;
-    }
-    else if (now - m_lastActivityTime >= 4.0) // 4 seconds inactivity timeout
-    {
-        targetAlpha = 0.35f; // Idle alpha
+        // When collapsed: draw a compact badge "💬 เปิด" so user can expand chat
+        ImVec2 pos = absolutePosition();
+        float btnH = 22.0f * scaleY;
+        float btnW = 55.0f * scaleX;
+        m_toggleMin = pos;
+        m_toggleMax = ImVec2(pos.x + btnW, pos.y + btnH);
+
+        ImColor bg(15, 23, 42, 180);
+        renderer->drawRect(m_toggleMin, m_toggleMax, bg, true, 6.0f);
+        std::string label = "💬 เปิด";
+        ImVec2 labelSz = renderer->calculateTextSize(label, fontSize);
+        ImVec2 txtPos(
+            m_toggleMin.x + (btnW - labelSz.x) / 2.0f,
+            m_toggleMin.y + (btnH - labelSz.y) / 2.0f
+        );
+        renderer->drawText(txtPos, ImColor(255, 255, 255, 255), label, false, fontSize);
+        return;
     }
 
-    float dt = ImGui::GetIO().DeltaTime;
-    if (dt <= 0.0f || dt > 0.1f) dt = 0.016f;
-    m_currentAlpha += (targetAlpha - m_currentAlpha) * (1.0f - expf(-5.0f * dt));
-
-    // 2. Propagate alpha to all visible items in the panel
+    // Always 1.0f alpha (no dimming/decay, per user request)
+    m_currentAlpha = 1.0f;
     if (panel())
     {
         for (Widget* w : panel()->children())
         {
             if (ListBoxItem* item = static_cast<ListBoxItem*>(w))
             {
-                item->setAlpha(m_currentAlpha);
+                item->setAlpha(1.0f);
             }
         }
     }
 
-    // 3. Transparent chat background (No card backdrop, no blue borders)
-    ImVec2 pos = absolutePosition();
-    ImVec2 sz = size();
-
-    // 4. Draw messages
+    // Draw messages
     ListBox::draw(renderer);
 
-    // 5. Clean Minimalist Transparent Tabs (CHAT / SMS) underneath the chat box
-    float scaleX = (UISettings::scaleFactor().x > 0.0f) ? UISettings::scaleFactor().x : 1.0f;
-    float scaleY = (UISettings::scaleFactor().y > 0.0f) ? UISettings::scaleFactor().y : 1.0f;
+    // Clean Minimalist Transparent Tabs (CHAT / SMS) and Toggle button underneath the chat box
+    ImVec2 pos = absolutePosition();
+    ImVec2 sz = size();
     float tabH = 20.0f * scaleY;
     float tabW = 55.0f * scaleX;
     float tabY = pos.y + sz.y + 6.0f;
@@ -717,18 +726,19 @@ void Chat::draw(ImGuiRenderer* renderer)
     m_tabSmsMin = ImVec2(pos.x + tabW + 6.0f, tabY);
     m_tabSmsMax = ImVec2(pos.x + tabW * 2.0f + 6.0f, tabY + tabH);
 
+    m_toggleMin = ImVec2(pos.x + tabW * 2.0f + 12.0f, tabY);
+    m_toggleMax = ImVec2(pos.x + tabW * 3.0f + 12.0f, tabY + tabH);
+
     // CHAT Tab
     bool isChatActive = (m_activeTab == TAB_CHAT);
     ImColor chatBg = isChatActive
-        ? ImColor(255, 255, 255, (int)(45.0f * m_currentAlpha))
-        : ImColor(0, 0, 0, (int)(30.0f * m_currentAlpha));
+        ? ImColor(255, 255, 255, 45)
+        : ImColor(0, 0, 0, 30);
     ImColor chatTextCol = isChatActive
-        ? ImColor(255, 255, 255, (int)(255.0f * m_currentAlpha))
-        : ImColor(170, 170, 170, (int)(180.0f * m_currentAlpha));
-
+        ? ImColor(255, 255, 255, 255)
+        : ImColor(170, 170, 170, 180);
     renderer->drawRect(m_tabChatMin, m_tabChatMax, chatBg, true, tabH / 2.0f);
 
-    float fontSize = UISettings::fontSize() / 2.2f;
     std::string chatLabel = "CHAT";
     ImVec2 chatLabelSz = renderer->calculateTextSize(chatLabel, fontSize);
     ImVec2 chatTextPos = ImVec2(
@@ -740,12 +750,11 @@ void Chat::draw(ImGuiRenderer* renderer)
     // SMS Tab
     bool isSmsActive = (m_activeTab == TAB_SMS);
     ImColor smsBg = isSmsActive
-        ? ImColor(255, 255, 255, (int)(45.0f * m_currentAlpha))
-        : ImColor(0, 0, 0, (int)(30.0f * m_currentAlpha));
+        ? ImColor(255, 255, 255, 45)
+        : ImColor(0, 0, 0, 30);
     ImColor smsTextCol = isSmsActive
-        ? ImColor(255, 255, 255, (int)(255.0f * m_currentAlpha))
-        : (m_unreadSms ? ImColor(251, 191, 36, (int)(250.0f * m_currentAlpha)) : ImColor(170, 170, 170, (int)(180.0f * m_currentAlpha)));
-
+        ? ImColor(255, 255, 255, 255)
+        : (m_unreadSms ? ImColor(251, 191, 36, 250) : ImColor(170, 170, 170, 180));
     renderer->drawRect(m_tabSmsMin, m_tabSmsMax, smsBg, true, tabH / 2.0f);
 
     std::string smsLabel = m_unreadSms ? "SMS •" : "SMS";
@@ -755,6 +764,19 @@ void Chat::draw(ImGuiRenderer* renderer)
         m_tabSmsMin.y + (tabH - smsLabelSz.y) / 2.0f
     );
     renderer->drawText(smsTextPos, smsTextCol, smsLabel, false, fontSize);
+
+    // Toggle Hide Button ("💬 ซ่อน")
+    ImColor toggleBg(0, 0, 0, 30);
+    ImColor toggleTextCol(200, 200, 200, 220);
+    renderer->drawRect(m_toggleMin, m_toggleMax, toggleBg, true, tabH / 2.0f);
+
+    std::string toggleLabel = "💬 ซ่อน";
+    ImVec2 toggleLabelSz = renderer->calculateTextSize(toggleLabel, fontSize);
+    ImVec2 toggleTextPos = ImVec2(
+        m_toggleMin.x + (tabW - toggleLabelSz.x) / 2.0f,
+        m_toggleMin.y + (tabH - toggleLabelSz.y) / 2.0f
+    );
+    renderer->drawText(toggleTextPos, toggleTextCol, toggleLabel, false, fontSize);
 }
 
 void Chat::activateEvent(bool active)

@@ -107,6 +107,7 @@ void Keyboard::changeCase(KeyboardLayout::KeyCase key_case)
 
 void Keyboard::show(Widget* caller)
 {
+    m_caller = caller ? caller : (pUI ? pUI->chat() : nullptr);
     if(pSettings->Get().iAndroidKeyboard)
     {
         pJavaWrapper->ShowKeyboard();
@@ -117,7 +118,6 @@ void Keyboard::show(Widget* caller)
         this->setVisible(true);
         pGame->EnableGameInput(false);
     }
-    m_caller = caller;
 }
 
 void Keyboard::hide()
@@ -151,9 +151,14 @@ void Keyboard::sendForGB(JNIEnv *pEnv, jobject thiz, jbyteArray str)
     memcpy(buffer, elements, v8);
     buffer[v8] = 0;
     std::string input = std::string(buffer);
-    if (m_caller) m_caller->keyboardEvent(input);
+    if (m_caller) {
+        m_caller->keyboardEvent(input);
+    } else if (pUI && pUI->chat()) {
+        pUI->chat()->keyboardEvent(input);
+    }
     hide();
     pEnv->ReleaseByteArrayElements(str, elements, JNI_ABORT);
+    free(buffer);
 }
 
 void Keyboard::activateEvent(bool active)

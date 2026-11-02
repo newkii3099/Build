@@ -149,8 +149,8 @@ public class CustomKeyboard {
             params.width = (int) (dm.widthPixels * 0.46f);
             params.leftMargin = (int) (dm.widthPixels * 0.16f);
 
-            // Default top: directly below the chatbox (top 2% + chat height 40% = 42%)
-            int defaultTop = (int) (dm.heightPixels * 0.42f) + (int) (dm.density * 4);
+            // Default top: directly below the chatbox and tabs (~46% screen height)
+            int defaultTop = (int) (dm.heightPixels * 0.46f) + (int) (dm.density * 4);
             int inputHeight = mInputLayout.getHeight() > 0 ? mInputLayout.getHeight() : (int) (dm.density * 46);
 
             if (keyboardHeight > 0) {
