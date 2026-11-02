@@ -19,97 +19,60 @@ void CWidgetGta::SetEnabled(bool bEnabled) {
 }
 
 void updateWidgetVisibility(CWidgetGta* widget, bool shouldShow) {
-    if (widget) {
-        if (shouldShow) {
-            if (widget->m_fOriginY < 0) {
-                widget->m_fOriginY += 10000.0f;
-            }
-        } else {
-            if (widget->m_fOriginY >= 0) {
-                widget->m_fOriginY -= 10000.0f;
-            }
-        }
+    // Disabled destructive coordinate shifting (+/- 10000.0f) which caused disappearing buttons
+    if (widget && widget->m_fOriginY < -5000.0f) {
+        widget->m_fOriginY += 10000.0f; // Heal any previously shifted buttons
     }
 }
 
 bool (*CWidget__IsTouched)(uintptr_t *thiz, CVector2D *pVecOut);
 bool CWidget__IsTouched_hook(uintptr_t *thiz, CVector2D *pVecOut) {
-//    if(*thiz == CWidgetGta::pWidgets[WIDGET_POSITION_HORN]) {
-//        return true;
-//    }
-//    if(!CHUD::bIsShow)
-//        return false;
-
-
     return CWidget__IsTouched(thiz, pVecOut);
 }
 
 void (*CWidgetButton__Update)(CWidgetButton* thiz);
 void CWidgetButton__Update_hook(CWidgetButton* thiz) {
-    CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_RADAR]->m_fTapHoldTime = 1.0;
-    CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_PHONE]->m_bEnabled = false; // voice
+    if (CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_RADAR]) {
+        CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_RADAR]->m_fTapHoldTime = 1.0;
+    }
+    if (CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_PHONE]) {
+        CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_PHONE]->m_bEnabled = false; // voice
+    }
 
+    // Auto-heal any button coordinates that were corrupted by the old -10000 offset
+    if (thiz && thiz->m_fOriginY < -5000.0f) {
+        thiz->m_fOriginY += 10000.0f;
+    }
 
     if(pNetGame) {
         CPlayerPed *pPlayerPed = pGame->FindPlayerPed();
         if (pPlayerPed) {
-            bool bSwimming = pPlayerPed->m_pPed->physicalFlags.bSubmergedInWater;
-            bool isInVehicle = pPlayerPed->m_pPed->IsInVehicle();
             bool isDriver = pPlayerPed->m_pPed->IsADriver();
             const auto pVehicle = pPlayerPed->GetCurrentVehicle();
-            bool isEngine = false;
-            bool enableshoot = false;
-            if (pVehicle) {
-                isEngine = pVehicle->m_bIsEngineOn;
-
-                if ((pPlayerPed->GetCurrentWeapon() == WEAPON_MP5 ||pPlayerPed->GetCurrentWeapon() == WEAPON_MICRO_UZI)
-                        &&
-                        (pVehicle->GetVehicleSubtype() == VEHICLE_SUBTYPE_BIKE || pVehicle->GetVehicleSubtype() == VEHICLE_SUBTYPE_PUSHBIKE) &&
-                        isDriver
-                        )
-                {
-                    enableshoot = true;
+            if (pVehicle && isDriver &&
+                (pPlayerPed->GetCurrentWeapon() == WEAPON_MP5 || pPlayerPed->GetCurrentWeapon() == WEAPON_MICRO_UZI) &&
+                (pVehicle->GetVehicleSubtype() == VEHICLE_SUBTYPE_BIKE || pVehicle->GetVehicleSubtype() == VEHICLE_SUBTYPE_PUSHBIKE))
+            {
+                if (CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_RIGHT])
                     CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_RIGHT]->m_bEnabled = true;
+                if (CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_LEFT])
                     CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_LEFT]->m_bEnabled = true;
-                }else{
-                    enableshoot = false;
-                    CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_RIGHT]->m_bEnabled = false;
-                    CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_LEFT]->m_bEnabled = false;
-                }
-
-            }else{
-                CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_RIGHT]->m_bEnabled = false;
-                CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_LEFT]->m_bEnabled = false;
             }
-
-
-
-            //updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_RIGHT], enableshoot);
-
-           // updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_SHOOT_LEFT], enableshoot);
-
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_BUTTON_SWIM], bSwimming);
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_BUTTON_DIVE], bSwimming);
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_SPRINT], (bSwimming || isInVehicle) ? false : true);
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_PED_MOVE], isInVehicle ? false : true);
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_ACCELERATE], (!bSwimming && isDriver && isEngine) ? true : false);
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_BRAKE], (!bSwimming && isDriver && isEngine) ? true : false);
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_HANDBRAKE], (!bSwimming && isDriver && isEngine) ? true : false);
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_VEHICLE_STEER_ANALOG], (!bSwimming && isDriver && isEngine) ? true : false);
-            updateWidgetVisibility(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_HORN], (!bSwimming && isDriver && isEngine) ? true : false);
         }
 
-        if(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_ENTER_CAR]->IsTouched(nullptr))
+        if(CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_ENTER_CAR] &&
+           CTouchInterface::m_pWidgets[WidgetIDs::WIDGET_ENTER_CAR]->IsTouched(nullptr))
         {
             if (bNeedEnterVehicleDriver == false) {
                 CPlayerPed *pPlayerPed = pGame->FindPlayerPed();
-                if (!pPlayerPed->IsInVehicle()) {
-                    bNeedEnterVehicleDriver = true;
-                }else{
-                    pPlayerPed->ExitCurrentVehicle();
+                if (pPlayerPed) {
+                    if (!pPlayerPed->IsInVehicle()) {
+                        bNeedEnterVehicleDriver = true;
+                    } else {
+                        pPlayerPed->ExitCurrentVehicle();
+                    }
                 }
             }
-
         }
     }
 

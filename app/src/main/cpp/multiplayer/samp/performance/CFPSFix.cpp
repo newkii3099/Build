@@ -78,16 +78,7 @@ void CFPSFix::Init(uint8_t targetFPS)
     SetTargetFPS(targetFPS);
     ApplyFPSPatch(GetTargetFPS());
     ResetFrameClock();
-    PushThread(gettid());
-    ApplyAffinityToAllThreads();
-
-    bool expected = false;
-    if (m_Initialized.compare_exchange_strong(expected, true))
-    {
-        m_Running.store(true);
-        m_Worker = std::thread(&CFPSFix::Routine, this);
-        m_Worker.detach();
-    }
+    m_Initialized.store(true);
 }
 
 void CFPSFix::Shutdown()
@@ -171,62 +162,32 @@ void CFPSFix::ProcessFrame()
 
     auto targetTime = m_LastFrameTime + targetFrameTime;
 
-    // If the game was paused or the current frame is already late, do not sleep.
-    // Reset the clock so the limiter does not keep chasing old frame times.
     if (now >= targetTime)
     {
         if (now - m_LastFrameTime > MAX_FRAME_RESET_DELTA)
             m_LastFrameTime = now;
         else
-            m_LastFrameTime = now;
+            m_LastFrameTime = targetTime;
         return;
     }
 
     auto remaining = targetTime - now;
-    if (remaining > SLEEP_GUARD)
-        std::this_thread::sleep_for(remaining - SLEEP_GUARD);
+    if (remaining > std::chrono::milliseconds(1))
+    {
+        std::this_thread::sleep_for(remaining);
+    }
 
-    // Small yield loop for better frame pacing on Android where sleep can overshoot.
-    while (std::chrono::steady_clock::now() < targetTime)
-        std::this_thread::yield();
-
-    m_LastFrameTime = targetTime;
+    m_LastFrameTime = std::chrono::steady_clock::now();
 }
 
 void CFPSFix::ApplyAffinityToAllThreads()
 {
-    std::vector<pid_t> tids;
-
-    if (DIR* dir = opendir("/proc/self/task"))
-    {
-        while (dirent* entry = readdir(dir))
-        {
-            pid_t tid = 0;
-            if (ParseThreadId(entry->d_name, tid))
-                tids.push_back(tid);
-        }
-        closedir(dir);
-    }
-
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-        tids.insert(tids.end(), m_Threads.begin(), m_Threads.end());
-    }
-
-    std::sort(tids.begin(), tids.end());
-    tids.erase(std::unique(tids.begin(), tids.end()), tids.end());
-
-    for (pid_t tid : tids)
-        SetThreadAffinityMask(tid, CPU_AFFINITY_MASK_ALL);
+    // No-op: Let Android OS Energy-Aware Scheduler handle thread placement
 }
 
 void CFPSFix::Routine()
 {
-    while (m_Running.load())
-    {
-        ApplyAffinityToAllThreads();
-        std::this_thread::sleep_for(THREAD_SCAN_INTERVAL);
-    }
+    // No-op
 }
 
 void CFPSFix::PushThread(pid_t tid)

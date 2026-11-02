@@ -19,7 +19,7 @@
 	
     <TextView 
 		android:textSize="@dimen/_8sdp"
-		android:textColor="#0F172A" 
+		android:textColor="#F8FAFC" 
 		android:id="@+id/item_field1"
 		android:paddingTop="@dimen/_3sdp"
 		android:paddingBottom="@dimen/_3sdp"
@@ -37,7 +37,7 @@
 	
     <TextView 
 		android:textSize="@dimen/_8sdp"
-		android:textColor="#0F172A" 
+		android:textColor="#F8FAFC" 
 		android:id="@+id/item_field2"
 		android:paddingTop="@dimen/_3sdp"
 		android:paddingBottom="@dimen/_3sdp"
@@ -54,7 +54,7 @@
 	
     <TextView 
 		android:textSize="@dimen/_8sdp"
-		android:textColor="#0F172A" 
+		android:textColor="#F8FAFC" 
 		android:id="@+id/item_field3"
 		android:paddingTop="@dimen/_3sdp"
 		android:paddingBottom="@dimen/_3sdp"
@@ -71,7 +71,7 @@
 	
     <TextView 
 		android:textSize="@dimen/_8sdp"
-		android:textColor="#0F172A" 
+		android:textColor="#F8FAFC" 
 		android:id="@+id/item_field4"
 		android:paddingTop="@dimen/_3sdp"
 		android:paddingBottom="@dimen/_3sdp"

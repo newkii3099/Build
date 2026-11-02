@@ -1770,7 +1770,10 @@ void ApplyGlobalPatches()
     CHook::RET("_ZN7CDarkel27FindTotalPedsKilledByPlayerEi"); // CDarkel__FindTotalPedsKilledByPlayer_hook
     CHook::RET("_ZN7CDarkel20RegisterKillByPlayerEPK4CPed11eWeaponTypebi"); // CDarkel__RegisterKillByPlayer_hook
 
-    CHook::NOP(g_libGTASA + 0x555A08, 1);	// CStreaming::ms_memoryAvailable = (int)v24
+    // Boost CStreaming::ms_memoryAvailable from default 50MB to 1024MB (1GB) for smooth map & object loading
+    CHook::WriteMemory(g_libGTASA + 0x5559D8, "\x08\x00\xA8\x52", 4); // mov w8, #0x40000000
+    CHook::WriteMemory(g_libGTASA + 0x5559DC, "\x09\x00\xA8\x52", 4); // mov w9, #0x40000000
+    *(uint32_t*)(g_libGTASA + 0x878540) = 0x40000000; // 1024 MB
 
 
      CHook::NOP(g_libGTASA + 0x5B7C20, 1);  // CCamera::ClearPlayerWeaponMode from CPlayerPed::ClearWeaponTarget

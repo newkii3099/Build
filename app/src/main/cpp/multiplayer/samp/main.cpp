@@ -533,17 +533,6 @@ uint32_t GetTickCount()
 void FLog(const char* fmt, ...)
 {
 	char buffer[0xFF];
-	static FILE* flLog = nullptr;
-	const char* pszStorage = g_pszStorage;
-
-
-	if (flLog == nullptr && pszStorage != nullptr)
-	{
-		snprintf(buffer, sizeof(buffer), "%s", BuildStoragePath("samp_log.txt").c_str());
-		//LOGI("buffer: %s", buffer);
-		flLog = fopen(buffer, "a");
-	}
-
 	memset(buffer, 0, sizeof(buffer));
 
 	va_list arg;
@@ -552,12 +541,6 @@ void FLog(const char* fmt, ...)
 	va_end(arg);
 
 	LOGI("%s", buffer);
-	//firebase::crashlytics::Log(buffer);
-
-	if (flLog == nullptr) return;
-	fprintf(flLog, "%s\n", buffer);
-	fflush(flLog);
-
 	return;
 }
 
@@ -583,8 +566,6 @@ void ChatLog(const char* fmt, ...)
 
 	if (flLog == nullptr) return;
 	fprintf(flLog, "%s\n", buffer);
-	fflush(flLog);
-
 	return;
 }
 
@@ -611,8 +592,6 @@ void MyLog(const char* fmt, ...)
 
 	if (flLog == nullptr) return;
 	fprintf(flLog, "%s\n", buffer);
-	fflush(flLog);
-
 	return;
 }
 
@@ -668,7 +647,5 @@ void LogVoice(const char* fmt, ...)
 
 	if (flLog == nullptr) return;
 	fprintf(flLog, "%s\n", buffer);
-	fflush(flLog);
-
 	return;
 }

@@ -1479,89 +1479,59 @@ char lastFile[1024];
 
 stFile* NvFOpen(const char *r1)
 {
-    LOGI("NvFOpen %s", r1);
     if (r1 == nullptr) return nullptr;
     strncpy(lastFile, r1, sizeof(lastFile) - 1);
     lastFile[sizeof(lastFile) - 1] = '\0';
 
     char path[1024]{};
 
-    if (strstr(r1, "emulated") != NULL)
+    // 1. If absolute path, try it directly
+    if (r1[0] == '/' || strstr(r1, "emulated") != nullptr)
     {
-        // text contains "emulated"
         snprintf(path, sizeof(path), "%s", r1);
     }
-    else {
-
+    else
+    {
+        // 2. Primary: Check exact path in game storage (allows custom data/gta.dat, models, maps to take effect)
         snprintf(path, sizeof(path), "%s%s", g_pszStorage, r1);
     }
 
-    if(!strncmp(r1, "data/script/mainv1.scm", 22))
+    FILE *f = fopen(path, "rb");
+
+    // 3. Fallback: If not found in primary path, check SAMP/ folder overrides
+    if (!f && r1[0] != '/')
     {
-        snprintf(path, sizeof(path), "%sSAMP/main.scm", g_pszStorage);
-        FLog("Loading mainv1", path);
-        FLog("Loading %s", path);
-    }
-    // ----------------------------
-    if(!strncmp(r1, "data/script/scriptv1.img", 24))
-    {
-        snprintf(path, sizeof(path), "%sSAMP/script.img", g_pszStorage);
-        FLog("Loading script.img..");
-        FLog("Loading %s", path);
-    }
-    // ----------------------------
-    if(!strncmp(r1, "data/peds.ide", 13))
-    {
-        snprintf(path, sizeof(path), "%sSAMP/peds.ide", g_pszStorage);
-        FLog("Loading peds.ide..");
-        FLog("Loading %s", path);
-    }
-    // ----------------------------
-    if(!strncmp(r1, "data/vehicles.ide", 17))
-    {
-        snprintf(path, sizeof(path), "%sSAMP/vehicles.ide", g_pszStorage);
-        FLog("Loading vehicles.ide..");
-        FLog("Loading %s", path);
+        char sampPath[1024]{};
+        if (!strncmp(r1, "data/script/mainv1.scm", 22) || !strncmp(r1, "data/script/main.scm", 20)) {
+            snprintf(sampPath, sizeof(sampPath), "%sSAMP/main.scm", g_pszStorage);
+        } else if (!strncmp(r1, "data/script/scriptv1.img", 24) || !strncmp(r1, "data/script/script.img", 22)) {
+            snprintf(sampPath, sizeof(sampPath), "%sSAMP/script.img", g_pszStorage);
+        } else if (!strncmp(r1, "data/peds.ide", 13)) {
+            snprintf(sampPath, sizeof(sampPath), "%sSAMP/peds.ide", g_pszStorage);
+        } else if (!strncmp(r1, "data/vehicles.ide", 17)) {
+            snprintf(sampPath, sizeof(sampPath), "%sSAMP/vehicles.ide", g_pszStorage);
+        } else if (!strncmp(r1, "data/gta.dat", 12)) {
+            snprintf(sampPath, sizeof(sampPath), "%sSAMP/gta.dat", g_pszStorage);
+        } else if (!strncmp(r1, "data/handling.cfg", 17)) {
+            snprintf(sampPath, sizeof(sampPath), "%sSAMP/handling.cfg", g_pszStorage);
+        } else if (!strncmp(r1, "data/weapon.dat", 15)) {
+            snprintf(sampPath, sizeof(sampPath), "%sSAMP/weapon.dat", g_pszStorage);
+        }
+
+        if (sampPath[0] != '\0') {
+            f = fopen(sampPath, "rb");
+        }
     }
 
-    if (!strncmp(r1, "data/gta.dat", 12))
+    if (f)
     {
-        snprintf(path, sizeof(path), "%sSAMP/gta.dat", g_pszStorage);
-        FLog("Loading gta.dat..");
-        FLog("Loading %s", path);
-    }
-
-    if (!strncmp(r1, "data/handling.cfg", 17))
-    {
-        snprintf(path, sizeof(path), "%sSAMP/handling.cfg", g_pszStorage);
-        FLog("Loading handling.cfg..");
-        FLog("Loading %s", path);
-    }
-
-    if (!strncmp(r1, "data/weapon.dat", 15))
-    {
-        snprintf(path, sizeof(path), "%sSAMP/weapon.dat", g_pszStorage);
-        FLog("Loading weapon.dat..");
-        FLog("Loading %s", path);
-    }
-
-    auto *st = (stFile*)malloc(sizeof(stFile));
-    st->isFileExist = false;
-
-    FILE *f  = fopen(path, "rb");
-
-    if(f)
-    {
+        auto *st = (stFile*)malloc(sizeof(stFile));
         st->isFileExist = true;
         st->f = f;
         return st;
     }
-    else
-    {
-        FLog("NVFOpen hook | Error: file not found (%s)", path);
-        free(st);
-        return nullptr;
-    }
+
+    return nullptr;
 }
 
 bool g_bPlaySAMP = false;
