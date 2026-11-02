@@ -633,6 +633,18 @@ void Chat::keyboardEvent(const std::string& input)
 
 bool Chat::commandClient(const std::string& command)
 {
+    if (command == "/dev" || command == "/editor" || command == "/devedit")
+    {
+        // หากเปิดอยู่แล้ว ให้คำสั่งปิดได้ทันที
+        if (pUI && pUI->deveditor() && pUI->deveditor()->visible())
+        {
+            pUI->deveditor()->toggle();
+            return true;
+        }
+        // หากยังไม่ได้เปิด ให้ส่งคำสั่งไปตรวจสิทธิ์แอดมินระดับ 129+ ที่เซิร์ฟเวอร์ก่อน
+        return false;
+    }
+
     if (command == "/chat")
     {
         if (pChat) pChat->toggleVisibility();
