@@ -38,7 +38,6 @@ RwTexture* CUtil::LoadTextureFromDB(const char* dbname, const char* texture)
     auto tex = CUtil::GetTexture(texture);
     if(!tex)
     {
-        FLog("Error: Texture (%s) not found in database (%s)", dbname, texture);
         return nullptr;
     }
 

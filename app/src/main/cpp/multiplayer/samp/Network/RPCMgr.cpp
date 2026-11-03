@@ -938,8 +938,6 @@ void UpdateScoresPingsIPs(RPCParameters *rpcParams)
 		bsData.Read(iPlayerScore);
 		bsData.Read(iPlayerPing);
 
-		FLog("RPC_PINGIP: (%d): score: %d, ping: %d", playerId, iPlayerScore, iPlayerPing);
-
 		pPlayerPool->UpdatePlayerScore(playerId, iPlayerScore);
 		pPlayerPool->UpdatePlayerPing(playerId, iPlayerPing);
 	}

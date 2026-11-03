@@ -246,25 +246,19 @@ bool CPlayerPed::IsDead()
 // 0.3.7
 void CPlayerPed::TogglePlayerControllable(bool bControllable)
 {
-    FLog("TogglePlayerControllable");
     if (!m_pPed) return;
-    FLog("TogglePlayerControllable2");
     if(!m_dwGTAId)return;
-    FLog("TogglePlayerControllable3");
     if (!IsValidGamePed(m_pPed) || !GamePool_Ped_GetAt(m_dwGTAId)) {
         return;
     }
-    FLog("TogglePlayerControllable4");
     //CHUD::bIsDisableControll = !bToggle;
     if(!bControllable)
     {
-        FLog("TogglePlayerControllable5");
         ScriptCommand(&toggle_player_controllable, m_bytePlayerNumber, 0);
         ScriptCommand(&lock_actor, m_dwGTAId, 1);
     }
     else if(bControllable)
     {
-        FLog("TogglePlayerControllable6");
         ScriptCommand(&toggle_player_controllable, m_bytePlayerNumber, 1);
         ScriptCommand(&lock_actor, m_dwGTAId, 0);
     }

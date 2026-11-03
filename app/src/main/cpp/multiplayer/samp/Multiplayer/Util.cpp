@@ -2003,12 +2003,10 @@ uintptr_t LoadTexture(const char* texname)
     {
         uintptr_t texture = (uintptr_t)CUtil::LoadTextureFromDB(texdb[i], texname);
         if (texture != 0) {
-            FLog("Texture: %s loaded from %s", texname, texdb[i]);
             return texture;
         }
     }
 
-    FLog("Texture: %s not found!", texname);
     return 0;
 }
 

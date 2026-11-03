@@ -167,18 +167,19 @@ void handler(int signum, siginfo_t *info, void* contextPtr)
 {
 	ucontext* context = (ucontext_t*)contextPtr;
 
-	if (act_old.sa_sigaction)
-	{
-		act_old.sa_sigaction(signum, info, contextPtr);
-	}
-
 	if(info->si_signo == SIGSEGV)
 	{
-		FLog("SIGSEGV | Fault address: 0x%x", info->si_addr);
+		FLog("SIGSEGV | Fault address: 0x%lx", (uintptr_t)info->si_addr);
 
 		PRINT_CRASH_STATES(context);
 
 		CStackTrace::printBacktrace();
+		if (flLog) fflush(flLog);
+	}
+
+	if (act_old.sa_sigaction)
+	{
+		act_old.sa_sigaction(signum, info, contextPtr);
 	}
 
 	return;
@@ -188,18 +189,19 @@ void handler1(int signum, siginfo_t *info, void* contextPtr)
 {
 	ucontext* context = (ucontext_t*)contextPtr;
 
-	if (act1_old.sa_sigaction)
-	{
-		act1_old.sa_sigaction(signum, info, contextPtr);
-	}
-
 	if(info->si_signo == SIGABRT)
 	{
-		FLog("SIGABRT | Fault address: 0x%x", info->si_addr);
+		FLog("SIGABRT | Fault address: 0x%lx", (uintptr_t)info->si_addr);
 
 		PRINT_CRASH_STATES(context);
 
 		CStackTrace::printBacktrace();
+		if (flLog) fflush(flLog);
+	}
+
+	if (act1_old.sa_sigaction)
+	{
+		act1_old.sa_sigaction(signum, info, contextPtr);
 	}
 
 	return;
@@ -209,18 +211,19 @@ void handler2(int signum, siginfo_t *info, void* contextPtr)
 {
 	ucontext* context = (ucontext_t*)contextPtr;
 
-	if (act2_old.sa_sigaction)
-	{
-		act2_old.sa_sigaction(signum, info, contextPtr);
-	}
-
 	if(info->si_signo == SIGFPE)
 	{
-		FLog("SIGFPE | Fault address: 0x%x", info->si_addr);
+		FLog("SIGFPE | Fault address: 0x%lx", (uintptr_t)info->si_addr);
 
 		PRINT_CRASH_STATES(context);
 
 		CStackTrace::printBacktrace();
+		if (flLog) fflush(flLog);
+	}
+
+	if (act2_old.sa_sigaction)
+	{
+		act2_old.sa_sigaction(signum, info, contextPtr);
 	}
 
 	return;
@@ -230,18 +233,19 @@ void handler3(int signum, siginfo_t *info, void* contextPtr)
 {
 	ucontext* context = (ucontext_t*)contextPtr;
 
-	if (act3_old.sa_sigaction)
-	{
-		act3_old.sa_sigaction(signum, info, contextPtr);
-	}
-
 	if(info->si_signo == SIGBUS)
 	{
-		FLog("SIGBUS | Fault address: 0x%x", info->si_addr);
+		FLog("SIGBUS | Fault address: 0x%lx", (uintptr_t)info->si_addr);
 
 		PRINT_CRASH_STATES(context);
 
 		CStackTrace::printBacktrace();
+		if (flLog) fflush(flLog);
+	}
+
+	if (act3_old.sa_sigaction)
+	{
+		act3_old.sa_sigaction(signum, info, contextPtr);
 	}
 
 	return;

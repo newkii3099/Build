@@ -571,8 +571,6 @@ uint32_t CWeapon__ProcessLineOfSight_hook(CVector *vecOrigin, CVector *vecEnd, C
     uintptr_t dwRetAddr = 0;
     GET_LR(dwRetAddr);
 
-    FLog("dwRetAddr CWeapon__ProcessLineOfSight_hook 0x%llx", dwRetAddr);
-
     if(dwRetAddr >= 0x6FA408 && dwRetAddr <= 0x6FAE44)
     g_bForceWorldProcessLineOfSight = true;
 
@@ -2089,7 +2087,6 @@ int GetMeshPriority_hook(RpMesh const* rpMesh)
 int (*CUpsideDownCarCheck__IsCarUpsideDown)(int thiz, uintptr_t a2);
 int CUpsideDownCarCheck__IsCarUpsideDown_hook(int thiz, uintptr_t a2)
 {
-    FLog("[MISC] CUpsideDownCarCheck__IsCarUpsideDown_hook");
     if(*(uintptr_t*)(a2 + 18))
         return CUpsideDownCarCheck__IsCarUpsideDown(thiz, a2);
 

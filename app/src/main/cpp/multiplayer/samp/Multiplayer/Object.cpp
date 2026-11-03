@@ -355,8 +355,6 @@ float CObject::DistanceRemaining(RwMatrix* matPos)
 
 void CObject::SetMaterial(int iModel, int iMaterialIndex, char* txdname, char* texturename, uint32_t dwColor)
 {
-	FLog("SetMaterial: model: %d, %s, %s", iModel, txdname, texturename);
-
 	int iTryCount = 0;
 
 	if (iMaterialIndex < 16)
