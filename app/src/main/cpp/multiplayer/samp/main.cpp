@@ -161,6 +161,8 @@ struct sigaction act1_old;
 struct sigaction act2_old;
 struct sigaction act3_old;
 
+FILE* g_flLog = nullptr;
+
 extern int g_iLastProcessedSkinCollision, g_iLastProcessedEntityCollision, g_iLastRenderedObject;
 extern uintptr_t g_dwLastRetAddrCrash;
 void handler(int signum, siginfo_t *info, void* contextPtr)
@@ -174,7 +176,7 @@ void handler(int signum, siginfo_t *info, void* contextPtr)
 		PRINT_CRASH_STATES(context);
 
 		CStackTrace::printBacktrace();
-		if (flLog) fflush(flLog);
+		if (g_flLog) fflush(g_flLog);
 	}
 
 	if (act_old.sa_sigaction)
@@ -196,7 +198,7 @@ void handler1(int signum, siginfo_t *info, void* contextPtr)
 		PRINT_CRASH_STATES(context);
 
 		CStackTrace::printBacktrace();
-		if (flLog) fflush(flLog);
+		if (g_flLog) fflush(g_flLog);
 	}
 
 	if (act1_old.sa_sigaction)
@@ -218,7 +220,7 @@ void handler2(int signum, siginfo_t *info, void* contextPtr)
 		PRINT_CRASH_STATES(context);
 
 		CStackTrace::printBacktrace();
-		if (flLog) fflush(flLog);
+		if (g_flLog) fflush(g_flLog);
 	}
 
 	if (act2_old.sa_sigaction)
@@ -240,7 +242,7 @@ void handler3(int signum, siginfo_t *info, void* contextPtr)
 		PRINT_CRASH_STATES(context);
 
 		CStackTrace::printBacktrace();
-		if (flLog) fflush(flLog);
+		if (g_flLog) fflush(g_flLog);
 	}
 
 	if (act3_old.sa_sigaction)
@@ -546,15 +548,15 @@ void FLog(const char* fmt, ...)
 
 	LOGI("%s", buffer);
 
-	static FILE* flLog = nullptr;
-	if (flLog == nullptr && g_pszStorage != nullptr)
+	if (g_flLog == nullptr && g_pszStorage != nullptr)
 	{
 		std::string logPath = BuildStoragePath("samp_log.txt");
-		flLog = fopen(logPath.c_str(), "a");
+		g_flLog = fopen(logPath.c_str(), "a");
 	}
-	if (flLog != nullptr)
+	if (g_flLog != nullptr)
 	{
-		fprintf(flLog, "%s\n", buffer);
+		fprintf(g_flLog, "%s\n", buffer);
+		fflush(g_flLog);
 	}
 	return;
 }
