@@ -23,8 +23,8 @@ android {
         applicationId "com.kurdish.roleplay"
         minSdk 28
         targetSdk 36
-        versionCode 4234656
-        versionName "2.11.326"
+        versionCode 4234657
+        versionName "2.11.327"
 
         multiDexEnabled true
 
@@ -65,7 +65,7 @@ android {
             excludes += ['META-INF/*']
         }
         resources {
-            excludes += ['META-INF/*']
+            excludes += ['META-INF/*', 'assets/dexopt/**', 'assets/dexopt/*']
         }
     }
 
