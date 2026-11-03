@@ -1,4 +1,4 @@
-name: Build SAMP Mobile 2.11.325 APK
+name: Build SAMP Mobile Release APK
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   build:
-    name: Build Debug APK
+    name: Build Release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -30,31 +30,67 @@ jobs:
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-36" "ndk;26.2.11394342" "cmake;3.22.1"
 
+      - name: Extract Project Version
+        id: get_version
+        run: |
+          VERSION_NAME=$(grep -E '^\s*versionName\s+' app/build.gradle | head -n1 | sed -E 's/.*"([^"]+)".*/\1/')
+          VERSION_CODE=$(grep -E '^\s*versionCode\s+' app/build.gradle | head -n1 | awk '{print $2}')
+          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+          echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
+          echo "Building Version: $VERSION_NAME ($VERSION_CODE)"
+
+      - name: Setup Keystore from Secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::KEYSTORE_BASE64 secret is not set! Please add KEYSTORE_BASE64 to GitHub Secrets."
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > app/release.jks
+          echo "KEYSTORE_FILE=release.jks" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
+          echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
+
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
 
-      - name: Rename APK for Clarity
+      - name: Prepare Artifacts
         run: |
           mkdir -p release-artifacts
-          cp app/build/outputs/apk/debug/*.apk release-artifacts/SAMP-Mobile-2.11.325-4king.apk || cp app/build/outputs/apk/debug/*.apk release-artifacts/ || true
+          cp app/build/outputs/apk/release/*.apk release-artifacts/launcher-v${{ env.VERSION_NAME }}.apk || cp app/build/outputs/apk/release/*.apk release-artifacts/ || true
 
-      - name: Upload Debug APK
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: SAMP-Mobile-2.11.325-Debug-APK
+          name: launcher-v${{ env.VERSION_NAME }}
           path: release-artifacts/*.apk
           retention-days: 30
+
+      - name: Upload Native Debug Symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: symbols-v${{ env.VERSION_NAME }}
+          path: app/build/outputs/native-debug-symbols/release/*.zip
+          retention-days: 30
+          if-no-files-found: warn
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          name: "SAMP Mobile v2.11.325 (4King Native UI Edition)"
+          name: "SAMP Mobile v${{ env.VERSION_NAME }}"
           body: |
-            ### 🚀 SAMP Mobile 2.11.325
-            - **Server IP**: `82.26.104.84:7777`
-            - **Native Server-side UI**: Cleaned client ImGui overlay in favor of Pawno native Dialogs & GTA SA in-game objects/textdraws.
-          files: release-artifacts/*.apk
+            ### 🚀 SAMP Mobile Release v${{ env.VERSION_NAME }}
+            - Build Type: Release (-O3, -DNDEBUG, non-debuggable)
+            - Native symbols archived separately
+          files: |
+            release-artifacts/*.apk
+            app/build/outputs/native-debug-symbols/release/*.zip

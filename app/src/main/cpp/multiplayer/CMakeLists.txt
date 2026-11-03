@@ -76,4 +76,8 @@ target_compile_options(samp PRIVATE
         $<$<CONFIG:Release>:-fvisibility=hidden>
 )
 
+target_compile_definitions(samp PRIVATE
+        $<$<CONFIG:Release>:NDEBUG>
+)
+
 target_link_options(samp PRIVATE "-Wl,-z,max-page-size=16384")
