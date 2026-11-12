@@ -1952,6 +1952,38 @@ int CTextureDatabaseRuntime__GetEntry_hook(TextureDatabaseRuntime *a1, const cha
         result = -1;
     return result;
 }
+void (*TextureDatabaseRuntime__SortEntries_orig)(uintptr_t thiz, bool a2) = nullptr;
+void TextureDatabaseRuntime__SortEntries_hook(uintptr_t thiz, bool a2) {
+    if (!thiz) return;
+    uint32_t format = *reinterpret_cast<uint32_t*>(thiz + 0xa0);
+    if (format <= 5) {
+        uintptr_t thumbsElement = thiz + 0x38 + (format * 16);
+        void* dataPtr = *reinterpret_cast<void**>(thumbsElement + 8);
+        uint32_t numEntries = *reinterpret_cast<uint32_t*>(thumbsElement + 4);
+        if (!dataPtr || numEntries == 0) {
+            FLog("[AntiCrash] Prevented crash in SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u)", format, dataPtr, numEntries);
+            return;
+        }
+    }
+    if (TextureDatabaseRuntime__SortEntries_orig) {
+        TextureDatabaseRuntime__SortEntries_orig(thiz, a2);
+    }
+}
+
+TextureDatabaseRuntime* (*TextureDatabaseRuntime__Load_orig)(const char *withName, bool fullyLoad, TextureDatabaseFormat forcedFormat) = nullptr;
+TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, bool fullyLoad, TextureDatabaseFormat forcedFormat) {
+    if (withName) {
+        if (strcmp(withName, "cutscene") == 0) {
+            FLog("[AntiCrash] Skipping non-existent cutscene database");
+            return nullptr;
+        }
+    }
+    if (TextureDatabaseRuntime__Load_orig) {
+        return TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
+    }
+    return nullptr;
+}
+
 void InstallCrashFixHooks()
 {
     // some crashfixes
@@ -1974,15 +2006,22 @@ void InstallCrashFixHooks()
     //more crashfix
     CHook::InlineHook(g_libGTASA + 0x496798, &TidyUpModelInfo2_hook, &TidyUpModelInfo2_orig);
 
-
+    // AntiCrash: Guard TextureDatabaseRuntime against null thumbnails (Pixel 8 / Mali fix)
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
 }
+
 void InitGui();
 bool (*CGame__InitialiseRenderWare)();
 bool CGame__InitialiseRenderWare_hook() {
     FLog("Loading SAMP texture database..");
-    CGame__InitialiseRenderWare();
+    if (CGame__InitialiseRenderWare) {
+        CGame__InitialiseRenderWare();
+    }
 
-    TextureDatabaseRuntime::Load("samp", false, TextureDatabaseFormat::DF_Default);
+    if (!TextureDatabaseRuntime::GetDatabase("samp")) {
+        TextureDatabaseRuntime::Load("samp", false, TextureDatabaseFormat::DF_Default);
+    }
 
     InitGui();
     return true;
