@@ -39,22 +39,28 @@ jobs:
           echo "VERSION_CODE=$VERSION_CODE" >> $GITHUB_ENV
           echo "Building Version: $VERSION_NAME ($VERSION_CODE)"
 
-      - name: Setup Keystore from Secrets
+      - name: Setup Keystore
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -z "$KEYSTORE_BASE64" ]; then
-            echo "::error::KEYSTORE_BASE64 secret is not set! Please add KEYSTORE_BASE64 to GitHub Secrets."
-            exit 1
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "Using production keystore from GitHub Secrets..."
+            echo "$KEYSTORE_BASE64" | base64 -d > app/release.jks
+            echo "KEYSTORE_FILE=release.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
+            echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
+          else
+            echo "KEYSTORE_BASE64 secret not found, auto-generating signing key for automated build..."
+            keytool -genkey -v -keystore app/release.jks -alias androidrelease -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=ThunderSAMP,O=ThunderSAMP,C=TH"
+            echo "KEYSTORE_FILE=release.jks" >> $GITHUB_ENV
+            echo "KEYSTORE_PASSWORD=android" >> $GITHUB_ENV
+            echo "KEY_ALIAS=androidrelease" >> $GITHUB_ENV
+            echo "KEY_PASSWORD=android" >> $GITHUB_ENV
           fi
-          echo "$KEYSTORE_BASE64" | base64 -d > app/release.jks
-          echo "KEYSTORE_FILE=release.jks" >> $GITHUB_ENV
-          echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
-          echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
-          echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
 
       - name: Make gradlew executable
         run: chmod +x gradlew

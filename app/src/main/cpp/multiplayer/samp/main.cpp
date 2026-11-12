@@ -34,7 +34,7 @@ Peerapol Unarak
 JavaVM* javaVM;
 
 
-static std::string g_storagePath = "/storage/emulated/0/Android/media/com.kurdish.roleplay/";
+static std::string g_storagePath = "/storage/emulated/0/Android/data/com.thundersamp.online/files/";
 char* g_pszStorage = const_cast<char*>(g_storagePath.c_str());
 
 UI* pUI = nullptr;
