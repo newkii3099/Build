@@ -20,7 +20,7 @@ android {
     namespace 'com.kurdish.roleplay'
 
     defaultConfig {
-        applicationId "com.thundersamp.online"
+        applicationId "com.kurdish.roleplay"
         minSdk 28
         targetSdk 36
         versionCode 4234658
