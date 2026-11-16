@@ -171,7 +171,7 @@ public class UpdateActivity extends AppCompatActivity{
 
                 boolean autoLaunch = getIntent().getBooleanExtra("autoLaunchAfter", false);
                 if (autoLaunch) {
-                    Intent intent = new Intent(UpdateActivity.this, com.rockstargames.gtasa.SAMP.class);
+                    Intent intent = new Intent(UpdateActivity.this, com.kurdish.roleplay.game.SAMP.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                 } else {
