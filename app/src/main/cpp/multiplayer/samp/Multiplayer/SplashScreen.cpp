@@ -3,21 +3,17 @@
 
 SplashScreen::SplashScreen()
 {
-	int x = rand() % 2;
-	switch (x)
-	{
-		case 0:
-			m_logo = new Image("menu", "menu_adjback");
-			break;
-
-		case 1:
-			m_logo = new Image("menu", "menu_adjback2");
-			break;
+	// Load logo from samp database (mylogo or defaultlogo)
+	m_logo = new Image("samp", "mylogo");
+	if (!m_logo || !m_logo->m_texture) {
+		if (m_logo) delete m_logo;
+		m_logo = new Image("samp", "defaultlogo");
+	}
+	if (!m_logo || !m_logo->m_texture) {
+		if (m_logo) delete m_logo;
+		m_logo = nullptr;
 	}
 
-	//-----------//
-	//m_logo = new Image("samp", "mylogo");
-	//m_logo = new Image("fm", "mylogo");
 	if (m_logo) {
 		this->addChild(m_logo);
 	}

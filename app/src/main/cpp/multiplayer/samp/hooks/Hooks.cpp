@@ -1993,7 +1993,59 @@ TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, 
         }
     }
     if (TextureDatabaseRuntime__Load_orig) {
-        return TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
+        TextureDatabaseRuntime* ret = TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
+        if (ret) {
+            uintptr_t dbAddr = reinterpret_cast<uintptr_t>(ret);
+            void* fullDataOffsets = *reinterpret_cast<void**>(dbAddr + 0xF8);
+            void* streamFile = *reinterpret_cast<void**>(dbAddr + 0xE8);
+            if (!fullDataOffsets || !streamFile) {
+                uint32_t fmt = *reinterpret_cast<uint32_t*>(dbAddr + 0xA0);
+                auto LoadDataOffsets_fn = reinterpret_cast<bool(*)(void*, uint32_t, void*, void*, bool)>(g_libGTASA + 0x799E7C);
+                LoadDataOffsets_fn(ret, fmt, reinterpret_cast<void*>(dbAddr + 0xF0), reinterpret_cast<void*>(dbAddr + 0xE8), false);
+                FLog("[AntiCrash] Manually invoked LoadDataOffsets for DB '%s' (format=%u), fullDataOffsets=%p, streamFile=%p",
+                     withName ? withName : "unknown", fmt,
+                     *reinterpret_cast<void**>(dbAddr + 0xF8),
+                     *reinterpret_cast<void**>(dbAddr + 0xE8));
+            }
+        }
+        return ret;
+    }
+    return nullptr;
+}
+
+static uint32_t (*TextureDatabaseRuntime__LoadFullTexture_orig)(uintptr_t thiz, uint32_t entryIndex) = nullptr;
+static uint32_t TextureDatabaseRuntime__LoadFullTexture_hook(uintptr_t thiz, uint32_t entryIndex)
+{
+    if (!thiz) return 0;
+    void* fullDataOffsets = *reinterpret_cast<void**>(thiz + 0xF8);
+    void* streamFile = *reinterpret_cast<void**>(thiz + 0xE8);
+    if (!fullDataOffsets || !streamFile) {
+        FLog("[AntiCrash] Prevented crash in LoadFullTexture: db at %p has null fullDataOffsets (%p) or streamFile (%p), entry=%u",
+             reinterpret_cast<void*>(thiz), fullDataOffsets, streamFile, entryIndex);
+        return 0;
+    }
+    if (TextureDatabaseRuntime__LoadFullTexture_orig) {
+        return TextureDatabaseRuntime__LoadFullTexture_orig(thiz, entryIndex);
+    }
+    return 0;
+}
+
+static RwTexture* (*TextureDatabaseRuntime__GetRWTexture_orig)(uintptr_t thiz, int32_t entryIndex) = nullptr;
+static RwTexture* TextureDatabaseRuntime__GetRWTexture_hook(uintptr_t thiz, int32_t entryIndex)
+{
+    if (!thiz || entryIndex < 0) return nullptr;
+    uint32_t numEntries = *reinterpret_cast<uint32_t*>(thiz + 0x24);
+    if (static_cast<uint32_t>(entryIndex) >= numEntries) {
+        FLog("[AntiCrash] GetRWTexture: entryIndex %d out of bounds (numEntries=%u)", entryIndex, numEntries);
+        return nullptr;
+    }
+    void* entriesData = *reinterpret_cast<void**>(thiz + 0x28);
+    if (!entriesData) {
+        FLog("[AntiCrash] GetRWTexture: db at %p has null entries.dataPtr", reinterpret_cast<void*>(thiz));
+        return nullptr;
+    }
+    if (TextureDatabaseRuntime__GetRWTexture_orig) {
+        return TextureDatabaseRuntime__GetRWTexture_orig(thiz, entryIndex);
     }
     return nullptr;
 }
@@ -2023,6 +2075,8 @@ void InstallCrashFixHooks()
     // AntiCrash: Guard TextureDatabaseRuntime against null thumbnails (Pixel 8 / Mali fix)
     CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
     CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
+    CHook::InlineHook(g_libGTASA + 0x7957E8, &TextureDatabaseRuntime__LoadFullTexture_hook, &TextureDatabaseRuntime__LoadFullTexture_orig);
+    CHook::InlineHook(g_libGTASA + 0x7956C8, &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
 }
 
 void InitGui();

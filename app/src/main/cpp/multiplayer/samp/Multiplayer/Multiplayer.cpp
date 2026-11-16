@@ -734,8 +734,8 @@ bool CGame::InitialiseRenderWare() {
     TextureDatabaseRuntime::Load("gta3", false, TextureDatabaseFormat::DF_Default);
     TextureDatabaseRuntime::Load("gta_int", false, TextureDatabaseFormat::DF_Default);
     //TextureDatabaseRuntime::Load("cutscene", false, TextureDatabaseFormat::DF_Default);
-    TextureDatabaseRuntime::Load("player", false, TextureDatabaseFormat::DF_PVR);
-    TextureDatabaseRuntime::Load("menu", false, TextureDatabaseFormat::DF_PVR);
+    TextureDatabaseRuntime::Load("player", false, TextureDatabaseFormat::DF_Default);
+    TextureDatabaseRuntime::Load("menu", false, TextureDatabaseFormat::DF_Default);
 
     const auto camera = RwCameraCreate();
     if (!camera) {
