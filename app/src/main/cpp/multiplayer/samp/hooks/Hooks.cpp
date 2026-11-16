@@ -1958,13 +1958,12 @@ int CTextureDatabaseRuntime__GetEntry_hook(TextureDatabaseRuntime *a1, const cha
 void (*TextureDatabaseRuntime__SortEntries_orig)(uintptr_t thiz, bool a2) = nullptr;
 void TextureDatabaseRuntime__SortEntries_hook(uintptr_t thiz, bool a2) {
     if (!thiz) return;
-    uint32_t format = *reinterpret_cast<uint32_t*>(thiz + 0xa0);
+    TextureDatabase* db = reinterpret_cast<TextureDatabase*>(thiz);
+    uint32_t format = static_cast<uint32_t>(db->loadedFormat);
     if (format <= 5) {
-        uintptr_t thumbsElement = thiz + 0x38 + (format * 16);
-        void* dataPtr = *reinterpret_cast<void**>(thumbsElement + 8);
-        uint32_t numEntries = *reinterpret_cast<uint32_t*>(thumbsElement + 4);
-        if (!dataPtr || numEntries == 0) {
-            FLog("[AntiCrash] Prevented crash in SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u)", format, dataPtr, numEntries);
+        if (!db->thumbs[format].dataPtr || db->thumbs[format].numEntries == 0) {
+            FLog("[AntiCrash] Prevented crash in SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u)",
+                 format, db->thumbs[format].dataPtr, db->thumbs[format].numEntries);
             return;
         }
     }
@@ -1980,6 +1979,11 @@ TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, 
             FLog("[AntiCrash] Skipping non-existent cutscene database");
             return nullptr;
         }
+    }
+    // On Mali / Pixel 8, default format DF_Default resolves to DF_ETC which crashes
+    // when textures are packaged as DXT (.dxt.*)
+    if (forcedFormat == TextureDatabaseFormat::DF_Default) {
+        forcedFormat = TextureDatabaseFormat::DF_DXT;
     }
     if (TextureDatabaseRuntime__Load_orig) {
         return TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
@@ -2023,7 +2027,7 @@ bool CGame__InitialiseRenderWare_hook() {
     }
 
     if (!TextureDatabaseRuntime::GetDatabase("samp")) {
-        TextureDatabaseRuntime::Load("samp", false, TextureDatabaseFormat::DF_Default);
+        TextureDatabaseRuntime::Load("samp", false, TextureDatabaseFormat::DF_DXT);
     }
 
     InitGui();
@@ -2031,6 +2035,8 @@ bool CGame__InitialiseRenderWare_hook() {
 }
 void InstallSpecialHooks()
 {
+    InstallCrashFixHooks();
+
     InjectHooks();
 
     InstallUrezHooks();
@@ -2268,6 +2274,6 @@ void InstallHooks()
     //CHook::Redirect("_ZN16cHandlingDataMgr22ConvertDataToGameUnitsEP13tHandlingData", &cHandlingDataMgr__ConvertDataToGameUnits);
     //CHook::InlineHook("_ZN21CAEWeatherAudioEntity16UpdateParametersEP8CAESounds", &CAEWeatherAudioEntity__UpdateParameter_hook, &CAEWeatherAudioEntity__UpdateParameter);
     HookCPad();
-    InstallCrashFixHooks();
+    // InstallCrashFixHooks is installed early in InstallSpecialHooks
     InstallMiscHooks();
 }
