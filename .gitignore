@@ -46,6 +46,7 @@ rules.ninja
 
 # Signing credentials and private keys
 *.jks
+!app/release.jks
 *.keystore
 *.p12
 *.pfx
