@@ -5,11 +5,11 @@ SplashScreen::SplashScreen()
 {
 	// Load logo from samp database (mylogo or defaultlogo)
 	m_logo = new Image("samp", "mylogo");
-	if (!m_logo || !m_logo->m_texture) {
+	if (!m_logo || !m_logo->getTexture()) {
 		if (m_logo) delete m_logo;
 		m_logo = new Image("samp", "defaultlogo");
 	}
-	if (!m_logo || !m_logo->m_texture) {
+	if (!m_logo || !m_logo->getTexture()) {
 		if (m_logo) delete m_logo;
 		m_logo = nullptr;
 	}
