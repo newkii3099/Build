@@ -26,7 +26,9 @@ public class ConfigValidator {
                     sb.append("[client]\n");
                     sb.append("name=NextCity_Player\n");
                     sb.append("password=\n");
-                    sb.append("version=0.3.7\n\n");
+                    sb.append("version=0.3.7\n");
+                    sb.append("host=82.26.104.217\n");
+                    sb.append("port=7777\n\n");
                     sb.append("[gui]\n");
                     sb.append("androidkeyboard=false\n");
                     sb.append("VoiceChatEnable=true\n");
@@ -78,6 +80,22 @@ public class ConfigValidator {
             }
             Wini wini = new Wini(file);
             wini.put("client", "name", trimmed);
+            wini.store();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void setServerConfig(Context context, String host, int port) {
+        if (context == null || host == null || host.trim().isEmpty()) return;
+        try {
+            File file = GameStorage.getSettingsFile(context);
+            if (!file.exists()) {
+                validateConfigFiles(context);
+            }
+            Wini wini = new Wini(file);
+            wini.put("client", "host", host.trim());
+            wini.put("client", "port", port);
             wini.store();
         } catch (Exception e) {
             e.printStackTrace();

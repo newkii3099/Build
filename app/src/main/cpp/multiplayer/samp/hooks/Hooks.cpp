@@ -295,8 +295,10 @@ void CObject_Render_hook(CObjectGta* thiz)
 
 
         }
+    }
 
-        CObject_Render(object);
+    if (CObject_Render && thiz) {
+        CObject_Render(thiz);
     }
 
     //((void (*)(void))(g_libGTASA + 0x6F6664))();
@@ -890,7 +892,8 @@ void CRenderer_ScanWorld_hook()
 {
     ApplyPcLikeCameraDrawDistanceState();
     CRenderer_ScanWorld();
-    RequestPcLikeFarLodStreamingAroundCamera();
+    // Disabled to prevent streaming queue overflow & SIGSEGV crashes
+    // RequestPcLikeFarLodStreamingAroundCamera();
 }
 
 void (*CRenderer_RenderEverythingBarRoads)();
@@ -922,9 +925,8 @@ static void ApplyPcLikeCameraDrawDistanceState()
         TheCamera.GenerationDistMultiplier = 1.0f;
 
     if (TheCamera.m_pRwCamera) {
-        // PC SA-MP UpdateFarClippingPlane defaults to 1250, clamps down to
-        // 700 in close/fade cases, and keeps 1400 as the backing max value.
-        constexpr float kPcSampFarClip = 1250.0f;
+        // Mobile-safe draw distance (600.0f instead of 1250.0f to avoid GPU choking)
+        constexpr float kPcSampFarClip = 600.0f;
         CRenderer::ms_fFarClipPlane = kPcSampFarClip;
         RwCameraSetFarClipPlane(TheCamera.m_pRwCamera, kPcSampFarClip);
         CVisibilityPlugins::SetRenderWareCamera(TheCamera.m_pRwCamera);
@@ -979,7 +981,8 @@ static void RenderSampFarObjectsAfterWorld()
 void CRenderer_RenderEverythingBarRoads_hook() {
     ApplyPcLikeCameraDrawDistanceState();
 	CRenderer_RenderEverythingBarRoads();
-	RenderSampFarObjectsAfterWorld();
+	// Disabled far object brute-force scan to prevent severe FPS drops
+	// RenderSampFarObjectsAfterWorld();
 }
 
 #include "gta-reversed/game_sa/Pickups.h"
@@ -2253,7 +2256,7 @@ void InstallHooks()
     CHook::InlineHook("_ZN6CRadar15DrawRadarSpriteEtffh", (uintptr_t) CRadar__DrawRadarSprite_hook,
                       (uintptr_t *) &CRadar__DrawRadarSprite);
 
-    CHook::InlineHook("_ZN7CObject6RenderEv", &CObject_Render_hook, & CObject_Render);
+    // Removed duplicate _ZN7CObject6RenderEv InlineHook here (already hooked above)
 
     //CHook::InlineHook("_Z16_rxPacketDestroyP8RxPacket", rxPacketDestroy_hook, rxPacketDestroy);
 

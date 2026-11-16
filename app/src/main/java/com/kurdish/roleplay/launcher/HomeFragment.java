@@ -30,7 +30,7 @@ import com.kurdish.roleplay.launcher.util.SampQueryAPI;
 
 public class HomeFragment extends Fragment {
 
-    public static final String LOCKED_SERVER_HOST = "127.0.0.1";
+    public static final String LOCKED_SERVER_HOST = "82.26.104.217";
     public static final int LOCKED_SERVER_PORT = 7777;
 
     private Animation scaleDown;
@@ -236,6 +236,12 @@ public class HomeFragment extends Fragment {
     private void launchGame() {
         if (getActivity() == null) return;
         android.util.Log.d("HomeFragment", "Launching SAMP game activity");
+
+        try {
+            ConfigValidator.setServerConfig(requireContext(), LOCKED_SERVER_HOST, LOCKED_SERVER_PORT);
+        } catch (Exception e) {
+            android.util.Log.e("HomeFragment", "Failed to update server config", e);
+        }
 
         Intent intent = new Intent(requireActivity(), SAMP.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
