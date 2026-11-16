@@ -1962,8 +1962,11 @@ void TextureDatabaseRuntime__SortEntries_hook(uintptr_t thiz, bool a2) {
     uint32_t format = static_cast<uint32_t>(db->loadedFormat);
     if (format <= 5) {
         if (!db->thumbs[format].dataPtr || db->thumbs[format].numEntries == 0) {
-            FLog("[AntiCrash] Prevented crash in SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u)",
+            FLog("[AntiCrash] SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u), skipping thumb sort (a2=true)",
                  format, db->thumbs[format].dataPtr, db->thumbs[format].numEntries);
+            if (TextureDatabaseRuntime__SortEntries_orig) {
+                TextureDatabaseRuntime__SortEntries_orig(thiz, true);
+            }
             return;
         }
     }
@@ -1981,9 +1984,13 @@ TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, 
         }
     }
     // On Mali / Pixel 8, default format DF_Default resolves to DF_ETC which crashes
-    // when textures are packaged as DXT (.dxt.*)
-    if (forcedFormat == TextureDatabaseFormat::DF_Default) {
-        forcedFormat = TextureDatabaseFormat::DF_DXT;
+    // when textures are packaged as DXT or PVR
+    if (forcedFormat == TextureDatabaseFormat::DF_Default && withName) {
+        if (strcmp(withName, "menu") == 0 || strcmp(withName, "player") == 0 || strcmp(withName, "playerhi") == 0) {
+            forcedFormat = TextureDatabaseFormat::DF_PVR;
+        } else {
+            forcedFormat = TextureDatabaseFormat::DF_DXT;
+        }
     }
     if (TextureDatabaseRuntime__Load_orig) {
         return TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);

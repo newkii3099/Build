@@ -26,6 +26,11 @@ uintptr_t CUtil::FindLib(const char* libname)
 
 RwTexture* CUtil::LoadTextureFromDB(const char* dbname, const char* texture)
 {
+    if (!dbname || !texture || dbname[0] == '\0' || texture[0] == '\0')
+    {
+        return nullptr;
+    }
+
     TextureDatabaseRuntime* db_handle = TextureDatabaseRuntime::GetDatabase(dbname);
     if(!db_handle)
     {
@@ -36,10 +41,6 @@ RwTexture* CUtil::LoadTextureFromDB(const char* dbname, const char* texture)
     TextureDatabaseRuntime::Register(db_handle);
 
     auto tex = CUtil::GetTexture(texture);
-    if(!tex)
-    {
-        return nullptr;
-    }
 
     TextureDatabaseRuntime::Unregister(db_handle);
 
@@ -48,6 +49,11 @@ RwTexture* CUtil::LoadTextureFromDB(const char* dbname, const char* texture)
 
 RwTexture* CUtil::GetTexture(const char* name)
 {
+    if (!name || name[0] == '\0')
+    {
+        return nullptr;
+    }
+
     auto tex = TextureDatabaseRuntime::GetTexture(name);
     if (!tex)
     {

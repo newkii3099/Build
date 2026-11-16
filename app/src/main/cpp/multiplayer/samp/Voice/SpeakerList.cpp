@@ -128,9 +128,12 @@ void SpeakerList::Render()
 
                         if (curTextLine < 4 && playerName && strlen(playerName))
                         {
-                            ImVec2 a = ImVec2(textPos.x, textPos.y);
-                            ImVec2 b = ImVec2(textPos.x + pUI->GetFontSize() / 2, textPos.y + pUI->GetFontSize() / 2);
-                            ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)SpeakerList::tSpeakerIcon->raster, a, b);
+                            if (SpeakerList::tSpeakerIcon && SpeakerList::tSpeakerIcon->raster)
+                            {
+                                ImVec2 a = ImVec2(textPos.x, textPos.y);
+                                ImVec2 b = ImVec2(textPos.x + pUI->GetFontSize() / 2, textPos.y + pUI->GetFontSize() / 2);
+                                ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)SpeakerList::tSpeakerIcon->raster, a, b);
+                            }
 
                             float fSpaceFromIconToText = pUI->GetFontSize() + ImGui::GetStyle().ItemSpacing.x;
 
@@ -188,9 +191,12 @@ void SpeakerList::Draw(CVector* vec, float fDist)
 	pos.x -= SpeakerList::GetSpeakerIconScale() / 2;
     pos.y -= pUI->GetFontSize();
 
-    ImVec2 a = ImVec2(pos.x, pos.y);
-    ImVec2 b = ImVec2(pos.x + SpeakerList::GetSpeakerIconScale(), pos.y + SpeakerList::GetSpeakerIconScale());
-    ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)SpeakerList::tSpeakerIcon->raster, a, b);
+    if (SpeakerList::tSpeakerIcon && SpeakerList::tSpeakerIcon->raster)
+    {
+        ImVec2 a = ImVec2(pos.x, pos.y);
+        ImVec2 b = ImVec2(pos.x + SpeakerList::GetSpeakerIconScale(), pos.y + SpeakerList::GetSpeakerIconScale());
+        ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)SpeakerList::tSpeakerIcon->raster, a, b);
+    }
 }
 
 void SpeakerList::OnSpeakerPlay(const Stream& stream, const uint16_t speaker) noexcept

@@ -11,32 +11,17 @@ TextureDatabaseRuntime* TextureDatabaseRuntime::Load(const char *withName, bool 
 }
 
 void TextureDatabaseRuntime::Register(TextureDatabaseRuntime *toRegister) {
+    if (!toRegister) return;
     CHook::CallFunction<void>(g_libGTASA + 0x7967D8, toRegister);
-//    if (std::find(registered.dataPtr, registered.dataPtr + registered.numEntries, toRegister) != registered.dataPtr + registered.numEntries) {
-//        return; // ��� ���������������, �������
-//    }
-//
-//    if (registered.numAlloced < registered.numEntries + 1) {
-//        size_t newAlloc = ((3 * (registered.numEntries + 1)) >> 1) + 3;
-//        TextureDatabaseRuntime** newData = static_cast<TextureDatabaseRuntime**>(malloc(sizeof(TextureDatabaseRuntime*) * newAlloc));
-//
-//        if (registered.dataPtr) {
-//            std::memcpy(newData, registered.dataPtr, sizeof(TextureDatabaseRuntime*) * registered.numEntries);
-//            free(registered.dataPtr);
-//        }
-//
-//        registered.dataPtr = newData;
-//        registered.numAlloced = newAlloc;
-//    }
-//
-//    registered.dataPtr[registered.numEntries++] = toRegister;
 }
 
 void TextureDatabaseRuntime::Unregister(TextureDatabaseRuntime *toUnregister) {
+    if (!toUnregister) return;
     CHook::CallFunction<void>(g_libGTASA + 0x7968C4, toUnregister);
 }
 
 RwTexture* TextureDatabaseRuntime::GetTexture(const char *name) {
+    if (!name || name[0] == '\0') return nullptr;
     return ((RwTexture*(*)(const char*))(g_libGTASA + 0x79693C))(name);
 }
 
@@ -45,15 +30,8 @@ void TextureDatabaseRuntime::UpdateStreaming(float deltaTime, bool flush) {
 }
 
 TextureDatabaseRuntime* TextureDatabaseRuntime::GetDatabase(const char *dbName) {
+    if (!dbName || dbName[0] == '\0') return nullptr;
     return CHook::CallFunction<TextureDatabaseRuntime*>(g_libGTASA + 0x797E90, dbName);
-//    for (unsigned int i = 0; i < TextureDatabaseRuntime::loaded.numEntries; ++i) {
-//        TextureDatabaseRuntime *currentDatabase = TextureDatabaseRuntime::loaded.dataPtr[i];
-//        if (strcmp(currentDatabase->name, dbName) == 0) {
-//            return currentDatabase;
-//        }
-//    }
-//
-//    return nullptr;
 }
 
 void TextureDatabaseRuntime::InjectHooks() {

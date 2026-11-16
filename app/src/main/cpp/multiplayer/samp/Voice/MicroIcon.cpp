@@ -14,8 +14,17 @@ bool MicroIcon::Init() noexcept
     try
     {
         MicroIcon::tPassiveIcon = (RwTexture*)CUtil::LoadTextureFromDB("samp", "voicepassive");
+        if (!MicroIcon::tPassiveIcon) {
+            MicroIcon::tPassiveIcon = (RwTexture*)CUtil::LoadTextureFromDB("samp", "micro_passive");
+        }
         MicroIcon::tActiveIcon = (RwTexture*)CUtil::LoadTextureFromDB("samp", "voiceactive");
+        if (!MicroIcon::tActiveIcon) {
+            MicroIcon::tActiveIcon = (RwTexture*)CUtil::LoadTextureFromDB("samp", "micro_active");
+        }
         MicroIcon::tMutedIcon = (RwTexture*)CUtil::LoadTextureFromDB("samp", "voicemuted");
+        if (!MicroIcon::tMutedIcon) {
+            MicroIcon::tMutedIcon = (RwTexture*)CUtil::LoadTextureFromDB("samp", "micro_muted");
+        }
     }
     catch(const std::exception& exception)
     {
