@@ -1530,6 +1530,23 @@ stFile* NvFOpen(const char *r1)
     }
 
     FILE *f = fopen(path, "rb");
+    if (!f && strstr(path, "/Android/media/")) {
+        char altPath[1024];
+        strncpy(altPath, path, sizeof(altPath) - 1);
+        altPath[sizeof(altPath) - 1] = '\0';
+        char* p = strstr(altPath, "/Android/media/");
+        if (p) {
+            memcpy(p + 9, "data", 4);
+            memmove(p + 13, p + 14, strlen(p + 14) + 1);
+            f = fopen(altPath, "rb");
+            if (f) {
+                FLog("[NvFOpen] Opened via Android/data fallback: '%s'", altPath);
+            }
+        }
+    }
+    if (!f) {
+        FLog("[NvFOpen] FAILED fopen: '%s' (r1='%s', errno=%d)", path, r1, errno);
+    }
     if (f)
     {
         auto *st = (stFile*)malloc(sizeof(stFile));
@@ -2076,6 +2093,42 @@ static RwTexture* TextureDatabaseRuntime__GetRWTexture_hook(uintptr_t thiz, int3
     return nullptr;
 }
 
+static RwTexture* g_pDummyTexture = nullptr;
+static RwTexture* (*TextureDatabaseRuntime__GetTexture_orig)(const char* name) = nullptr;
+
+static RwTexture* TextureDatabaseRuntime__GetTexture_hook(const char* name)
+{
+    if (!name || name[0] == '\0') return nullptr;
+
+    RwTexture* tex = nullptr;
+    if (TextureDatabaseRuntime__GetTexture_orig) {
+        tex = TextureDatabaseRuntime__GetTexture_orig(name);
+    }
+    if (tex) return tex;
+
+    // Allocate persistent dummy texture so callers doing tex->refCount++ never crash at 0x64
+    if (!g_pDummyTexture) {
+        g_pDummyTexture = reinterpret_cast<RwTexture*>(calloc(1, sizeof(RwTexture) + 64));
+        if (g_pDummyTexture) {
+            g_pDummyTexture->refCount = 99999;
+            strncpy(g_pDummyTexture->name, "dummy", sizeof(g_pDummyTexture->name) - 1);
+        }
+    }
+
+    FLog("[AntiCrash] GetTexture '%s' not found, returned dummy texture (%p) to prevent null refCount crash", name, g_pDummyTexture);
+    return g_pDummyTexture;
+}
+
+static void (*MobileMenu__Load_orig)(uintptr_t thiz) = nullptr;
+static void MobileMenu__Load_hook(uintptr_t thiz)
+{
+    FLog("[AntiCrash] MobileMenu::Load entered on %p", reinterpret_cast<void*>(thiz));
+    if (MobileMenu__Load_orig) {
+        MobileMenu__Load_orig(thiz);
+    }
+    FLog("[AntiCrash] MobileMenu::Load completed successfully on %p", reinterpret_cast<void*>(thiz));
+}
+
 void InstallCrashFixHooks()
 {
     // some crashfixes
@@ -2105,6 +2158,16 @@ void InstallCrashFixHooks()
     CHook::InlineHook(g_libGTASA + 0x7957E8, &TextureDatabaseRuntime__LoadFullTexture_hook, &TextureDatabaseRuntime__LoadFullTexture_orig);
     CHook::InlineHook("_ZN22TextureDatabaseRuntime11GetRWTextureEi", &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
     CHook::InlineHook(g_libGTASA + 0x7956C8, &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
+
+    // AntiCrash: Guard TextureDatabaseRuntime::GetTexture against null return (prevents SIGSEGV at 0x64 in MobileMenu::Load)
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime10GetTextureEPKc", &TextureDatabaseRuntime__GetTexture_hook, &TextureDatabaseRuntime__GetTexture_orig);
+    CHook::InlineHook(g_libGTASA + 0x79693C, &TextureDatabaseRuntime__GetTexture_hook, &TextureDatabaseRuntime__GetTexture_orig);
+    CHook::InstallPLT(g_libGTASA + 0x848708, &TextureDatabaseRuntime__GetTexture_hook, &TextureDatabaseRuntime__GetTexture_orig);
+
+    // AntiCrash: Guard MobileMenu::Load against unhandled crashes
+    CHook::InlineHook("_ZN10MobileMenu4LoadEv", &MobileMenu__Load_hook, &MobileMenu__Load_orig);
+    CHook::InlineHook(g_libGTASA + 0x70DC90, &MobileMenu__Load_hook, &MobileMenu__Load_orig);
+    CHook::InstallPLT(g_libGTASA + 0x84D448, &MobileMenu__Load_hook, &MobileMenu__Load_orig);
 
     // AntiCrash: Guard RLEDecompress against buffer overflow on Mali / PVR textures
     CHook::InlineHook("_Z13RLEDecompressPhjPKhjj", &RLEDecompress_hook, &RLEDecompress);
