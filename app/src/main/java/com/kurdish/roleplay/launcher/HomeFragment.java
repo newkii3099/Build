@@ -24,9 +24,13 @@ import androidx.fragment.app.Fragment;
 
 import com.kurdish.roleplay.R;
 import com.kurdish.roleplay.game.SAMP;
+import com.kurdish.roleplay.launcher.util.Config;
 import com.kurdish.roleplay.launcher.util.ConfigValidator;
+import com.kurdish.roleplay.launcher.util.FastGameDownloader;
 import com.kurdish.roleplay.launcher.util.RemoteConfigManager;
 import com.kurdish.roleplay.launcher.util.SampQueryAPI;
+
+import java.util.List;
 
 public class HomeFragment extends Fragment {
 
@@ -235,7 +239,7 @@ public class HomeFragment extends Fragment {
 
     private void launchGame() {
         if (getActivity() == null) return;
-        android.util.Log.d("HomeFragment", "Launching SAMP game activity");
+        android.util.Log.d("HomeFragment", "Checking game files before launch...");
 
         try {
             ConfigValidator.setServerConfig(requireContext(), LOCKED_SERVER_HOST, LOCKED_SERVER_PORT);
@@ -243,11 +247,46 @@ public class HomeFragment extends Fragment {
             android.util.Log.e("HomeFragment", "Failed to update server config", e);
         }
 
-        Intent intent = new Intent(requireActivity(), SAMP.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        startActivity(intent);
+        // Run fast file verification on background thread
+        new Thread(() -> {
+            try {
+                if (getContext() == null || getActivity() == null) return;
+                int gpuType = Config.getGpuType(requireContext());
+                List<FilesData> manifest = FastGameDownloader.fetchManifest(requireContext(), Config.getManifestUrl(requireContext()));
+                List<FilesData> missingOrInvalid = FastGameDownloader.verifyFiles(requireContext(), manifest, gpuType);
 
-        requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                if (getActivity() == null) return;
+
+                getActivity().runOnUiThread(() -> {
+                    if (missingOrInvalid != null && !missingOrInvalid.isEmpty()) {
+                        android.util.Log.w("HomeFragment", "Missing or invalid files found: " + missingOrInvalid.size() + ", launching UpdateActivity");
+                        Toast.makeText(getContext(), "ตรวจพบไฟล์เกมไม่ครบ (" + missingOrInvalid.size() + " ไฟล์) กำลังดาวน์โหลดอัตโนมัติ...", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(requireActivity(), UpdateActivity.class);
+                        intent.putExtra("mode", UpdateActivity.UpdateMode.GameDataUpdate.name());
+                        intent.putExtra("autoLaunchAfter", true);
+                        startActivity(intent);
+                        requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    } else {
+                        android.util.Log.i("HomeFragment", "All game files verified, launching SAMP");
+                        Intent intent = new Intent(requireActivity(), SAMP.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    }
+                });
+            } catch (Exception e) {
+                android.util.Log.e("HomeFragment", "Error checking files, fallback to launch", e);
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        Intent intent = new Intent(requireActivity(), SAMP.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        startActivity(intent);
+                        requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                    });
+                }
+            }
+        }).start();
     }
 
     private void openUrl(String url) {

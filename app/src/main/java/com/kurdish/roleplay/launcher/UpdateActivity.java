@@ -84,15 +84,34 @@ public class UpdateActivity extends AppCompatActivity{
                     Log.d("Dev Hama", "statusname = " + valueOf);
                     long j = msg.getData().getLong("total");
                     long j2 = msg.getData().getLong("current");
-                    ((TextView) findViewById(R.id.fileName)).setText(msg.getData().getString("filename"));
-                    ((TextView) findViewById(R.id.fileCount)).setText((j2/1048576) + " MB / " + (j/1048576) + " MB");
+                    String speed = msg.getData().getString("speed", "");
+                    String filename = msg.getData().getString("filename", "");
+                    long totalFiles = msg.getData().getLong("totalfiles", 0);
+                    long currentFile = msg.getData().getLong("currentfile", 0);
+
+                    if (filename != null && !filename.isEmpty()) {
+                        ((TextView) findViewById(R.id.fileName)).setText(filename);
+                    }
+
+                    String countText = (j2 / 1048576) + " MB / " + (j / 1048576) + " MB";
+                    if (speed != null && !speed.isEmpty()) {
+                        countText += " • " + speed;
+                    }
+                    if (totalFiles > 0) {
+                        countText += " (" + currentFile + "/" + totalFiles + " ไฟล์)";
+                    }
+                    ((TextView) findViewById(R.id.fileCount)).setText(countText);
+
                     ProgressBar progressBar = findViewById(R.id.download_progress);
                     progressBar.setIndeterminate(false);
-                    Log.d("UpdateActivity", (int) (j/1048576) + "/" + (int) (j2/1048576));
-                    progressBar.setMax((int) (j/1048576));
-                    progressBar.setProgress((int) (j2/1048576));
+                    int maxMb = (int) (j / 1048576);
+                    int curMb = (int) (j2 / 1048576);
+                    progressBar.setMax(maxMb > 0 ? maxMb : 100);
+                    progressBar.setProgress(curMb);
 
-                    ((TextView) findViewById(R.id.fileProgressPercent)).setText(j2*100/(j+1) + "%");
+                    long percent = j > 0 ? (j2 * 100 / j) : 0;
+                    if (percent > 100) percent = 100;
+                    ((TextView) findViewById(R.id.fileProgressPercent)).setText(percent + "%");
                 } else if (valueOf == UpdateActivity.UpdateStatus.CheckUpdate) {
                     Log.d("Dev Hama", "statusname = " + valueOf);
                     long j = msg.getData().getLong("total");
@@ -146,10 +165,18 @@ public class UpdateActivity extends AppCompatActivity{
             }
             else if (msg.what == 1) {
                 Log.i("UpdateActivity", "UpdateService.UPDATE_GAME");
-                ((TextView)findViewById(R.id.installation_text)).setText("กำลังติดตั้งข้อมูลเกม...");
+                ((TextView)findViewById(R.id.installation_text)).setText("เตรียมพร้อมเข้าเกม...");
                 ProgressBar progressBar = (ProgressBar) UpdateActivity.this.findViewById(R.id.download_progress);
                 progressBar.setIndeterminate(true);
-                startActivity(new Intent(UpdateActivity.this, MainActivity.class));
+
+                boolean autoLaunch = getIntent().getBooleanExtra("autoLaunchAfter", false);
+                if (autoLaunch) {
+                    Intent intent = new Intent(UpdateActivity.this, com.rockstargames.gtasa.SAMP.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                    startActivity(intent);
+                } else {
+                    startActivity(new Intent(UpdateActivity.this, MainActivity.class));
+                }
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                 finish();
             }
@@ -230,6 +257,7 @@ public class UpdateActivity extends AppCompatActivity{
                     egputype = eGPUType.ETC;
                     mGpuType = 2;
                 }
+                Config.setGpuType(UpdateActivity.this, mGpuType);
                 Log.e("Dev Hama", "GPU name: " + glGetString);
                 Log.e("Dev Hama", "GPU type: " + egputype.name());
 

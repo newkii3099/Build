@@ -23,8 +23,8 @@ android {
         applicationId "com.kurdish.roleplay"
         minSdk 28
         targetSdk 36
-        versionCode 4234663
-        versionName "2.11.333"
+        versionCode 4234664
+        versionName "2.11.334"
 
         multiDexEnabled true
 

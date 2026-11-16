@@ -27,6 +27,8 @@ import com.downloader.PRDownloaderConfig;
 import com.downloader.Progress;
 import com.joom.paranoid.Obfuscate;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.kurdish.roleplay.launcher.util.Config;
+import com.kurdish.roleplay.launcher.util.FastGameDownloader;
 import com.kurdish.roleplay.launcher.util.GameStorage;
 import com.kurdish.roleplay.launcher.util.Util;
 
@@ -44,6 +46,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 @Obfuscate
 public class UpdateService extends Service {
 
@@ -64,6 +67,7 @@ public class UpdateService extends Service {
     public ArrayList<String> mUpdateFiles;
     public ArrayList<String> mUpdateFilesName;
     public ArrayList<Long> mUpdateFilesSize;
+    public ArrayList<FilesData> mFilesDataList = new ArrayList<>();
 
     public int mGpuType = 0;
 
@@ -154,159 +158,79 @@ public class UpdateService extends Service {
         }
     }
 
-    void startUpdating()
-    {
+    void startUpdating() {
         setUpdateStatus(UpdateActivity.UpdateStatus.CheckUpdate);
-        String urlClient = FirebaseRemoteConfig.getInstance().getString("launcher_client");
-        if (!isHttpUrl(urlClient)) {
-            handleUnavailableUpdateConfig("launcher_client");
-            return;
-        }
 
-        Volley.newRequestQueue(getApplicationContext()).add(new StringRequest(urlClient, new Response.Listener<String>() {
+        new Thread(new Runnable() {
             @Override
-            public void onResponse(String response) {
+            public void run() {
                 try {
+                    String urlClient = FirebaseRemoteConfig.getInstance().getString("launcher_client");
+                    String manifestUrl = null;
+
+                    if (isHttpUrl(urlClient)) {
+                        try {
+                            String response = FastGameDownloader.downloadString(urlClient);
+                            if (response != null && response.contains("client_config")) {
+                                JSONObject jSONObject = new JSONObject(response).getJSONObject("client_config");
+                                mUpdateVersion = jSONObject.optInt("version_code", 0);
+                                mUpdateGameURL = jSONObject.optString("url_launcher", "");
+                                manifestUrl = jSONObject.optString("url_cache_files", null);
+                            }
+                        } catch (Exception e) {
+                            Log.w("UpdateService", "Error reading launcher_client config: " + e.getMessage());
+                        }
+                    }
+
+                    if (manifestUrl == null || !isHttpUrl(manifestUrl)) {
+                        manifestUrl = Config.getManifestUrl(UpdateService.this);
+                    }
+
+                    if (mGpuType == 0) {
+                        mGpuType = Config.getGpuType(UpdateService.this);
+                    }
+
+                    List<FilesData> manifest = FastGameDownloader.fetchManifest(UpdateService.this, manifestUrl);
+                    if (manifest == null || manifest.isEmpty()) {
+                        manifest = FastGameDownloader.fetchManifest(UpdateService.this, null);
+                    }
+
+                    List<FilesData> invalidFiles = FastGameDownloader.verifyFiles(UpdateService.this, manifest, mGpuType);
+
+                    mFilesDataList = new ArrayList<>(invalidFiles);
                     mUpdateFiles = new ArrayList<>();
                     mUpdateFilesName = new ArrayList<>();
                     mUpdateFilesSize = new ArrayList<>();
+                    mUpdateGameDataSize = 0;
 
-                    JSONObject jSONObject = new JSONObject(response).getJSONObject("client_config");
-                    mUpdateVersion = jSONObject.getInt("version_code");
-                    mUpdateGameURL = jSONObject.getString("url_launcher");
+                    for (FilesData fd : invalidFiles) {
+                        mUpdateFiles.add(fd.getPath());
+                        mUpdateFilesName.add(fd.getName());
+                        mUpdateFilesSize.add(fd.getSize());
+                        mUpdateGameDataSize += fd.getSize();
+                    }
 
-                    String string = jSONObject.getString("url_cache_files");
-
-                    getFilesInfo(string);
+                    Log.d("UpdateService", "Manifest total: " + (manifest != null ? manifest.size() : 0) + ", invalid: " + invalidFiles.size() + " (" + mUpdateGameDataSize + " bytes)");
 
                     if (!isGameUpdateExists()) {
                         if (mUpdateFiles.isEmpty()) {
                             mGameStatus = UpdateActivity.GameStatus.Updated;
-                        }
-                        else {
+                        } else {
                             mGameStatus = UpdateActivity.GameStatus.UpdateRequired;
                         }
-                    }
-                    else {
+                    } else {
                         mGameStatus = UpdateActivity.GameStatus.GameUpdateRequired;
                     }
 
                     setUpdateStatus(UpdateActivity.UpdateStatus.Undefined);
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.d("Dev Hama", "error " + error.toString());
-                mGameStatus = UpdateActivity.GameStatus.Unknown;
-                Message obtain = Message.obtain(mInHandler, 5);
-                obtain.getData().putString("status", mGameStatus.name());
-                obtain.replyTo = mMessenger;
-                Messenger messenger = mActivityMessenger;
-                if (messenger != null) {
-                    try {
-                        messenger.send(obtain);
-                    } catch (RemoteException e5) {
-                        e5.printStackTrace();
-                    }
-                }
-
-            }
-        }));
-    }
-
-    public void getFilesInfo(String response) throws JSONException {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                HttpURLConnection connection = null;
-                BufferedReader reader = null;
-
-                try {
-                    URL url = new URL(response);
-                    connection = (HttpURLConnection) url.openConnection();
-                    connection.connect();
-
-
-                    InputStream stream = connection.getInputStream();
-
-                    reader = new BufferedReader(new InputStreamReader(stream));
-
-                    StringBuffer buffer = new StringBuffer();
-                    String line = "";
-
-                    while ((line = reader.readLine()) != null) {
-                        buffer.append(line+"\n");
-
-                    }
-
-                    Util.responseFiles = buffer.toString();
-                    Util.responseFilesInt = 1;
-
-
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                    Util.responseFilesInt = 2;
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    Util.responseFilesInt = 2;
+                } catch (Exception e) {
+                    Log.e("UpdateService", "startUpdating failed", e);
+                    mGameStatus = UpdateActivity.GameStatus.Updated;
+                    setUpdateStatus(UpdateActivity.UpdateStatus.Undefined);
                 }
             }
         }).start();
-        int i5;
-        while (true) {
-            i5 = Util.responseFilesInt;
-            if (i5 != 0) {
-                break;
-            }
-            try {
-                Thread.sleep(30);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        if(i5 == 2) return;
-
-        Log.d("Dev Hama", "Info: " + Util.responseFiles);
-        JSONObject jsonObject = new JSONObject(Util.responseFiles);
-        JSONArray jsonArray = jsonObject.getJSONArray("files");
-        Log.d("Dev Hama", "Length: " + jsonArray.length());
-        for(int i = 0; i<jsonArray.length(); i++) {
-            FilesData fileData = new FilesData(jsonArray.getJSONObject(i).getString("name"), jsonArray.getJSONObject(i).getLong("size"), jsonArray.getJSONObject(i).getString("path"), jsonArray.getJSONObject(i).getString("url"));
-            if (!fileData.getName().equals("samp_log.txt") && !fileData.getName().equals("svlog.txt") && !fileData.getName().equals("gtasatelem.set")) {
-                if (!fileData.getName().equals("GTASAMP10.b") && !fileData.getName().equals(".htaccess")) {
-                    if (!fileData.getName().equals("gta_sa.set")) {
-                        if (!fileData.getName().equals("settings.ini")) {
-                            String str = GameStorage.getGameBasePath(UpdateService.this);
-                            File file = new File(str + fileData.getPath());
-                            if (!file.exists() || file.length() != fileData.getSize()) {
-                                if (!fileData.getPath().contains("player") && !fileData.getPath().contains("menu") && !fileData.getPath().contains("samp")) {
-                                    if ((fileData.getPath().contains(".dxt.") && mGpuType != 1))
-                                        continue;
-                                    else if ((fileData.getPath().contains(".etc.") && mGpuType != 2))
-                                        continue;
-                                    else if ((fileData.getPath().contains(".pvr.") && mGpuType != 3))
-                                        continue;
-                                }
-
-                                mUpdateFiles.add(fileData.getPath());
-                                Log.d("Dev Hama", "File name: " + fileData.getName());
-                                mUpdateFilesName.add(fileData.getName());
-                                Log.d("Dev Hama", "File path: " + fileData.getPath());
-                                mUpdateFilesSize.add(fileData.getSize());
-                                mUpdateGameDataSize = mUpdateGameDataSize + fileData.getSize();
-                                Log.d("Dev Hama", "File size: " + fileData.getSize());
-                            }
-                            Log.d("Dev Hama", "Data size: " + mUpdateGameDataSize);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     public void updateGame() {
@@ -374,57 +298,51 @@ public class UpdateService extends Service {
     }
 
 
-    public void startDataUpdating()
-    {
+    public void startDataUpdating() {
         String dataBase = FirebaseRemoteConfig.getInstance().getString("launcher_data");
         if (!isHttpUrl(dataBase)) {
-            handleUnavailableUpdateConfig("launcher_data");
+            dataBase = Config.getDataUrl(this);
+        }
+
+        final List<FilesData> toDownload;
+        if (mFilesDataList != null && !mFilesDataList.isEmpty()) {
+            toDownload = new ArrayList<>(mFilesDataList);
+        } else {
+            toDownload = new ArrayList<>();
+            for (int i = 0; i < mUpdateFiles.size(); i++) {
+                String path = mUpdateFiles.get(i);
+                String name = (i < mUpdateFilesName.size()) ? mUpdateFilesName.get(i) : new File(path).getName();
+                long size = (i < mUpdateFilesSize.size()) ? mUpdateFilesSize.get(i) : 0;
+                toDownload.add(new FilesData(name, size, path, path));
+            }
+        }
+
+        if (toDownload.isEmpty()) {
+            Log.d("UpdateService", "No files to download, update finished");
+            notifyDataUpdateCompleted();
             return;
         }
 
-        ArrayList arrayList = new ArrayList(mUpdateFiles);
-        ArrayList arrayList1 = new ArrayList(mUpdateFilesName);
-        ArrayList arrayList2 = new ArrayList(mUpdateFilesSize);
-        mUpdateFiles.clear();
-        mUpdateFilesName.clear();
-        mUpdateFilesSize.clear();
-        Ref.IntRef intRef = new Ref.IntRef();
-        intRef.element = 0;
-        Ref.LongRef longRef1 = new Ref.LongRef();
-        longRef1.element = 0;
-        while(intRef.element<arrayList.size()) {
-            mDownloadingStatus = true;
+        mDownloadingStatus = true;
+        final String finalDataBase = dataBase;
 
-            String string = GameStorage.getGameBasePath(UpdateService.this) + arrayList.get(intRef.element);
-
-            //Log.d("Dev Hama", "Update file path: " + string.replace((CharSequence) arrayList1.get(intRef.element), "") + ", Name:" + arrayList1.get(intRef.element));
-
-            File file = new File(string);
-            file.getParentFile().mkdirs();
-            if (file.exists()) {
-                file.delete();
-            }
-
-            Ref.LongRef longRef = new Ref.LongRef();
-            longRef.element = System.currentTimeMillis();
-
-            Log.d("Dev Hama", "startDataUpdating " + mUpdateGameDataSize + " " + mUpdateGameDataSizeUpdated);
-
-            mDownloadingStatus = true;
-            PRDownloader.download(dataBase + arrayList.get(intRef.element), string.replace(arrayList1.get(intRef.element).toString(), ""), String.valueOf(arrayList1.get(intRef.element))).build().setOnStartOrResumeListener(null).setOnPauseListener(null).setOnCancelListener(null).setOnProgressListener(new OnProgressListener() {
-                @Override
-                public void onProgress(Progress progress) {
-                    mDownloadingStatus = true;
-                    if(System.currentTimeMillis() - longRef.element > 100) {
-                        longRef.element = System.currentTimeMillis();
+        FastGameDownloader.downloadFilesParallel(
+                UpdateService.this,
+                finalDataBase,
+                toDownload,
+                new FastGameDownloader.DownloadCallback() {
+                    @Override
+                    public void onProgress(long currentBytes, long totalBytes, int currentFile, int totalFiles, String currentFileName, String speedText) {
                         Message obtain = Message.obtain(mInHandler, 4);
                         obtain.getData().putString("status", UpdateActivity.UpdateStatus.DownloadGameData.name());
                         obtain.getData().putBoolean("withProgress", true);
-                        obtain.getData().putLong("current", longRef1.element+progress.currentBytes);
-                        obtain.getData().putLong("total", mUpdateGameDataSize/2);
-                        obtain.getData().putString("filename", (String)arrayList1.get(intRef.element));
-                        obtain.getData().putLong("totalfiles", arrayList.size());
-                        obtain.getData().putLong("currentfile", intRef.element);
+                        obtain.getData().putLong("current", currentBytes);
+                        obtain.getData().putLong("total", totalBytes);
+                        obtain.getData().putString("filename", currentFileName);
+                        obtain.getData().putString("speed", speedText);
+                        obtain.getData().putLong("totalfiles", totalFiles);
+                        obtain.getData().putLong("currentfile", currentFile);
+                        obtain.replyTo = mMessenger;
                         if (mActivityMessenger != null) {
                             try {
                                 mActivityMessenger.send(obtain);
@@ -434,39 +352,35 @@ public class UpdateService extends Service {
                         }
                     }
 
+                    @Override
+                    public void onFileCompleted(String fileName, int currentFile, int totalFiles) {
+                        Log.d("UpdateService", "File completed (" + currentFile + "/" + totalFiles + "): " + fileName);
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        mDownloadingStatus = false;
+                        mUpdateFiles.clear();
+                        mUpdateFilesName.clear();
+                        mUpdateFilesSize.clear();
+                        mFilesDataList.clear();
+                        mUpdateGameDataSize = 0;
+                        Log.d("UpdateService", "All files downloaded successfully");
+                        notifyDataUpdateCompleted();
+                    }
+
+                    @Override
+                    public void onError(String errorReason) {
+                        mDownloadingStatus = false;
+                        Log.e("UpdateService", "Download error: " + errorReason);
+                        notifyDataUpdateCompleted();
+                    }
                 }
-            }).start(new OnDownloadListener() {
-                @Override
-                public void onDownloadComplete() {
-                    mDownloadingStatus = false;
-                    longRef1.element+=(long)arrayList2.get(intRef.element);
-                    Log.d("Dev Hama", "completed");
-                }
+        );
+    }
 
-                @Override
-                public void onError(Error error) {
-                    mDownloadingStatus = false;
-                    mUpdateFiles.add(String.valueOf(arrayList.get(intRef.element)));
-                    Log.d("Dev Hama", "error downloadgamedata");
-                }
-            });
-
-            do {
-                try {
-                    Thread.sleep(30);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } while (mDownloadingStatus);
-
-
-            intRef.element++;
-
-        }
-
-        mDownloadingStatus = false;
-
-        Log.d("UpdateService", "updateGameData()");
+    private void notifyDataUpdateCompleted() {
+        setUpdateStatus(UpdateActivity.UpdateStatus.Undefined);
         Message obtain = Message.obtain(this.mInHandler, 1);
         obtain.getData().putBoolean("status", true);
         obtain.replyTo = mMessenger;
@@ -590,14 +504,19 @@ public class UpdateService extends Service {
     }
 
     public boolean isGameUpdateExists() {
-        PackageInfo packageInfo = null;
+        if (mUpdateVersion <= 0) {
+            return false;
+        }
         try {
-            packageInfo = getPackageManager().getPackageInfo("com.kurdish.roleplay", PackageManager.GET_ACTIVITIES);
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            if (packageInfo != null) {
+                Log.d("UpdateService", "isGameUpdateExists -> currentVersion " + packageInfo.versionCode + " | mUpdateVersion " + this.mUpdateVersion);
+                return this.mUpdateVersion > packageInfo.versionCode;
+            }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        Log.d("Dev Hama", "isGameUpdateExists -> currentVersion " + packageInfo.versionCode + " | mUpdateVersion " + this.mUpdateVersion);
-        return packageInfo.versionCode == this.mUpdateVersion ? false:true;
+        return false;
     }
 
     private void sendLoadingScreen(boolean unpacking, String filename, long current, long total) {

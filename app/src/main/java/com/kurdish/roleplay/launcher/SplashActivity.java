@@ -222,6 +222,7 @@ public class SplashActivity extends AppCompatActivity {
                 } else {
                     mGpuType = 2;
                 }
+                Config.setGpuType(SplashActivity.this, mGpuType);
 
                 runOnUiThread(() -> {
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
