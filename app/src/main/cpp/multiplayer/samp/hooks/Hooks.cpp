@@ -1,5 +1,6 @@
 #include <GLES2/gl2.h>
 #include <cmath>
+#include <malloc.h>
 #include "samp/main.h"
 #include "vendor/patch/patch.h"
 #include "samp/Multiplayer/Multiplayer.h"
@@ -1742,51 +1743,66 @@ size_t OS_FileRead_hook(OSFile a1, void *buffer, size_t numBytes)
     return OS_FileRead(a1, buffer, numBytes);
 }
 
-void (*RLEDecompress)(uint8_t* pDest, size_t uiDestSize, uint8_t const* pSrc, size_t uiSegSize, uint32_t uiEscape);
+void (*RLEDecompress)(uint8_t* pDest, size_t uiDestSize, uint8_t const* pSrc, size_t uiSegSize, uint32_t uiEscape) = nullptr;
 void RLEDecompress_hook(uint8_t* pDest, size_t uiDestSize, const uint8_t* pSrc, size_t uiSegSize, uint32_t uiEscape) {
-
     if (!pDest || !pSrc || uiDestSize == 0 || uiSegSize == 0) {
-        // Обработка некорректных входных данных или размеров
-        // Здесь можно сгенерировать исключение или вернуть код ошибки
         return;
     }
 
-    const uint8_t* pTempSrc = pSrc;
+    size_t usableDst = malloc_usable_size(pDest);
+    if (usableDst > 0 && uiDestSize > usableDst) {
+        uiDestSize = usableDst;
+    }
+
+    memset(pDest, 0, uiDestSize);
+
+    size_t usableSrc = malloc_usable_size(const_cast<void*>(reinterpret_cast<const void*>(pSrc)));
+
+    uint8_t* dstPtr = pDest;
     const uint8_t* const pEndOfDest = pDest + uiDestSize;
-    const uint8_t* const pEndOfSrc = pSrc + dwRLEDecompressSourceSize; // Предполагается, что dwRLEDecompressSourceSize определено правильно
+    const uint8_t* srcPtr = pSrc;
+    const uint8_t* const pEndOfSrc = (usableSrc > 0) ? (pSrc + usableSrc) : nullptr;
 
-    try {
-        while (pDest < pEndOfDest && pTempSrc < pEndOfSrc) {
-            if (*pTempSrc == uiEscape) {
-                if (pTempSrc + 1 >= pEndOfSrc || pTempSrc[1] == 0 || pTempSrc + 2 + uiSegSize > pEndOfSrc) {
-                    // Обработка ошибки, неверное значение ucCurSeg или недостаточно данных в исходном буфере
-                    throw std::runtime_error("rled error 1");
-                }
-
-                uint8_t ucCurSeg = pTempSrc[1];
-                while (ucCurSeg--) {
-                    if (pDest + uiSegSize > pEndOfDest) {
-                        // Обработка ошибки, недостаточно места в целевом буфере
-                        throw std::runtime_error("rled error 2");
-                    }
-                    memcpy(pDest, pTempSrc + 2, uiSegSize);
-                    pDest += uiSegSize;
-                }
-                pTempSrc += 2 + uiSegSize;
-            } else {
-                if (pDest + uiSegSize > pEndOfDest || pTempSrc + uiSegSize > pEndOfSrc) {
-                    // Обработка ошибки, недостаточно данных в исходном буфере или недостаточно места в целевом буфере
-                    throw std::runtime_error("rled error 3");
-                }
-                memcpy(pDest, pTempSrc, uiSegSize);
-                pDest += uiSegSize;
-                pTempSrc += uiSegSize;
-            }
+    while (dstPtr < pEndOfDest) {
+        if (pEndOfSrc && srcPtr >= pEndOfSrc) {
+            break;
         }
 
-        dwRLEDecompressSourceSize = 0;
-    } catch (const std::exception& e) {
-        FLog("%s", e.what());
+        uint8_t marker = *srcPtr;
+        if (marker == static_cast<uint8_t>(uiEscape)) {
+            if (pEndOfSrc && (srcPtr + 2 + uiSegSize > pEndOfSrc)) {
+                break;
+            }
+
+            uint8_t count = srcPtr[1];
+            const uint8_t* valPtr = srcPtr + 2;
+            srcPtr += 2 + uiSegSize;
+
+            if (count == 0) continue;
+
+            for (uint32_t i = 0; i < count && dstPtr < pEndOfDest; ++i) {
+                size_t toCopy = uiSegSize;
+                if (dstPtr + toCopy > pEndOfDest) {
+                    toCopy = pEndOfDest - dstPtr;
+                }
+                memcpy(dstPtr, valPtr, toCopy);
+                dstPtr += toCopy;
+            }
+        } else {
+            if (pEndOfSrc && (srcPtr + uiSegSize > pEndOfSrc)) {
+                break;
+            }
+
+            const uint8_t* valPtr = srcPtr;
+            srcPtr += uiSegSize;
+
+            size_t toCopy = uiSegSize;
+            if (dstPtr + toCopy > pEndOfDest) {
+                toCopy = pEndOfDest - dstPtr;
+            }
+            memcpy(dstPtr, valPtr, toCopy);
+            dstPtr += toCopy;
+        }
     }
 }
 
@@ -2024,6 +2040,16 @@ static uint32_t TextureDatabaseRuntime__LoadFullTexture_hook(uintptr_t thiz, uin
              reinterpret_cast<void*>(thiz), fullDataOffsets, streamFile, entryIndex);
         return 0;
     }
+    uint32_t numEntries = *reinterpret_cast<uint32_t*>(thiz + 0x24);
+    if (entryIndex >= numEntries) {
+        FLog("[AntiCrash] Prevented out-of-bounds LoadFullTexture: entry=%u >= numEntries=%u", entryIndex, numEntries);
+        return 0;
+    }
+    void* entriesData = *reinterpret_cast<void**>(thiz + 0x28);
+    if (!entriesData) {
+        FLog("[AntiCrash] Prevented crash in LoadFullTexture: null entriesData");
+        return 0;
+    }
     if (TextureDatabaseRuntime__LoadFullTexture_orig) {
         return TextureDatabaseRuntime__LoadFullTexture_orig(thiz, entryIndex);
     }
@@ -2075,8 +2101,15 @@ void InstallCrashFixHooks()
     // AntiCrash: Guard TextureDatabaseRuntime against null thumbnails (Pixel 8 / Mali fix)
     CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
     CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime15LoadFullTextureEj", &TextureDatabaseRuntime__LoadFullTexture_hook, &TextureDatabaseRuntime__LoadFullTexture_orig);
     CHook::InlineHook(g_libGTASA + 0x7957E8, &TextureDatabaseRuntime__LoadFullTexture_hook, &TextureDatabaseRuntime__LoadFullTexture_orig);
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime11GetRWTextureEi", &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
     CHook::InlineHook(g_libGTASA + 0x7956C8, &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
+
+    // AntiCrash: Guard RLEDecompress against buffer overflow on Mali / PVR textures
+    CHook::InlineHook("_Z13RLEDecompressPhjPKhjj", &RLEDecompress_hook, &RLEDecompress);
+    CHook::InlineHook(g_libGTASA + 0x7982BC, &RLEDecompress_hook, &RLEDecompress);
+    CHook::InstallPLT(g_libGTASA + 0x84EB30, &RLEDecompress_hook, &RLEDecompress);
 }
 
 void InitGui();
