@@ -40,27 +40,22 @@ jobs:
           echo "Building Version: $VERSION_NAME ($VERSION_CODE)"
 
       - name: Setup Keystore
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "Using production keystore from GitHub Secrets..."
-            echo "$KEYSTORE_BASE64" | base64 -d > app/release.jks
-            echo "KEYSTORE_FILE=release.jks" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD" >> $GITHUB_ENV
-            echo "KEY_ALIAS=$KEY_ALIAS" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=$KEY_PASSWORD" >> $GITHUB_ENV
+          if [ -f app/release.jks ]; then
+            echo "Using committed permanent keystore app/release.jks"
           else
-            echo "KEYSTORE_BASE64 secret not found, auto-generating signing key for automated build..."
+            echo "Creating permanent keystore app/release.jks..."
             keytool -genkey -v -keystore app/release.jks -alias androidrelease -keyalg RSA -keysize 2048 -validity 10000 -storepass android -keypass android -dname "CN=ThunderSAMP,O=ThunderSAMP,C=TH"
-            echo "KEYSTORE_FILE=release.jks" >> $GITHUB_ENV
-            echo "KEYSTORE_PASSWORD=android" >> $GITHUB_ENV
-            echo "KEY_ALIAS=androidrelease" >> $GITHUB_ENV
-            echo "KEY_PASSWORD=android" >> $GITHUB_ENV
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add app/release.jks
+            git commit -m "Add permanent release keystore [skip ci]" || true
+            git push origin main || true
           fi
+          echo "KEYSTORE_FILE=release.jks" >> $GITHUB_ENV
+          echo "KEYSTORE_PASSWORD=android" >> $GITHUB_ENV
+          echo "KEY_ALIAS=androidrelease" >> $GITHUB_ENV
+          echo "KEY_PASSWORD=android" >> $GITHUB_ENV
 
       - name: Make gradlew executable
         run: chmod +x gradlew
