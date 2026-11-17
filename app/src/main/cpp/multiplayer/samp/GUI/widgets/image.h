@@ -8,8 +8,6 @@ public:
 	virtual void performLayout() override;
 	virtual void draw(ImGuiRenderer* renderer) override;
 
-	RwTexture* getTexture() const { return m_texture; }
-
 private:
 	RwTexture* m_texture;
 };

@@ -171,15 +171,11 @@ void CFPSFix::ProcessFrame()
         return;
     }
 
-    // In Render Loop, sleeping stalls EGL rendering and causes severe FPS drops.
-    // Frame rate is already limited natively via ApplyFPSPatch.
-    /*
     auto remaining = targetTime - now;
     if (remaining > std::chrono::milliseconds(1))
     {
         std::this_thread::sleep_for(remaining);
     }
-    */
 
     m_LastFrameTime = std::chrono::steady_clock::now();
 }

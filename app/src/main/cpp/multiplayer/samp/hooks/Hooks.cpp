@@ -1,6 +1,5 @@
 #include <GLES2/gl2.h>
 #include <cmath>
-#include <malloc.h>
 #include "samp/main.h"
 #include "vendor/patch/patch.h"
 #include "samp/Multiplayer/Multiplayer.h"
@@ -296,10 +295,8 @@ void CObject_Render_hook(CObjectGta* thiz)
 
 
         }
-    }
 
-    if (CObject_Render && thiz) {
-        CObject_Render(thiz);
+        CObject_Render(object);
     }
 
     //((void (*)(void))(g_libGTASA + 0x6F6664))();
@@ -893,8 +890,7 @@ void CRenderer_ScanWorld_hook()
 {
     ApplyPcLikeCameraDrawDistanceState();
     CRenderer_ScanWorld();
-    // Disabled to prevent streaming queue overflow & SIGSEGV crashes
-    // RequestPcLikeFarLodStreamingAroundCamera();
+    RequestPcLikeFarLodStreamingAroundCamera();
 }
 
 void (*CRenderer_RenderEverythingBarRoads)();
@@ -926,8 +922,9 @@ static void ApplyPcLikeCameraDrawDistanceState()
         TheCamera.GenerationDistMultiplier = 1.0f;
 
     if (TheCamera.m_pRwCamera) {
-        // Mobile-safe draw distance (600.0f instead of 1250.0f to avoid GPU choking)
-        constexpr float kPcSampFarClip = 600.0f;
+        // PC SA-MP UpdateFarClippingPlane defaults to 1250, clamps down to
+        // 700 in close/fade cases, and keeps 1400 as the backing max value.
+        constexpr float kPcSampFarClip = 1250.0f;
         CRenderer::ms_fFarClipPlane = kPcSampFarClip;
         RwCameraSetFarClipPlane(TheCamera.m_pRwCamera, kPcSampFarClip);
         CVisibilityPlugins::SetRenderWareCamera(TheCamera.m_pRwCamera);
@@ -982,8 +979,7 @@ static void RenderSampFarObjectsAfterWorld()
 void CRenderer_RenderEverythingBarRoads_hook() {
     ApplyPcLikeCameraDrawDistanceState();
 	CRenderer_RenderEverythingBarRoads();
-	// Disabled far object brute-force scan to prevent severe FPS drops
-	// RenderSampFarObjectsAfterWorld();
+	RenderSampFarObjectsAfterWorld();
 }
 
 #include "gta-reversed/game_sa/Pickups.h"
@@ -1530,18 +1526,12 @@ stFile* NvFOpen(const char *r1)
     }
 
     FILE *f = fopen(path, "rb");
-    if (!f && strstr(path, "/Android/media/")) {
+    if (!f && strstr(path, "com.kurdish.roleplay")) {
         char altPath[1024];
-        strncpy(altPath, path, sizeof(altPath) - 1);
-        altPath[sizeof(altPath) - 1] = '\0';
-        char* p = strstr(altPath, "/Android/media/");
-        if (p) {
-            memcpy(p + 9, "data", 4);
-            memmove(p + 13, p + 14, strlen(p + 14) + 1);
-            f = fopen(altPath, "rb");
-            if (f) {
-                FLog("[NvFOpen] Opened via Android/data fallback: '%s'", altPath);
-            }
+        snprintf(altPath, sizeof(altPath), "%s%s", g_pszStorage, r1);
+        f = fopen(altPath, "rb");
+        if (f) {
+            FLog("[NvFOpen] Opened via g_pszStorage fallback: '%s'", altPath);
         }
     }
     if (!f) {
@@ -1760,14 +1750,51 @@ size_t OS_FileRead_hook(OSFile a1, void *buffer, size_t numBytes)
     return OS_FileRead(a1, buffer, numBytes);
 }
 
-void (*RLEDecompress)(uint8_t* pDest, size_t uiDestSize, uint8_t const* pSrc, size_t uiSegSize, uint32_t uiEscape) = nullptr;
+void (*RLEDecompress)(uint8_t* pDest, size_t uiDestSize, uint8_t const* pSrc, size_t uiSegSize, uint32_t uiEscape);
 void RLEDecompress_hook(uint8_t* pDest, size_t uiDestSize, const uint8_t* pSrc, size_t uiSegSize, uint32_t uiEscape) {
+
     if (!pDest || !pSrc || uiDestSize == 0 || uiSegSize == 0) {
+        // Обработка некорректных входных данных или размеров
+        // Здесь можно сгенерировать исключение или вернуть код ошибки
         return;
     }
 
-    if (RLEDecompress) {
-        RLEDecompress(pDest, uiDestSize, pSrc, uiSegSize, uiEscape);
+    const uint8_t* pTempSrc = pSrc;
+    const uint8_t* const pEndOfDest = pDest + uiDestSize;
+    const uint8_t* const pEndOfSrc = pSrc + dwRLEDecompressSourceSize; // Предполагается, что dwRLEDecompressSourceSize определено правильно
+
+    try {
+        while (pDest < pEndOfDest && pTempSrc < pEndOfSrc) {
+            if (*pTempSrc == uiEscape) {
+                if (pTempSrc + 1 >= pEndOfSrc || pTempSrc[1] == 0 || pTempSrc + 2 + uiSegSize > pEndOfSrc) {
+                    // Обработка ошибки, неверное значение ucCurSeg или недостаточно данных в исходном буфере
+                    throw std::runtime_error("rled error 1");
+                }
+
+                uint8_t ucCurSeg = pTempSrc[1];
+                while (ucCurSeg--) {
+                    if (pDest + uiSegSize > pEndOfDest) {
+                        // Обработка ошибки, недостаточно места в целевом буфере
+                        throw std::runtime_error("rled error 2");
+                    }
+                    memcpy(pDest, pTempSrc + 2, uiSegSize);
+                    pDest += uiSegSize;
+                }
+                pTempSrc += 2 + uiSegSize;
+            } else {
+                if (pDest + uiSegSize > pEndOfDest || pTempSrc + uiSegSize > pEndOfSrc) {
+                    // Обработка ошибки, недостаточно данных в исходном буфере или недостаточно места в целевом буфере
+                    throw std::runtime_error("rled error 3");
+                }
+                memcpy(pDest, pTempSrc, uiSegSize);
+                pDest += uiSegSize;
+                pTempSrc += uiSegSize;
+            }
+        }
+
+        dwRLEDecompressSourceSize = 0;
+    } catch (const std::exception& e) {
+        FLog("%s", e.what());
     }
 }
 
@@ -1939,15 +1966,13 @@ int CTextureDatabaseRuntime__GetEntry_hook(TextureDatabaseRuntime *a1, const cha
 void (*TextureDatabaseRuntime__SortEntries_orig)(uintptr_t thiz, bool a2) = nullptr;
 void TextureDatabaseRuntime__SortEntries_hook(uintptr_t thiz, bool a2) {
     if (!thiz) return;
-    TextureDatabase* db = reinterpret_cast<TextureDatabase*>(thiz);
-    uint32_t format = static_cast<uint32_t>(db->loadedFormat);
+    uint32_t format = *reinterpret_cast<uint32_t*>(thiz + 0xa0);
     if (format <= 5) {
-        if (!db->thumbs[format].dataPtr || db->thumbs[format].numEntries == 0) {
-            FLog("[AntiCrash] SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u), skipping thumb sort (a2=true)",
-                 format, db->thumbs[format].dataPtr, db->thumbs[format].numEntries);
-            if (TextureDatabaseRuntime__SortEntries_orig) {
-                TextureDatabaseRuntime__SortEntries_orig(thiz, true);
-            }
+        uintptr_t thumbsElement = thiz + 0x38 + (format * 16);
+        void* dataPtr = *reinterpret_cast<void**>(thumbsElement + 8);
+        uint32_t numEntries = *reinterpret_cast<uint32_t*>(thumbsElement + 4);
+        if (!dataPtr || numEntries == 0) {
+            FLog("[AntiCrash] Prevented crash in SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u)", format, dataPtr, numEntries);
             return;
         }
     }
@@ -1962,15 +1987,6 @@ TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, 
         if (strcmp(withName, "cutscene") == 0) {
             FLog("[AntiCrash] Skipping non-existent cutscene database");
             return nullptr;
-        }
-    }
-    // On Mali / Pixel 8, default format DF_Default resolves to DF_ETC which crashes
-    // when textures are packaged as DXT or PVR
-    if (forcedFormat == TextureDatabaseFormat::DF_Default && withName) {
-        if (strcmp(withName, "menu") == 0 || strcmp(withName, "player") == 0 || strcmp(withName, "playerhi") == 0) {
-            forcedFormat = TextureDatabaseFormat::DF_PVR;
-        } else {
-            forcedFormat = TextureDatabaseFormat::DF_DXT;
         }
     }
     if (TextureDatabaseRuntime__Load_orig) {
@@ -2015,7 +2031,7 @@ bool CGame__InitialiseRenderWare_hook() {
     }
 
     if (!TextureDatabaseRuntime::GetDatabase("samp")) {
-        TextureDatabaseRuntime::Load("samp", false, TextureDatabaseFormat::DF_DXT);
+        TextureDatabaseRuntime::Load("samp", false, TextureDatabaseFormat::DF_Default);
     }
 
     InitGui();
@@ -2023,8 +2039,6 @@ bool CGame__InitialiseRenderWare_hook() {
 }
 void InstallSpecialHooks()
 {
-    InstallCrashFixHooks();
-
     InjectHooks();
 
     InstallUrezHooks();
@@ -2250,7 +2264,7 @@ void InstallHooks()
     CHook::InlineHook("_ZN6CRadar15DrawRadarSpriteEtffh", (uintptr_t) CRadar__DrawRadarSprite_hook,
                       (uintptr_t *) &CRadar__DrawRadarSprite);
 
-    // Removed duplicate _ZN7CObject6RenderEv InlineHook here (already hooked above)
+    CHook::InlineHook("_ZN7CObject6RenderEv", &CObject_Render_hook, & CObject_Render);
 
     //CHook::InlineHook("_Z16_rxPacketDestroyP8RxPacket", rxPacketDestroy_hook, rxPacketDestroy);
 
@@ -2262,6 +2276,6 @@ void InstallHooks()
     //CHook::Redirect("_ZN16cHandlingDataMgr22ConvertDataToGameUnitsEP13tHandlingData", &cHandlingDataMgr__ConvertDataToGameUnits);
     //CHook::InlineHook("_ZN21CAEWeatherAudioEntity16UpdateParametersEP8CAESounds", &CAEWeatherAudioEntity__UpdateParameter_hook, &CAEWeatherAudioEntity__UpdateParameter);
     HookCPad();
-    // InstallCrashFixHooks is installed early in InstallSpecialHooks
+    InstallCrashFixHooks();
     InstallMiscHooks();
 }

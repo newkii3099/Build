@@ -23,8 +23,8 @@ android {
         applicationId "com.newlab.mayes"
         minSdk 28
         targetSdk 36
-        versionCode 4234666
-        versionName "2.11.336"
+        versionCode 4234667
+        versionName "2.11.337"
 
         multiDexEnabled true
 
