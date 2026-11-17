@@ -326,7 +326,7 @@ public final class FastGameDownloader {
             connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
             connection.setReadTimeout(READ_TIMEOUT_MS);
             connection.setRequestProperty("Connection", "Keep-Alive");
-            connection.setRequestProperty("User-Agent", "NextCity-FastDownloader/2.11");
+            connection.setRequestProperty("User-Agent", "MAYES-FastDownloader/2.11");
             connection.connect();
 
             int code = connection.getResponseCode();

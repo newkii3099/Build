@@ -5,28 +5,29 @@ import android.content.Context;
 import java.io.File;
 
 public final class GameStorage {
-    private static final String PACKAGE_DIR = "com.kurdish.roleplay";
+    private static final String PACKAGE_DIR = "com.newlab.mayes";
     private static final String SAMP_DIR = "SAMP";
 
     private GameStorage() {
     }
 
     public static File getGameBaseDirectory(Context context) {
-        File mediaRoot = new File("/storage/emulated/0/Android/media");
-        File gameDir = new File(mediaRoot, PACKAGE_DIR);
+        if (context != null) {
+            File extFiles = context.getExternalFilesDir(null);
+            if (extFiles != null) {
+                if (!extFiles.exists()) {
+                    extFiles.mkdirs();
+                }
+                return extFiles;
+            }
+        }
+
+        File dataRoot = new File("/storage/emulated/0/Android/data");
+        File gameDir = new File(dataRoot, PACKAGE_DIR + "/files");
         if (!gameDir.exists()) {
             gameDir.mkdirs();
         }
-
-        if (gameDir.exists() || context == null) {
-            return gameDir;
-        }
-
-        File fallback = context.getExternalFilesDir(null);
-        if (fallback == null) {
-            return gameDir;
-        }
-        return fallback;
+        return gameDir;
     }
 
     public static String getGameBasePath(Context context) {

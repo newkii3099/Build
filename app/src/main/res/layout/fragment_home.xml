@@ -44,10 +44,10 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginEnd="10dp"
-                android:src="@drawable/ic_nextcity_logo"
+                android:src="@drawable/ic_app_logo"
                 android:elevation="4dp" />
 
             <LinearLayout
@@ -59,7 +59,7 @@
                     android:id="@+id/tvBrandName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="NEXTCITY"
+                    android:text="MAYES!"
                     android:textColor="#FFFFFF"
                     android:textSize="22sp"
                     android:fontFamily="sans-serif-black"
@@ -171,7 +171,7 @@
                     android:id="@+id/tvHeaderPlayerNick"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="NextCity_Player"
+                    android:text="MAYES_Player"
                     android:textColor="#E2E8F0"
                     android:textSize="11sp"
                     android:fontFamily="sans-serif-bold" />
@@ -292,7 +292,7 @@
                         android:id="@+id/tvPlayerNickSubtitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="ชื่อตัวละคร: NextCity_Player"
+                        android:text="ชื่อตัวละคร: MAYES_Player"
                         android:textColor="#E0E7FF"
                         android:textSize="9.5sp"
                         android:fontFamily="sans-serif-medium" />
@@ -666,7 +666,7 @@
                             android:id="@+id/tvServerHostname"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="NextCity Roleplay"
+                            android:text="MAYES! Roleplay"
                             android:textColor="@color/nextcity_text_title"
                             android:textSize="13sp"
                             android:fontFamily="sans-serif-bold"
@@ -811,7 +811,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_nextcity_logo" />
+                            android:src="@drawable/ic_app_logo" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -823,7 +823,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="ยินดีต้อนรับสู่ NextCity 🎉"
+                            android:text="ยินดีต้อนรับสู่ MAYES! 🎉"
                             android:textColor="@color/nextcity_text_title"
                             android:textSize="12sp"
                             android:fontFamily="sans-serif-bold"

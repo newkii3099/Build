@@ -94,7 +94,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
-                    android:hint="กรอกชื่อตัวละคร (เช่น Somchai_NextCity)"
+                    android:hint="กรอกชื่อตัวละคร (เช่น Somchai_MAYES)"
                     android:textColor="#0F172A"
                     android:textColorHint="#94A3B8"
                     android:textSize="13sp"

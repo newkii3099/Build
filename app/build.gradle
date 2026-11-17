@@ -20,11 +20,11 @@ android {
     namespace 'com.kurdish.roleplay'
 
     defaultConfig {
-        applicationId "com.kurdish.roleplay"
+        applicationId "com.newlab.mayes"
         minSdk 28
         targetSdk 36
-        versionCode 4234664
-        versionName "2.11.334"
+        versionCode 4234665
+        versionName "2.11.335"
 
         multiDexEnabled true
 

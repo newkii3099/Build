@@ -17,9 +17,9 @@
 
         <ImageView
             android:layout_width="26dp"
-            android:layout_height="26dp"
+            android:layout_height="32dp"
             android:layout_marginEnd="10dp"
-            android:src="@drawable/ic_nextcity_logo" />
+            android:src="@drawable/ic_app_logo" />
 
         <TextView
             android:id="@+id/title"
@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif"
         android:lineSpacingExtra="3dp"
-        android:text="เพื่อดาวน์โหลดและอัปเดตไฟล์ข้อมูลเกม NextCity SAMP ให้สมบูรณ์ โปรดอนุญาตการเข้าถึงพื้นที่จัดเก็บข้อมูลของอุปกรณ์"
+        android:text="เพื่อดาวน์โหลดและอัปเดตไฟล์ข้อมูลเกม MAYES! ให้สมบูรณ์ โปรดอนุญาตการเข้าถึงพื้นที่จัดเก็บข้อมูลของอุปกรณ์"
         android:textColor="@color/nextcity_text_body"
         android:textSize="12.5sp"
         android:layout_marginBottom="18dp" />

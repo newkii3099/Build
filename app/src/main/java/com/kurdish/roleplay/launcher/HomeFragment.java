@@ -191,7 +191,7 @@ public class HomeFragment extends Fragment {
                     "🎉 กิจกรรมเทศกาลต้อนรับผู้เล่นใหม่ & ฮาโลวีน ไนท์\n\n" +
                             "1. คูณ EXP และเงินในเกม x2 ตลอดสุดสัปดาห์นี้\n" +
                             "2. ล็อกอินสะสมครบ 7 วัน รับสกินรถลิมิเต็ดฟรี!\n" +
-                            "3. เควสภารกิจล่ารางวัลในเมือง NextCity รับกล่องสุ่มแรร์\n\n" +
+                            "3. เควสภารกิจล่ารางวัลในเมือง MAYES! รับกล่องสุ่มแรร์\n\n" +
                             "ระยะเวลากิจกรรม: วันนี้ - 15 พ.ย. 2568",
                     "ดูรายละเอียด",
                     null
@@ -220,7 +220,7 @@ public class HomeFragment extends Fragment {
                     R.drawable.ic_headset_shortcut,
                     "หากพบปัญหาในการเล่น การติดตั้ง หรือต้องการแจ้งบัค:\n\n" +
                             "• Discord Support: เปิด Ticket ได้ตลอด 24 ชม.\n" +
-                            "• Fanpage: Facebook.com/NextCityMobile\n" +
+                            "• Fanpage: Facebook.com/MAYES\n" +
                             "• เวลาทำการทีมงานแอดมิน: ทุกวัน 10:00 - 02:00 น.\n\n" +
                             "เราพร้อมดูแลและช่วยเหลือผู้เล่นทุกท่านเสมอครับ ❤️",
                     "เปิด Discord Ticket",
@@ -345,7 +345,7 @@ public class HomeFragment extends Fragment {
                         }
                         if (tvServerHostname != null) {
                             String hn = (info.hostname != null) ? info.hostname.trim() : "";
-                            tvServerHostname.setText(hn.isEmpty() ? "NextCity Roleplay" : hn);
+                            tvServerHostname.setText(hn.isEmpty() ? "MAYES! Roleplay" : hn);
                         }
                         if (tvServerRealPlayers != null) {
                             tvServerRealPlayers.setText(info.players + " / " + info.maxPlayers + " คน");
@@ -382,12 +382,12 @@ public class HomeFragment extends Fragment {
         String statusText = (lastServerInfo != null && lastServerInfo.isOnline) ? "🟢 ออนไลน์ (ปกติ)" : "🔴 ไม่สามารถติดต่อได้";
         String playersText = (lastServerInfo != null && lastServerInfo.isOnline) ? (lastServerInfo.players + " / " + lastServerInfo.maxPlayers + " คน") : "ไม่สามารถติดต่อได้";
         String pingText = (lastServerInfo != null && lastServerInfo.isOnline) ? (lastServerInfo.ping + " ms") : "-";
-        String hostName = (lastServerInfo != null && !lastServerInfo.hostname.isEmpty()) ? lastServerInfo.hostname : "NextCity Roleplay";
+        String hostName = (lastServerInfo != null && !lastServerInfo.hostname.isEmpty()) ? lastServerInfo.hostname : "MAYES! Roleplay";
 
         showModernDialog(
                 "🏢 " + hostName,
                 R.drawable.ic_server_database,
-                "ข้อมูลเซิร์ฟเวอร์ทางการ NextCity:\n\n" +
+                "ข้อมูลเซิร์ฟเวอร์ทางการ MAYES!:\n\n" +
                         "• สถานะ: " + statusText + "\n" +
                         "• ที่อยู่ IP: " + LOCKED_SERVER_HOST + ":" + LOCKED_SERVER_PORT + "\n" +
                         "• ผู้เล่นออนไลน์จริง: " + playersText + "\n" +
@@ -401,16 +401,16 @@ public class HomeFragment extends Fragment {
 
     private void showAnnouncementDialog() {
         showModernDialog(
-                "📢 ประกาศจากทีมงาน NextCity",
+                "📢 ประกาศจากทีมงาน MAYES!",
                 R.drawable.ic_megaphone_clean,
-                "ยินดีต้อนรับสู่ NextCity Modern Mobile Launcher 🎉\n\n" +
+                "ยินดีต้อนรับสู่ MAYES! 🎉\n\n" +
                         "ขอบคุณผู้เล่นทุกท่านที่เข้ามาเป็นส่วนหนึ่งของคอมมูนิตี้ของเรา!\n\n" +
-                        "📌 อัพเดทแพทช์ล่าสุด 2.11.312:\n" +
-                        "1. ปรับปรุงหน้าตา UI ใหม่ทั้งหมด สไตล์ Modern Casual & Anime\n" +
+                        "📌 อัพเดทแพทช์ล่าสุด 2.11.335:\n" +
+                        "1. ปรับปรุงหน้าตา UI ใหม่ทั้งหมด สไตล์ Modern MAYES!\n" +
                         "2. เพิ่มประสิทธิภาพการเชื่อมต่อเซิร์ฟเวอร์ให้รวดเร็วและลื่นไหลยิ่งขึ้น\n" +
-                        "3. รองรับการแสดงผลทุกขนาดหน้าจอบน Android\n" +
+                        "3. ระบบออโต้ดาวน์โหลดไฟล์ผ่าน Cloudflare R2 ความเร็วสูงพิเศษ\n" +
                         "4. ปรับปรุงเสถียรภาพและระบบเสียงเกม\n\n" +
-                        "🕒 วันที่ประกาศ: 31 ต.ค. 2568 เวลา 14:30 น.",
+                        "🕒 วันที่ประกาศ: 17 พ.ย. 2569",
                 "เข้าใจแล้ว",
                 null
         );
@@ -421,7 +421,7 @@ public class HomeFragment extends Fragment {
                 "🔔 ศูนย์การแจ้งเตือน",
                 R.drawable.ic_bell_clean,
                 "การแจ้งเตือนล่าสุดของคุณ:\n\n" +
-                        "🟢 [ระบบ] เซิร์ฟเวอร์ NextCity RP ออนไลน์ปกติ พร้อมให้บริการ\n" +
+                        "🟢 [ระบบ] เซิร์ฟเวอร์ MAYES! ออนไลน์ปกติ พร้อมให้บริการ\n" +
                         "🎁 [รางวัล] คุณมีของขวัญประจำวันรอรับอยู่ในกระเป๋า!\n" +
                         "⚡ [กิจกรรม] กิจกรรม EXP x2 เริ่มต้นแล้ว อย่าลืมชวนเพื่อนมาร่วมสนุก\n" +
                         "🛡️ [ความปลอดภัย] แนะนำให้ตั้งรหัสผ่านที่ปลอดภัยในเมนูตั้งค่าเกม",

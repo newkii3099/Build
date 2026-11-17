@@ -24,7 +24,7 @@ CSettings::CSettings()
 	// client
 	size_t length = 0;
 	char fallbackName[0x7F];
-	sprintf(fallbackName, "NextCity_%d", rand() % 1000);
+	sprintf(fallbackName, "MAYES_%d", rand() % 1000);
 	length = reader.Get("client", "name", fallbackName).copy(m_Settings.szNickName, 24);
 	m_Settings.szNickName[length] = '\0';
 	length = reader.Get("client", "host", "82.26.104.217").copy(m_Settings.szHost, MAX_SETTINGS_STRING);

@@ -24,7 +24,7 @@ public class ConfigValidator {
                     FileOutputStream fos = new FileOutputStream(file);
                     StringBuilder sb = new StringBuilder();
                     sb.append("[client]\n");
-                    sb.append("name=NextCity_Player\n");
+                    sb.append("name=MAYES_Player\n");
                     sb.append("password=\n");
                     sb.append("version=0.3.7\n");
                     sb.append("host=82.26.104.217\n");
@@ -46,7 +46,7 @@ public class ConfigValidator {
     }
 
     public static String getNickName(Context context) {
-        if (context == null) return "NextCity_Player";
+        if (context == null) return "MAYES_Player";
         try {
             File file = GameStorage.getSettingsFile(context);
             if (!file.exists()) {
@@ -66,7 +66,7 @@ public class ConfigValidator {
         if (saved != null && !saved.trim().isEmpty()) {
             return saved.trim();
         }
-        return "NextCity_Player";
+        return "MAYES_Player";
     }
 
     public static void setNickName(Context context, String nickname) {

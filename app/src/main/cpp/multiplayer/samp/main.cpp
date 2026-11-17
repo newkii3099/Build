@@ -34,7 +34,7 @@ Peerapol Unarak
 JavaVM* javaVM;
 
 
-static std::string g_storagePath = "/storage/emulated/0/Android/media/com.kurdish.roleplay/";
+static std::string g_storagePath = "/storage/emulated/0/Android/data/com.newlab.mayes/files/";
 char* g_pszStorage = const_cast<char*>(g_storagePath.c_str());
 
 UI* pUI = nullptr;
@@ -315,7 +315,7 @@ void DoInitStuff()
 
 		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "127.0.0.1";
 		int iPort = (pSettings && pSettings->Get().iPort > 0) ? pSettings->Get().iPort : 7777;
-		const char* szNick = (pSettings && pSettings->Get().szNickName[0] != '\0') ? pSettings->Get().szNickName : "NextCityPlayer";
+		const char* szNick = (pSettings && pSettings->Get().szNickName[0] != '\0') ? pSettings->Get().szNickName : "MAYES_Player";
 		const char* szPass = (pSettings) ? pSettings->Get().szPassword : "";
 
 		FLog("Starting CNetGame with Host: %s:%d, NickName: %s", szHost, iPort, szNick);

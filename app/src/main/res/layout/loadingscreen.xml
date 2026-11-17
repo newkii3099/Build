@@ -35,10 +35,10 @@
             app:layout_constraintEnd_toEndOf="parent">
 
             <ImageView
-                android:layout_width="38dp"
-                android:layout_height="38dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginEnd="10dp"
-                android:src="@drawable/ic_nextcity_logo"
+                android:src="@drawable/ic_app_logo"
                 android:elevation="6dp" />
 
             <LinearLayout
@@ -49,7 +49,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="NEXTCITY"
+                    android:text="MAYES!"
                     android:textColor="#FFFFFF"
                     android:textSize="22sp"
                     android:fontFamily="sans-serif-black"
@@ -148,7 +148,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:gravity="center"
-                    android:text="กำลังเตรียมความพร้อมของเมือง NextCity..."
+                    android:text="กำลังเตรียมความพร้อมของเมือง MAYES!..."
                     android:textColor="@color/nextcity_text_muted"
                     android:textSize="11sp" />
 
@@ -219,7 +219,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="NextCity Edition"
+                android:text="MAYES! Edition"
                 android:textColor="#E2E8F0"
                 android:textSize="10sp" />
         </LinearLayout>

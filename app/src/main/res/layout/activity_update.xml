@@ -75,7 +75,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="NextCity SA-MP"
+                        android:text="MAYES!"
                         android:textSize="18sp"
                         android:fontFamily="sans-serif-black"
                         android:textStyle="bold"
