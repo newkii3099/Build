@@ -1987,14 +1987,13 @@ int CTextureDatabaseRuntime__GetEntry_hook(TextureDatabaseRuntime *a1, const cha
 void (*TextureDatabaseRuntime__SortEntries_orig)(uintptr_t thiz, bool a2) = nullptr;
 void TextureDatabaseRuntime__SortEntries_hook(uintptr_t thiz, bool a2) {
     if (!thiz) return;
-    uint32_t format = *reinterpret_cast<uint32_t*>(thiz + 0xa0);
+    auto* db = reinterpret_cast<TextureDatabaseRuntime*>(thiz);
+    uint32_t format = static_cast<uint32_t>(db->loadedFormat);
     if (format <= 5) {
-        uintptr_t thumbsElement = thiz + 0x38 + (format * 16);
-        void* dataPtr = *reinterpret_cast<void**>(thumbsElement + 8);
-        uint32_t numEntries = *reinterpret_cast<uint32_t*>(thumbsElement + 4);
-        if (!dataPtr || numEntries == 0) {
-            FLog("[AntiCrash] Prevented crash in SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u)", format, dataPtr, numEntries);
-            return;
+        if (!db->thumbs[format].dataPtr || db->thumbs[format].numEntries == 0) {
+            FLog("[AntiCrash] SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u), skipping thumb sort (a2=true)",
+                 format, db->thumbs[format].dataPtr, db->thumbs[format].numEntries);
+            a2 = true;
         }
     }
     if (TextureDatabaseRuntime__SortEntries_orig) {
@@ -2012,6 +2011,39 @@ TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, 
     }
     if (TextureDatabaseRuntime__Load_orig) {
         return TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
+    }
+    return nullptr;
+}
+
+static RwTexture* g_pDummyTexture = nullptr;
+static RwTexture* (*TextureDatabaseRuntime__GetTexture_orig)(const char* name) = nullptr;
+static RwTexture* TextureDatabaseRuntime__GetTexture_hook(const char* name) {
+    if (!name || name[0] == '\0') return nullptr;
+    RwTexture* tex = nullptr;
+    if (TextureDatabaseRuntime__GetTexture_orig) {
+        tex = TextureDatabaseRuntime__GetTexture_orig(name);
+    }
+    if (tex) return tex;
+
+    if (!g_pDummyTexture) {
+        g_pDummyTexture = reinterpret_cast<RwTexture*>(calloc(1, sizeof(RwTexture) + 64));
+        if (g_pDummyTexture) {
+            g_pDummyTexture->refCount = 99999;
+            strncpy(g_pDummyTexture->name, "dummy", sizeof(g_pDummyTexture->name) - 1);
+        }
+    }
+    return g_pDummyTexture;
+}
+
+static RwTexture* (*TextureDatabaseRuntime__GetRWTexture_orig)(uintptr_t thiz, int32_t entryIndex) = nullptr;
+static RwTexture* TextureDatabaseRuntime__GetRWTexture_hook(uintptr_t thiz, int32_t entryIndex) {
+    if (!thiz || entryIndex < 0) return nullptr;
+    auto* db = reinterpret_cast<TextureDatabaseRuntime*>(thiz);
+    if (!db->fullDataOffsets.dataPtr || static_cast<uint32_t>(entryIndex) >= db->entries.numEntries) {
+        return nullptr;
+    }
+    if (TextureDatabaseRuntime__GetRWTexture_orig) {
+        return TextureDatabaseRuntime__GetRWTexture_orig(thiz, entryIndex);
     }
     return nullptr;
 }
@@ -2072,6 +2104,8 @@ void InstallSpecialHooks()
     // Early crash guards for texture database loading
     CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
     CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime10GetTextureEPKc", &TextureDatabaseRuntime__GetTexture_hook, &TextureDatabaseRuntime__GetTexture_orig);
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime12GetRWTextureEi", &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
 
     CHook::InlineHook("_ZN14MainMenuScreen6UpdateEf", &MainMenuScreen__Update_hook, &MainMenuScreen__Update);
 
