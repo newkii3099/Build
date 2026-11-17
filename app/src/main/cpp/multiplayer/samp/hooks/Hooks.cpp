@@ -1984,36 +1984,6 @@ int CTextureDatabaseRuntime__GetEntry_hook(TextureDatabaseRuntime *a1, const cha
         result = -1;
     return result;
 }
-void (*TextureDatabaseRuntime__SortEntries_orig)(uintptr_t thiz, bool a2) = nullptr;
-void TextureDatabaseRuntime__SortEntries_hook(uintptr_t thiz, bool a2) {
-    if (!thiz) return;
-    auto* db = reinterpret_cast<TextureDatabaseRuntime*>(thiz);
-    uint32_t format = static_cast<uint32_t>(db->loadedFormat);
-    if (format <= 5) {
-        if (!db->thumbs[format].dataPtr || db->thumbs[format].numEntries == 0) {
-            FLog("[AntiCrash] SortEntries: format %u has null/empty thumbs (dataPtr=%p, count=%u), skipping thumb sort (a2=true)",
-                 format, db->thumbs[format].dataPtr, db->thumbs[format].numEntries);
-            a2 = true;
-        }
-    }
-    if (TextureDatabaseRuntime__SortEntries_orig) {
-        TextureDatabaseRuntime__SortEntries_orig(thiz, a2);
-    }
-}
-
-TextureDatabaseRuntime* (*TextureDatabaseRuntime__Load_orig)(const char *withName, bool fullyLoad, TextureDatabaseFormat forcedFormat) = nullptr;
-TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, bool fullyLoad, TextureDatabaseFormat forcedFormat) {
-    if (withName) {
-        if (strcmp(withName, "cutscene") == 0) {
-            FLog("[AntiCrash] Skipping non-existent cutscene database");
-            return nullptr;
-        }
-    }
-    if (TextureDatabaseRuntime__Load_orig) {
-        return TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
-    }
-    return nullptr;
-}
 
 void InstallCrashFixHooks()
 {
@@ -2067,10 +2037,6 @@ void InstallSpecialHooks()
     CHook::RET("_ZN12CCutsceneMgr10InitialiseEv");			// CCutsceneMgr::Initialise
 
     CHook::Redirect(g_libGTASA+0x7D624C, &NvFOpen);
-
-    // Early crash guards for texture database loading
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
 
     CHook::InlineHook("_ZN14MainMenuScreen6UpdateEf", &MainMenuScreen__Update_hook, &MainMenuScreen__Update);
 
