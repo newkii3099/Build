@@ -1766,60 +1766,8 @@ void RLEDecompress_hook(uint8_t* pDest, size_t uiDestSize, const uint8_t* pSrc, 
         return;
     }
 
-    size_t usableDst = malloc_usable_size(pDest);
-    if (usableDst > 0 && uiDestSize > usableDst) {
-        uiDestSize = usableDst;
-    }
-
-    memset(pDest, 0, uiDestSize);
-
-    size_t usableSrc = malloc_usable_size(const_cast<void*>(reinterpret_cast<const void*>(pSrc)));
-
-    uint8_t* dstPtr = pDest;
-    const uint8_t* const pEndOfDest = pDest + uiDestSize;
-    const uint8_t* srcPtr = pSrc;
-    const uint8_t* const pEndOfSrc = (usableSrc > 0) ? (pSrc + usableSrc) : nullptr;
-
-    while (dstPtr < pEndOfDest) {
-        if (pEndOfSrc && srcPtr >= pEndOfSrc) {
-            break;
-        }
-
-        uint8_t marker = *srcPtr;
-        if (marker == static_cast<uint8_t>(uiEscape)) {
-            if (pEndOfSrc && (srcPtr + 2 + uiSegSize > pEndOfSrc)) {
-                break;
-            }
-
-            uint8_t count = srcPtr[1];
-            const uint8_t* valPtr = srcPtr + 2;
-            srcPtr += 2 + uiSegSize;
-
-            if (count == 0) continue;
-
-            for (uint32_t i = 0; i < count && dstPtr < pEndOfDest; ++i) {
-                size_t toCopy = uiSegSize;
-                if (dstPtr + toCopy > pEndOfDest) {
-                    toCopy = pEndOfDest - dstPtr;
-                }
-                memcpy(dstPtr, valPtr, toCopy);
-                dstPtr += toCopy;
-            }
-        } else {
-            if (pEndOfSrc && (srcPtr + uiSegSize > pEndOfSrc)) {
-                break;
-            }
-
-            const uint8_t* valPtr = srcPtr;
-            srcPtr += uiSegSize;
-
-            size_t toCopy = uiSegSize;
-            if (dstPtr + toCopy > pEndOfDest) {
-                toCopy = pEndOfDest - dstPtr;
-            }
-            memcpy(dstPtr, valPtr, toCopy);
-            dstPtr += toCopy;
-        }
+    if (RLEDecompress) {
+        RLEDecompress(pDest, uiDestSize, pSrc, uiSegSize, uiEscape);
     }
 }
 
@@ -2026,107 +1974,9 @@ TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, 
         }
     }
     if (TextureDatabaseRuntime__Load_orig) {
-        TextureDatabaseRuntime* ret = TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
-        if (ret) {
-            uintptr_t dbAddr = reinterpret_cast<uintptr_t>(ret);
-            void* fullDataOffsets = *reinterpret_cast<void**>(dbAddr + 0xF8);
-            void* streamFile = *reinterpret_cast<void**>(dbAddr + 0xE8);
-            if (!fullDataOffsets || !streamFile) {
-                uint32_t fmt = *reinterpret_cast<uint32_t*>(dbAddr + 0xA0);
-                auto LoadDataOffsets_fn = reinterpret_cast<bool(*)(void*, uint32_t, void*, void*, bool)>(g_libGTASA + 0x799E7C);
-                LoadDataOffsets_fn(ret, fmt, reinterpret_cast<void*>(dbAddr + 0xF0), reinterpret_cast<void*>(dbAddr + 0xE8), false);
-                FLog("[AntiCrash] Manually invoked LoadDataOffsets for DB '%s' (format=%u), fullDataOffsets=%p, streamFile=%p",
-                     withName ? withName : "unknown", fmt,
-                     *reinterpret_cast<void**>(dbAddr + 0xF8),
-                     *reinterpret_cast<void**>(dbAddr + 0xE8));
-            }
-        }
-        return ret;
+        return TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
     }
     return nullptr;
-}
-
-static uint32_t (*TextureDatabaseRuntime__LoadFullTexture_orig)(uintptr_t thiz, uint32_t entryIndex) = nullptr;
-static uint32_t TextureDatabaseRuntime__LoadFullTexture_hook(uintptr_t thiz, uint32_t entryIndex)
-{
-    if (!thiz) return 0;
-    void* fullDataOffsets = *reinterpret_cast<void**>(thiz + 0xF8);
-    void* streamFile = *reinterpret_cast<void**>(thiz + 0xE8);
-    if (!fullDataOffsets || !streamFile) {
-        FLog("[AntiCrash] Prevented crash in LoadFullTexture: db at %p has null fullDataOffsets (%p) or streamFile (%p), entry=%u",
-             reinterpret_cast<void*>(thiz), fullDataOffsets, streamFile, entryIndex);
-        return 0;
-    }
-    uint32_t numEntries = *reinterpret_cast<uint32_t*>(thiz + 0x24);
-    if (entryIndex >= numEntries) {
-        FLog("[AntiCrash] Prevented out-of-bounds LoadFullTexture: entry=%u >= numEntries=%u", entryIndex, numEntries);
-        return 0;
-    }
-    void* entriesData = *reinterpret_cast<void**>(thiz + 0x28);
-    if (!entriesData) {
-        FLog("[AntiCrash] Prevented crash in LoadFullTexture: null entriesData");
-        return 0;
-    }
-    if (TextureDatabaseRuntime__LoadFullTexture_orig) {
-        return TextureDatabaseRuntime__LoadFullTexture_orig(thiz, entryIndex);
-    }
-    return 0;
-}
-
-static RwTexture* (*TextureDatabaseRuntime__GetRWTexture_orig)(uintptr_t thiz, int32_t entryIndex) = nullptr;
-static RwTexture* TextureDatabaseRuntime__GetRWTexture_hook(uintptr_t thiz, int32_t entryIndex)
-{
-    if (!thiz || entryIndex < 0) return nullptr;
-    uint32_t numEntries = *reinterpret_cast<uint32_t*>(thiz + 0x24);
-    if (static_cast<uint32_t>(entryIndex) >= numEntries) {
-        FLog("[AntiCrash] GetRWTexture: entryIndex %d out of bounds (numEntries=%u)", entryIndex, numEntries);
-        return nullptr;
-    }
-    void* entriesData = *reinterpret_cast<void**>(thiz + 0x28);
-    if (!entriesData) {
-        FLog("[AntiCrash] GetRWTexture: db at %p has null entries.dataPtr", reinterpret_cast<void*>(thiz));
-        return nullptr;
-    }
-    if (TextureDatabaseRuntime__GetRWTexture_orig) {
-        return TextureDatabaseRuntime__GetRWTexture_orig(thiz, entryIndex);
-    }
-    return nullptr;
-}
-
-static RwTexture* g_pDummyTexture = nullptr;
-static RwTexture* (*TextureDatabaseRuntime__GetTexture_orig)(const char* name) = nullptr;
-
-static RwTexture* TextureDatabaseRuntime__GetTexture_hook(const char* name)
-{
-    if (!name || name[0] == '\0') return nullptr;
-
-    RwTexture* tex = nullptr;
-    if (TextureDatabaseRuntime__GetTexture_orig) {
-        tex = TextureDatabaseRuntime__GetTexture_orig(name);
-    }
-    if (tex) return tex;
-
-    // Allocate persistent dummy texture so callers doing tex->refCount++ never crash at 0x64
-    if (!g_pDummyTexture) {
-        g_pDummyTexture = reinterpret_cast<RwTexture*>(calloc(1, sizeof(RwTexture) + 64));
-        if (g_pDummyTexture) {
-            g_pDummyTexture->refCount = 99999;
-            strncpy(g_pDummyTexture->name, "dummy", sizeof(g_pDummyTexture->name) - 1);
-        }
-    }
-
-    FLog("[AntiCrash] GetTexture '%s' not found, returned dummy texture (%p) to prevent null refCount crash", name, g_pDummyTexture);
-    return g_pDummyTexture;
-}
-
-static void (*MobileMenu__Load_orig)(uintptr_t thiz) = nullptr;
-static void MobileMenu__Load_hook(uintptr_t thiz)
-{
-    FLog("[AntiCrash] MobileMenu::Load entered on %p", reinterpret_cast<void*>(thiz));
-    if (MobileMenu__Load_orig) {
-        MobileMenu__Load_orig(thiz);
-    }
-    FLog("[AntiCrash] MobileMenu::Load completed successfully on %p", reinterpret_cast<void*>(thiz));
 }
 
 void InstallCrashFixHooks()
@@ -2154,25 +2004,6 @@ void InstallCrashFixHooks()
     // AntiCrash: Guard TextureDatabaseRuntime against null thumbnails (Pixel 8 / Mali fix)
     CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
     CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime15LoadFullTextureEj", &TextureDatabaseRuntime__LoadFullTexture_hook, &TextureDatabaseRuntime__LoadFullTexture_orig);
-    CHook::InlineHook(g_libGTASA + 0x7957E8, &TextureDatabaseRuntime__LoadFullTexture_hook, &TextureDatabaseRuntime__LoadFullTexture_orig);
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime11GetRWTextureEi", &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
-    CHook::InlineHook(g_libGTASA + 0x7956C8, &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
-
-    // AntiCrash: Guard TextureDatabaseRuntime::GetTexture against null return (prevents SIGSEGV at 0x64 in MobileMenu::Load)
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime10GetTextureEPKc", &TextureDatabaseRuntime__GetTexture_hook, &TextureDatabaseRuntime__GetTexture_orig);
-    CHook::InlineHook(g_libGTASA + 0x79693C, &TextureDatabaseRuntime__GetTexture_hook, &TextureDatabaseRuntime__GetTexture_orig);
-    CHook::InstallPLT(g_libGTASA + 0x848708, &TextureDatabaseRuntime__GetTexture_hook, &TextureDatabaseRuntime__GetTexture_orig);
-
-    // AntiCrash: Guard MobileMenu::Load against unhandled crashes
-    CHook::InlineHook("_ZN10MobileMenu4LoadEv", &MobileMenu__Load_hook, &MobileMenu__Load_orig);
-    CHook::InlineHook(g_libGTASA + 0x70DC90, &MobileMenu__Load_hook, &MobileMenu__Load_orig);
-    CHook::InstallPLT(g_libGTASA + 0x84D448, &MobileMenu__Load_hook, &MobileMenu__Load_orig);
-
-    // AntiCrash: Guard RLEDecompress against buffer overflow on Mali / PVR textures
-    CHook::InlineHook("_Z13RLEDecompressPhjPKhjj", &RLEDecompress_hook, &RLEDecompress);
-    CHook::InlineHook(g_libGTASA + 0x7982BC, &RLEDecompress_hook, &RLEDecompress);
-    CHook::InstallPLT(g_libGTASA + 0x84EB30, &RLEDecompress_hook, &RLEDecompress);
 }
 
 void InitGui();

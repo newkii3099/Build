@@ -42,7 +42,12 @@ RwTexture* CUtil::LoadTextureFromDB(const char* dbname, const char* texture)
 
     auto tex = CUtil::GetTexture(texture);
 
-    TextureDatabaseRuntime::Unregister(db_handle);
+    // Only unregister temporary databases, never unregister persistent core databases
+    if (strcmp(dbname, "samp") != 0 && strcmp(dbname, "menu") != 0 && strcmp(dbname, "player") != 0 &&
+        strcmp(dbname, "gta3") != 0 && strcmp(dbname, "gta_int") != 0 && strcmp(dbname, "mobile") != 0 && strcmp(dbname, "txd") != 0)
+    {
+        TextureDatabaseRuntime::Unregister(db_handle);
+    }
 
     return tex;
 }
