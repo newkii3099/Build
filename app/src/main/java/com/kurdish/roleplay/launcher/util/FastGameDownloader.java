@@ -425,13 +425,14 @@ public final class FastGameDownloader {
     }
 
     private static boolean isMutableFile(String name) {
-        return "samp_log.txt".equalsIgnoreCase(name)
-                || "svlog.txt".equalsIgnoreCase(name)
-                || "gtasatelem.set".equalsIgnoreCase(name)
-                || "gta_sa.set".equalsIgnoreCase(name)
-                || "settings.ini".equalsIgnoreCase(name)
-                || "GTASAMP10.b".equalsIgnoreCase(name)
-                || "GTASAsf10.b".equalsIgnoreCase(name)
-                || ".htaccess".equalsIgnoreCase(name);
+        if (name == null) return false;
+        String lower = name.toLowerCase();
+        return lower.endsWith(".log")
+                || "gtasatelem.set".equalsIgnoreCase(lower)
+                || "gta_sa.set".equalsIgnoreCase(lower)
+                || "settings.ini".equalsIgnoreCase(lower)
+                || "GTASAMP10.b".equalsIgnoreCase(lower)
+                || "GTASAsf10.b".equalsIgnoreCase(lower)
+                || ".htaccess".equalsIgnoreCase(lower);
     }
 }

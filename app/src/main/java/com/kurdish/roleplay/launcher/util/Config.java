@@ -14,8 +14,8 @@ public class Config {
     public static final String KEY_GPU_TYPE = "gpu_type";
 
     // Default download source (User-configurable Web Hosting or GitHub Release raw)
-    public static final String DEFAULT_DATA_URL = "https://raw.githubusercontent.com/newkii3099/Build/main/data/";
-    public static final String DEFAULT_MANIFEST_URL = "https://raw.githubusercontent.com/newkii3099/Build/main/files.json";
+    public static final String DEFAULT_DATA_URL = "https://pub-ba3bc1ea6a6a477fb843c7d67b4083dc.r2.dev/";
+    public static final String DEFAULT_MANIFEST_URL = "https://pub-ba3bc1ea6a6a477fb843c7d67b4083dc.r2.dev/files.json";
 
     public static String getDataUrl(Context context) {
         if (context == null) return DEFAULT_DATA_URL;
