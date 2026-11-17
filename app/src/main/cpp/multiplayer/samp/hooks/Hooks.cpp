@@ -140,14 +140,14 @@ void MainLoop();
 void(*Render2dStuff)();
 void Render2dStuff_hook()
 {
+    static bool bFirstFrameLogged = false;
+    if (!bFirstFrameLogged) {
+        FLog("[SAMP] First Render2dStuff_hook frame executed!");
+        bFirstFrameLogged = true;
+    }
     Render2dStuff();
     MainLoop();
     ShowHud();
-    if(pNetGame)
-    {
-        //CTextDrawPool* pTextDrawPool = pNetGame->GetTextDrawPool();
-       // if(pTextDrawPool) pTextDrawPool->Draw();
-    }
     if (pUI) pUI->render();
 }
 
@@ -1574,22 +1574,22 @@ bool g_bPlaySAMP = false;
 void MainMenu_OnStartSAMP()
 {
     if(g_bPlaySAMP) return;
-    //InitInMenu();
+    FLog("[SAMP] MainMenu_OnStartSAMP: Starting game & calling Menu_NewGame");
     pGame->StartGame();
 
     CHook::CallFunction<void>(g_libGTASA + 0x718FCC); //  Menu_NewGame();
-
-
-
-   // CHook::CallFunction<void>(g_libGTASA + 0x5509AC);
     g_bPlaySAMP = true;
+    FLog("[SAMP] MainMenu_OnStartSAMP: g_bPlaySAMP set to true");
 }
 
 unsigned int (*MainMenuScreen__Update)(uintptr_t thiz, float a2);
 unsigned int MainMenuScreen__Update_hook(uintptr_t thiz, float a2)
 {
     unsigned int ret = MainMenuScreen__Update(thiz, a2);
-    MainMenu_OnStartSAMP();
+    if (!g_bPlaySAMP) {
+        FLog("[SAMP] MainMenuScreen__Update_hook called, triggering MainMenu_OnStartSAMP");
+        MainMenu_OnStartSAMP();
+    }
     return ret;
 }
 
@@ -2015,39 +2015,6 @@ TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, 
     return nullptr;
 }
 
-static RwTexture* g_pDummyTexture = nullptr;
-static RwTexture* (*TextureDatabaseRuntime__GetTexture_orig)(const char* name) = nullptr;
-static RwTexture* TextureDatabaseRuntime__GetTexture_hook(const char* name) {
-    if (!name || name[0] == '\0') return nullptr;
-    RwTexture* tex = nullptr;
-    if (TextureDatabaseRuntime__GetTexture_orig) {
-        tex = TextureDatabaseRuntime__GetTexture_orig(name);
-    }
-    if (tex) return tex;
-
-    if (!g_pDummyTexture) {
-        g_pDummyTexture = reinterpret_cast<RwTexture*>(calloc(1, sizeof(RwTexture) + 64));
-        if (g_pDummyTexture) {
-            g_pDummyTexture->refCount = 99999;
-            strncpy(g_pDummyTexture->name, "dummy", sizeof(g_pDummyTexture->name) - 1);
-        }
-    }
-    return g_pDummyTexture;
-}
-
-static RwTexture* (*TextureDatabaseRuntime__GetRWTexture_orig)(uintptr_t thiz, int32_t entryIndex) = nullptr;
-static RwTexture* TextureDatabaseRuntime__GetRWTexture_hook(uintptr_t thiz, int32_t entryIndex) {
-    if (!thiz || entryIndex < 0) return nullptr;
-    auto* db = reinterpret_cast<TextureDatabaseRuntime*>(thiz);
-    if (!db->fullDataOffsets.dataPtr || static_cast<uint32_t>(entryIndex) >= db->entries.numEntries) {
-        return nullptr;
-    }
-    if (TextureDatabaseRuntime__GetRWTexture_orig) {
-        return TextureDatabaseRuntime__GetRWTexture_orig(thiz, entryIndex);
-    }
-    return nullptr;
-}
-
 void InstallCrashFixHooks()
 {
     // some crashfixes
@@ -2104,8 +2071,6 @@ void InstallSpecialHooks()
     // Early crash guards for texture database loading
     CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
     CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime10GetTextureEPKc", &TextureDatabaseRuntime__GetTexture_hook, &TextureDatabaseRuntime__GetTexture_orig);
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime12GetRWTextureEi", &TextureDatabaseRuntime__GetRWTexture_hook, &TextureDatabaseRuntime__GetRWTexture_orig);
 
     CHook::InlineHook("_ZN14MainMenuScreen6UpdateEf", &MainMenuScreen__Update_hook, &MainMenuScreen__Update);
 
