@@ -1985,6 +1985,24 @@ int CTextureDatabaseRuntime__GetEntry_hook(TextureDatabaseRuntime *a1, const cha
     return result;
 }
 
+void (*TextureDatabaseRuntime__SortEntries_orig)(uintptr_t thiz, bool a2) = nullptr;
+void TextureDatabaseRuntime__SortEntries_hook(uintptr_t thiz, bool a2) {
+    if (!thiz) return;
+    uint32_t format = *reinterpret_cast<uint32_t*>(thiz + 0xa0);
+    if (format <= 5) {
+        void* dataPtr = *reinterpret_cast<void**>(thiz + 0x38 + (format * 16));
+        if (!dataPtr) {
+            // When thumbs dataPtr is null (e.g. menu.pvr on Mali), pass a2=true
+            // to bypass the null thumbnail copy loop at 0x797204 (Fault 0x1f0),
+            // while allowing qsort and entry sorting to complete 100%!
+            a2 = true;
+        }
+    }
+    if (TextureDatabaseRuntime__SortEntries_orig) {
+        TextureDatabaseRuntime__SortEntries_orig(thiz, a2);
+    }
+}
+
 void InstallCrashFixHooks()
 {
     // some crashfixes
@@ -2037,6 +2055,9 @@ void InstallSpecialHooks()
     CHook::RET("_ZN12CCutsceneMgr10InitialiseEv");			// CCutsceneMgr::Initialise
 
     CHook::Redirect(g_libGTASA+0x7D624C, &NvFOpen);
+
+    // Bypass null thumbnail dereference SIGSEGV (0x797204) while ensuring full entry sorting
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
 
     CHook::InlineHook("_ZN14MainMenuScreen6UpdateEf", &MainMenuScreen__Update_hook, &MainMenuScreen__Update);
 
