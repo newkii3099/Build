@@ -1534,6 +1534,27 @@ stFile* NvFOpen(const char *r1)
             FLog("[NvFOpen] Opened via g_pszStorage fallback: '%s'", altPath);
         }
     }
+    // Transparent texture format fallback (.dxt. <-> .pvr. <-> .etc.)
+    if (!f) {
+        const char* formats[] = { ".dxt.", ".pvr.", ".etc." };
+        for (int i = 0; i < 3 && !f; ++i) {
+            char* match = strstr(path, formats[i]);
+            if (match) {
+                for (int j = 0; j < 3; ++j) {
+                    if (i == j) continue;
+                    char altPath[1024];
+                    size_t prefixLen = match - path;
+                    snprintf(altPath, sizeof(altPath), "%.*s%s%s", (int)prefixLen, path, formats[j], match + 5);
+                    f = fopen(altPath, "rb");
+                    if (f) {
+                        FLog("[NvFOpen] Format fallback '%s' -> '%s'", path, altPath);
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
     if (!f) {
         FLog("[NvFOpen] FAILED fopen: '%s' (r1='%s', errno=%d)", path, r1, errno);
     }
@@ -2016,10 +2037,6 @@ void InstallCrashFixHooks()
 
     //more crashfix
     CHook::InlineHook(g_libGTASA + 0x496798, &TidyUpModelInfo2_hook, &TidyUpModelInfo2_orig);
-
-    // AntiCrash: Guard TextureDatabaseRuntime against null thumbnails (Pixel 8 / Mali fix)
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
-    CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
 }
 
 void InitGui();
@@ -2051,6 +2068,10 @@ void InstallSpecialHooks()
     CHook::RET("_ZN12CCutsceneMgr10InitialiseEv");			// CCutsceneMgr::Initialise
 
     CHook::Redirect(g_libGTASA+0x7D624C, &NvFOpen);
+
+    // Early crash guards for texture database loading
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
 
     CHook::InlineHook("_ZN14MainMenuScreen6UpdateEf", &MainMenuScreen__Update_hook, &MainMenuScreen__Update);
 
