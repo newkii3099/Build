@@ -2003,6 +2003,38 @@ void TextureDatabaseRuntime__SortEntries_hook(uintptr_t thiz, bool a2) {
     }
 }
 
+TextureDatabaseRuntime* (*TextureDatabaseRuntime__Load_orig)(const char *withName, bool fullyLoad, TextureDatabaseFormat forcedFormat) = nullptr;
+TextureDatabaseRuntime* TextureDatabaseRuntime__Load_hook(const char *withName, bool fullyLoad, TextureDatabaseFormat forcedFormat) {
+    if (withName) {
+        if (strcmp(withName, "cutscene") == 0) return nullptr;
+        if (forcedFormat == TextureDatabaseFormat::DF_Default) {
+            if (strcmp(withName, "menu") == 0 || strcmp(withName, "player") == 0 || strcmp(withName, "playerhi") == 0) {
+                forcedFormat = TextureDatabaseFormat::DF_PVR;
+            } else {
+                forcedFormat = TextureDatabaseFormat::DF_DXT;
+            }
+        }
+    }
+    if (TextureDatabaseRuntime__Load_orig) {
+        return TextureDatabaseRuntime__Load_orig(withName, fullyLoad, forcedFormat);
+    }
+    return nullptr;
+}
+
+uint32_t (*TextureDatabaseRuntime__LoadFullTexture_orig)(uintptr_t thiz, uint32_t entryIndex) = nullptr;
+uint32_t TextureDatabaseRuntime__LoadFullTexture_hook(uintptr_t thiz, uint32_t entryIndex) {
+    if (!thiz) return 0;
+    void* fullDataOffsets = *reinterpret_cast<void**>(thiz + 0xF8);
+    void* streamFile = *reinterpret_cast<void**>(thiz + 0xE8);
+    if (!fullDataOffsets || !streamFile) {
+        return 0;
+    }
+    if (TextureDatabaseRuntime__LoadFullTexture_orig) {
+        return TextureDatabaseRuntime__LoadFullTexture_orig(thiz, entryIndex);
+    }
+    return 0;
+}
+
 void InstallCrashFixHooks()
 {
     // some crashfixes
@@ -2035,7 +2067,7 @@ bool CGame__InitialiseRenderWare_hook() {
     }
 
     if (!TextureDatabaseRuntime::GetDatabase("samp")) {
-        TextureDatabaseRuntime::Load("samp", false, TextureDatabaseFormat::DF_Default);
+        TextureDatabaseRuntime::Load("samp", false, TextureDatabaseFormat::DF_DXT);
     }
 
     InitGui();
@@ -2058,6 +2090,10 @@ void InstallSpecialHooks()
 
     // Bypass null thumbnail dereference SIGSEGV (0x797204) while ensuring full entry sorting
     CHook::InlineHook("_ZN22TextureDatabaseRuntime11SortEntriesEb", &TextureDatabaseRuntime__SortEntries_hook, &TextureDatabaseRuntime__SortEntries_orig);
+
+    // Texture Database Loading hooks to force DXT on devices with only DXT files
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime4LoadEPKcb21TextureDatabaseFormat", &TextureDatabaseRuntime__Load_hook, &TextureDatabaseRuntime__Load_orig);
+    CHook::InlineHook("_ZN22TextureDatabaseRuntime15LoadFullTextureEj", &TextureDatabaseRuntime__LoadFullTexture_hook, &TextureDatabaseRuntime__LoadFullTexture_orig);
 
     CHook::InlineHook("_ZN14MainMenuScreen6UpdateEf", &MainMenuScreen__Update_hook, &MainMenuScreen__Update);
 

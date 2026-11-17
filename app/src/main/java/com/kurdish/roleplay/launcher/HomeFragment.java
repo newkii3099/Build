@@ -247,6 +247,16 @@ public class HomeFragment extends Fragment {
             android.util.Log.e("HomeFragment", "Failed to update server config", e);
         }
 
+        // Fast-path: if critical game files are already present, launch SAMP directly!
+        if (FastGameDownloader.areCriticalFilesPresent(requireContext())) {
+            android.util.Log.i("HomeFragment", "Critical game files present, launching SAMP immediately");
+            Intent intent = new Intent(requireActivity(), SAMP.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(intent);
+            requireActivity().overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+            return;
+        }
+
         // Run fast file verification on background thread
         new Thread(() -> {
             try {

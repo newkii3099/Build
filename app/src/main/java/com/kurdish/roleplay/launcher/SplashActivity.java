@@ -37,6 +37,7 @@ import com.google.firebase.crashlytics.FirebaseCrashlytics;
 import com.joom.paranoid.Obfuscate;
 import com.kurdish.roleplay.R;
 import com.kurdish.roleplay.launcher.util.Config;
+import com.kurdish.roleplay.launcher.util.FastGameDownloader;
 import com.kurdish.roleplay.launcher.util.Util;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -225,10 +226,16 @@ public class SplashActivity extends AppCompatActivity {
                 Config.setGpuType(SplashActivity.this, mGpuType);
 
                 runOnUiThread(() -> {
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        Intent intent = new Intent(SplashActivity.this, UpdateService.class);
-                        mIsBind = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-                    }, 4000);
+                    if (FastGameDownloader.areCriticalFilesPresent(SplashActivity.this)) {
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            openMain();
+                        }, 800);
+                    } else {
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            Intent intent = new Intent(SplashActivity.this, UpdateService.class);
+                            mIsBind = bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+                        }, 1000);
+                    }
                 });
             }
 
