@@ -678,7 +678,7 @@ void Chat::draw(ImGuiRenderer* renderer)
 
     if (!m_showingChat)
     {
-        // When collapsed: draw a compact badge "💬 เปิด" so user can expand chat
+        // When collapsed: draw a compact badge "เปิด" so user can expand chat
         ImVec2 pos = absolutePosition();
         float btnH = 22.0f * scaleY;
         float btnW = 55.0f * scaleX;
@@ -687,7 +687,8 @@ void Chat::draw(ImGuiRenderer* renderer)
 
         ImColor bg(15, 23, 42, 180);
         renderer->drawRect(m_toggleMin, m_toggleMax, bg, true, 6.0f);
-        std::string label = "💬 เปิด";
+        renderer->drawRect(m_toggleMin, m_toggleMax, ImColor(255, 255, 255, 120), false, 6.0f, 1.0f);
+        std::string label = "เปิด";
         ImVec2 labelSz = renderer->calculateTextSize(label, fontSize);
         ImVec2 txtPos(
             m_toggleMin.x + (btnW - labelSz.x) / 2.0f,

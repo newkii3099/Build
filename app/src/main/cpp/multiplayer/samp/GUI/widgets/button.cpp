@@ -9,7 +9,7 @@ Button::Button(const std::string& caption, float font_size)
 {
     m_callback = nullptr;
 
-    m_label = new Label(caption, ImColor(15, 23, 42, 235), false, font_size);
+    m_label = new Label(caption, ImColor(255, 255, 255, 255), false, font_size);
     this->addChild(m_label);
 
     m_color = UISettings::buttonColor();
@@ -18,40 +18,45 @@ Button::Button(const std::string& caption, float font_size)
 
 void Button::performLayout()
 {
-    float padding = UISettings::padding();
+    float padX = UISettings::padding() * 0.8f;
+    float padY = UISettings::padding() * 0.45f;
 
     m_label->performLayout();
-    this->setSize(m_label->size() + ImVec2(padding * 2, padding));
+    this->setSize(m_label->size() + ImVec2(padX * 2.0f, padY * 2.0f));
 
-    m_label->setPosition((size() - m_label->size()) / 2);
+    m_label->setPosition((size() - m_label->size()) / 2.0f);
 }
 
 void Button::draw(ImGuiRenderer* renderer)
 {
-    // Modern bright white-cyan translucent glass pill
+    // Static translucent dark background or pressed state (color change only)
     ImColor bgCol = focused() ? m_colorFocused : m_color;
-    ImColor borderCol = focused() ? ImColor(255, 255, 255, 240) : ImColor(56, 189, 248, 190);
+    ImColor borderCol = focused() ? ImColor(255, 255, 255, 220) : ImColor(255, 255, 255, 140);
+
+    float radius = size().y * 0.45f;
+    if (radius > 16.0f) radius = 16.0f;
 
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
             bgCol,
             true,
-            20.0f
+            radius
     );
 
+    // Thin solid border
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
             borderCol,
             false,
-            20.0f,
-            1.2f
+            radius,
+            1.0f
     );
 
     if (m_label)
     {
-        m_label->setColor(focused() ? ImColor(255, 255, 255, 255) : ImColor(15, 23, 42, 235));
+        m_label->setColor(ImColor(255, 255, 255, 255));
     }
 
     Widget::draw(renderer);
@@ -68,7 +73,7 @@ CButton::CButton(const std::string& caption, float font_size)
 {
     m_callback = nullptr;
 
-    m_label = new Label(caption, ImColor(15, 23, 42, 235), false, font_size);
+    m_label = new Label(caption, ImColor(255, 255, 255, 255), false, font_size);
     this->addChild(m_label);
 
     m_color = UISettings::buttonColor();
@@ -77,42 +82,47 @@ CButton::CButton(const std::string& caption, float font_size)
 
 void CButton::performLayout()
 {
-    float padding = UISettings::padding();
+    float padX = UISettings::padding() * 0.8f;
+    float padY = UISettings::padding() * 0.45f;
 
     m_label->performLayout();
-    this->setSize(m_label->size() + ImVec2(padding * 2, padding));
+    this->setSize(m_label->size() + ImVec2(padX * 2.0f, padY * 2.0f));
 
-    m_label->setPosition((size() - m_label->size()) / 2);
+    m_label->setPosition((size() - m_label->size()) / 2.0f);
 }
 
 void CButton::draw(ImGuiRenderer* renderer)
 {
     if (!OpenButton) return;
 
-    // Modern bright white-cyan translucent glass pill
+    // Static translucent dark background or pressed state (color change only)
     ImColor bgCol = focused() ? m_colorFocused : m_color;
-    ImColor borderCol = focused() ? ImColor(255, 255, 255, 240) : ImColor(56, 189, 248, 190);
+    ImColor borderCol = focused() ? ImColor(255, 255, 255, 220) : ImColor(255, 255, 255, 140);
+
+    float radius = size().y * 0.45f;
+    if (radius > 16.0f) radius = 16.0f;
 
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
             bgCol,
             true,
-            20.0f
+            radius
     );
 
+    // Thin solid border
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
             borderCol,
             false,
-            20.0f,
-            1.2f
+            radius,
+            1.0f
     );
 
     if (m_label)
     {
-        m_label->setColor(focused() ? ImColor(255, 255, 255, 255) : ImColor(15, 23, 42, 235));
+        m_label->setColor(ImColor(255, 255, 255, 255));
     }
 
     Widget::draw(renderer);
@@ -130,7 +140,7 @@ OButton::OButton(const std::string& caption, float font_size)
 {
     m_callback = nullptr;
 
-    m_label = new Label(caption, ImColor(15, 23, 42, 235), false, font_size);
+    m_label = new Label(caption, ImColor(255, 255, 255, 255), false, font_size);
     this->addChild(m_label);
 
     m_color = UISettings::buttonColor();
@@ -139,12 +149,13 @@ OButton::OButton(const std::string& caption, float font_size)
 
 void OButton::performLayout()
 {
-    float padding = UISettings::padding();
+    float padX = UISettings::padding() * 0.8f;
+    float padY = UISettings::padding() * 0.45f;
 
     m_label->performLayout();
-    this->setSize(m_label->size() + ImVec2(padding * 2, padding));
+    this->setSize(m_label->size() + ImVec2(padX * 2.0f, padY * 2.0f));
 
-    m_label->setPosition((size() - m_label->size()) / 2);
+    m_label->setPosition((size() - m_label->size()) / 2.0f);
 }
 
 void OButton::draw(ImGuiRenderer* renderer)
@@ -155,30 +166,34 @@ void OButton::draw(ImGuiRenderer* renderer)
         return;
     }
 
-    // Modern bright white-cyan translucent glass pill
+    // Static translucent dark background or pressed state (color change only)
     ImColor bgCol = focused() ? m_colorFocused : m_color;
-    ImColor borderCol = focused() ? ImColor(255, 255, 255, 240) : ImColor(56, 189, 248, 190);
+    ImColor borderCol = focused() ? ImColor(255, 255, 255, 220) : ImColor(255, 255, 255, 140);
+
+    float radius = size().y * 0.45f;
+    if (radius > 16.0f) radius = 16.0f;
 
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
             bgCol,
             true,
-            20.0f
+            radius
     );
 
+    // Thin solid border
     renderer->drawRect(
             absolutePosition(),
             absolutePosition() + size(),
             borderCol,
             false,
-            20.0f,
-            1.2f
+            radius,
+            1.0f
     );
 
     if (m_label)
     {
-        m_label->setColor(focused() ? ImColor(255, 255, 255, 255) : ImColor(15, 23, 42, 235));
+        m_label->setColor(ImColor(255, 255, 255, 255));
     }
 
     Widget::draw(renderer);

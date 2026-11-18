@@ -5,7 +5,8 @@ class ButtonPanel : public Layout
 public:
     ButtonPanel();
 
-    void performLayout() override; // ⚡ اضافه کردن فانکشنی performLayout
+    void performLayout() override;
+    void draw(ImGuiRenderer* renderer) override;
 
     CButton* m_bH;
     OButton* m_bOpen;

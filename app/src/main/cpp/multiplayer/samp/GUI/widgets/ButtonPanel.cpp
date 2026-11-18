@@ -1,3 +1,4 @@
+#include <cfloat>
 #include "samp/main.h"
 #include "samp/GUI/gui.h"
 #include "samp/Multiplayer/Multiplayer.h"
@@ -118,4 +119,46 @@ void ButtonPanel::performLayout()
         ImVec2 openSize = m_bOpen->size();
         m_bTab->setPosition(ImVec2(openPos.x + openSize.x + 10.0f, openPos.y));
     }
+}
+
+void ButtonPanel::draw(ImGuiRenderer* renderer)
+{
+    if (OpenButton)
+    {
+        ImVec2 minPos(FLT_MAX, FLT_MAX);
+        ImVec2 maxPos(-FLT_MAX, -FLT_MAX);
+
+        for (auto child : children())
+        {
+            if (child && child != m_bOpen && child->visible())
+            {
+                ImVec2 cp = child->absolutePosition();
+                ImVec2 cs = child->size();
+                if (cp.x > 0.0f && cp.y > 0.0f && cs.x > 0.0f && cs.y > 0.0f)
+                {
+                    if (cp.x < minPos.x) minPos.x = cp.x;
+                    if (cp.y < minPos.y) minPos.y = cp.y;
+                    if (cp.x + cs.x > maxPos.x) maxPos.x = cp.x + cs.x;
+                    if (cp.y + cs.y > maxPos.y) maxPos.y = cp.y + cs.y;
+                }
+            }
+        }
+
+        if (minPos.x < maxPos.x && minPos.y < maxPos.y)
+        {
+            float padX = 6.0f;
+            float padY = 4.0f;
+            ImVec2 containerMin(minPos.x - padX, minPos.y - padY);
+            ImVec2 containerMax(maxPos.x + padX, maxPos.y + padY);
+            float radius = (containerMax.y - containerMin.y) * 0.5f;
+
+            // Static translucent dark background
+            renderer->drawRect(containerMin, containerMax, ImColor(12, 16, 22, 150), true, radius);
+
+            // Thin solid border
+            renderer->drawRect(containerMin, containerMax, ImColor(255, 255, 255, 130), false, radius, 1.0f);
+        }
+    }
+
+    Layout::draw(renderer);
 }
