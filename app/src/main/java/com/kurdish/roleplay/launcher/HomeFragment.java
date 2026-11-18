@@ -34,7 +34,7 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
 
-    public static final String LOCKED_SERVER_HOST = "82.26.104.217";
+    public static final String LOCKED_SERVER_HOST = "gta-irz.com";
     public static final int LOCKED_SERVER_PORT = 7777;
 
     private Animation scaleDown;

@@ -109,6 +109,30 @@ public final class FastGameDownloader {
         return list;
     }
 
+    private static boolean hasLocalFileOrAlternative(String basePath, String path, long expectedSize) {
+        File file = new File(basePath, path);
+        if (file.exists() && (expectedSize <= 0 || file.length() == expectedSize)) {
+            return true;
+        }
+
+        // Transparent fallback: if an equivalent texture format exists locally with valid size
+        String[] formats = {".dxt.", ".pvr.", ".etc."};
+        for (String fmt : formats) {
+            if (path.contains(fmt)) {
+                for (String alt : formats) {
+                    if (!alt.equals(fmt)) {
+                        String altPath = path.replace(fmt, alt);
+                        File altFile = new File(basePath, altPath);
+                        if (altFile.exists() && altFile.length() > 0) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     /**
      * Verifies game files against manifest:
      * - Returns list of files that do not exist or have mismatched size.
@@ -117,19 +141,32 @@ public final class FastGameDownloader {
         List<FilesData> missingOrInvalid = new ArrayList<>();
         String basePath = GameStorage.getGameBasePath(context);
 
-        for (FilesData data : manifest) {
-            String path = data.getPath();
-
-            // GPU filter for texture files
-            if (!path.contains("player") && !path.contains("menu") && !path.contains("samp")) {
-                if (path.contains(".dxt.") && gpuType != 1) continue;
-                if (path.contains(".etc.") && gpuType != 2) continue;
-                if (path.contains(".pvr.") && gpuType != 3) continue;
+        // Check if manifest contains textures specifically for this GPU
+        String targetExt = (gpuType == 1) ? ".dxt." : (gpuType == 3 ? ".pvr." : ".etc.");
+        boolean manifestHasTargetGpu = false;
+        if (manifest != null) {
+            for (FilesData fd : manifest) {
+                if (fd.getPath().contains(targetExt)) {
+                    manifestHasTargetGpu = true;
+                    break;
+                }
             }
+        }
 
-            File localFile = new File(basePath, path);
-            if (!localFile.exists() || localFile.length() != data.getSize()) {
-                missingOrInvalid.add(data);
+        if (manifest != null) {
+            for (FilesData data : manifest) {
+                String path = data.getPath();
+
+                // GPU filter for texture files: only filter if manifest actually provides this GPU's textures
+                if (manifestHasTargetGpu && !path.contains("player") && !path.contains("menu") && !path.contains("samp")) {
+                    if (path.contains(".dxt.") && gpuType != 1) continue;
+                    if (path.contains(".etc.") && gpuType != 2) continue;
+                    if (path.contains(".pvr.") && gpuType != 3) continue;
+                }
+
+                if (!hasLocalFileOrAlternative(basePath, path, data.getSize())) {
+                    missingOrInvalid.add(data);
+                }
             }
         }
 

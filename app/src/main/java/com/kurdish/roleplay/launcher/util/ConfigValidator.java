@@ -27,7 +27,7 @@ public class ConfigValidator {
                     sb.append("name=MAYES_Player\n");
                     sb.append("password=\n");
                     sb.append("version=0.3.7\n");
-                    sb.append("host=82.26.104.217\n");
+                    sb.append("host=gta-irz.com\n");
                     sb.append("port=7777\n\n");
                     sb.append("[gui]\n");
                     sb.append("androidkeyboard=false\n");
