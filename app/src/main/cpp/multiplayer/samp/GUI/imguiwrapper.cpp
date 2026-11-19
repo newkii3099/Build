@@ -45,7 +45,7 @@ bool ImGuiWrapper::initialize()
 
     Log::addParameter("Loading font: %s", m_fontPath.c_str());
     ImFontConfig fontCfg;
-    fontCfg.GlyphExtraSpacing.x = UISettings::outlineSize();
+    fontCfg.GlyphExtraAdvanceX = UISettings::outlineSize();
 
     static const ImWchar ranges[] =
     {
