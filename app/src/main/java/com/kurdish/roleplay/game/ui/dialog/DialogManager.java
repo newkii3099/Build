@@ -135,7 +135,8 @@ public class DialogManager {
     }
 
     public void show(int i, int i2, String str, String str2, String str3, String str4) {
-        if (i == -1) {
+        if (i == -1 || i == 65535 || (short) i == -1 ||
+            ((str == null || str.trim().isEmpty()) && (str2 == null || str2.trim().isEmpty()) && (str3 == null || str3.trim().isEmpty()))) {
             Hide();
             return;
         }
@@ -346,7 +347,10 @@ public class DialogManager {
                 dialogManager.SendDialogResponse(1, dialogManager.mCurrentListitem, DialogManager.this.mCurrentInputtext);
             }
         });
-        if (this.mButtonNegative.length() == 0) {
+        if (this.mButtonPositive == null || this.mButtonPositive.isEmpty()) {
+            this.mDialogButtonPositive.setVisibility(View.GONE);
+        }
+        if (this.mButtonNegative == null || this.mButtonNegative.isEmpty()) {
             this.mDialogButtonNegative.setVisibility(View.GONE);
         } else {
             this.mDialogButtonNegative.setOnClickListener(new View.OnClickListener() {

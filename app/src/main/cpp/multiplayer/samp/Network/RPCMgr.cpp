@@ -225,11 +225,11 @@ void DialogBox(RPCParameters *rpcParams)
 	Log::addParameter("szButton2", szButton2);
 	Log::addParameter("szMessage", szMessage);
 	
-	/*if (wDialogID == 65535 || wDialogID < 0) //Fix Blank Dialog
+	if (wDialogID == -1 || wDialogID < 0 || (uint16_t)wDialogID == 65535 || (uint16_t)wDialogID == 0xFFFF || (szTitle[0] == '\0' && szMessage[0] == '\0' && szButton1[0] == '\0'))
 	{
-		pNetGame->SendDialogResponse(wDialogID, 1, -1, " ");
+		if (pJavaWrapper) pJavaWrapper->ShowDialog(0, -1, (char*)"", (char*)"", (char*)"", (char*)"");
 		return;
-	}*/
+	}
 
 	DialogStyle style;
 	switch (byteDialogStyle)
