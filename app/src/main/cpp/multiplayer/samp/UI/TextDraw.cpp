@@ -67,6 +67,8 @@ CTextDraw::CTextDraw(TEXT_DRAW_TRANSMIT* pTextDrawTransmit, const char* szText)
     m_rectArea.bottom = 0.0f;
     m_bHovered = false;
     m_dwHoverColor = 0;
+    m_byteSnapshotAttempts = 0;
+    m_dwLastSnapshotAttempt = 0;
 
 }
 // 0.3.7
@@ -131,12 +133,10 @@ uintptr_t LoadFromTxdSlot(const char* szSlot, const char* szTexture)
 void CTextDraw::Draw()
 {
     if (m_TextDrawData.dwStyle == 5) {
-        if (m_TextDrawData.iTextureSlot == -1) {
-            SnapshotProcess();
-        }
         if (m_TextDrawData.iTextureSlot != -1) {
             return DrawTextured();
         }
+        return;
     }
 
     if (m_TextDrawData.iTextureSlot != -1) {
@@ -365,6 +365,17 @@ void CTextDraw::SnapshotProcess()
     if (m_TextDrawData.dwStyle != 5 || m_TextDrawData.iTextureSlot != -1) {
         return;
     }
+
+    if (m_byteSnapshotAttempts >= 3) {
+        return;
+    }
+
+    uint32_t dwNow = GetTickCount();
+    if (dwNow - m_dwLastSnapshotAttempt < 1500) {
+        return;
+    }
+    m_dwLastSnapshotAttempt = dwNow;
+    m_byteSnapshotAttempts++;
 
     if (!pSnapShotHelper) {
         return;

@@ -381,33 +381,42 @@ int UI::GetBankMoney(){
 void UI::ShowSpeed(){
     if (!pJavaWrapper) return;
 
-    if (!pGame || !pNetGame || !pGame->FindPlayerPed()->IsInVehicle()) {
-        pJavaWrapper->HideSpeed();
+    static bool s_bSpeedoVisible = false;
+    static uint32_t s_dwLastSpeedUpdate = 0;
+
+    CPlayerPed* pPlayerPed = (pGame) ? pGame->FindPlayerPed() : nullptr;
+    if (!pGame || !pNetGame || !pPlayerPed || !pPlayerPed->IsInVehicle() || pPlayerPed->IsAPassenger()) {
+        if (s_bSpeedoVisible) {
+            pJavaWrapper->HideSpeed();
+            s_bSpeedoVisible = false;
+        }
         return;
     }
-    if (pGame->FindPlayerPed()->IsAPassenger()) {
-        pJavaWrapper->HideSpeed();
+
+    if (!s_bSpeedoVisible) {
+        pJavaWrapper->ShowSpeed();
+        s_bSpeedoVisible = true;
+    }
+
+    uint32_t dwNow = GetTickCount();
+    if (dwNow - s_dwLastSpeedUpdate < 100) {
         return;
     }
+    s_dwLastSpeedUpdate = dwNow;
 
     int i_speed = 0;
     float fHealth = 0;
     CVehicle *pVehicle = nullptr;
     CVehiclePool *pVehiclePool = pNetGame->GetVehiclePool();
-    CPlayerPed *pPlayerPed = pGame->FindPlayerPed();
-    VEHICLEID id = pVehiclePool->FindIDFromGtaPtr(pPlayerPed->GetGtaVehicle());
-    pVehicle = pVehiclePool->GetAt(id);
-
-    if(pPlayerPed)
-    {
-        if(pVehicle)
-        {
-            CVector vecMoveSpeed = pVehicle->m_pVehicle->GetMoveSpeed();;
+    if (pVehiclePool && pPlayerPed->GetGtaVehicle()) {
+        VEHICLEID id = pVehiclePool->FindIDFromGtaPtr(pPlayerPed->GetGtaVehicle());
+        pVehicle = pVehiclePool->GetAt(id);
+        if (pVehicle && pVehicle->m_pVehicle) {
+            CVector vecMoveSpeed = pVehicle->m_pVehicle->GetMoveSpeed();
             i_speed = sqrt((vecMoveSpeed.x * vecMoveSpeed.x) + (vecMoveSpeed.y * vecMoveSpeed.y) + (vecMoveSpeed.z * vecMoveSpeed.z)) * 180;
-            bHealth = pVehicle->GetHealth()/10;
+            bHealth = pVehicle->GetHealth() / 10;
         }
     }
-    pJavaWrapper->ShowSpeed();
     pJavaWrapper->UpdateSpeedInfo(i_speed, m_fuel, bHealth, bMeliage, bEngine, bLights, 0, bDoor);
 }
 

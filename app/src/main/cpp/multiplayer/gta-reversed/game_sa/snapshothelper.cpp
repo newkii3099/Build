@@ -56,12 +56,10 @@ void CSnapShotHelper::SetUpScene()
 RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, CVector* vecRot, float fZoom)
 {
     if(iModel > 20000) return nullptr;
-    FLog("CreateObjectSnapShot: %d, %f, %f, %f", iModel, vecRot->x, vecRot->y, vecRot->z);
     CStreaming::TryLoadModel(iModel);
 
     auto pRwObject = ModelInfoCreateInstance(iModel);
     if (pRwObject == nullptr) {
-        FLog("pRwObject no rw object");
         return nullptr;
     }
 

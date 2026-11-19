@@ -115,19 +115,13 @@ void CJavaWrapper::SetPauseState(bool pause)
 
 void CJavaWrapper::ShowDialog(int dialogStyle, int dialogID, char* title, char* text, char* button1, char* button2)
 {
-	JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
+	JNIEnv* env = GetEnv();
+	if (!env || !activity || !s_ShowDialog) return;
 
-	if (!env)
-	{
-		FLog("No env");
-		return;
-	}
-
-	std::string sTitle(title);
-	std::string sText(text);
-	std::string sButton1(button1);
-	std::string sButton2(button2);
+	std::string sTitle(title ? title : "");
+	std::string sText(text ? text : "");
+	std::string sButton1(button1 ? button1 : "");
+	std::string sButton2(button2 ? button2 : "");
 
 	jbyteArray jstrTitle = as_byte_array((unsigned char*)sTitle.c_str(), sTitle.length());
 	jbyteArray jstrText = as_byte_array((unsigned char*)sText.c_str(), sText.length());
@@ -135,6 +129,11 @@ void CJavaWrapper::ShowDialog(int dialogStyle, int dialogID, char* title, char* 
 	jbyteArray jstrButton2 = as_byte_array((unsigned char*)sButton2.c_str(), sButton2.length());
 
 	env->CallVoidMethod(activity, s_ShowDialog, dialogID, dialogStyle, jstrTitle, jstrText, jstrButton1, jstrButton2);
+
+	if (jstrTitle) env->DeleteLocalRef(jstrTitle);
+	if (jstrText) env->DeleteLocalRef(jstrText);
+	if (jstrButton1) env->DeleteLocalRef(jstrButton1);
+	if (jstrButton2) env->DeleteLocalRef(jstrButton2);
 
 	EXCEPTION_CHECK(env);
 }
@@ -186,41 +185,22 @@ void CJavaWrapper::HideHud()
 
 void CJavaWrapper::ShowSpeed()
 {
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_showSpeed) return;
     env->CallVoidMethod(this->activity, this->s_showSpeed);
 }
 
 void CJavaWrapper::HideSpeed()
 {
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_hideSpeed) return;
     env->CallVoidMethod(this->activity, this->s_hideSpeed);
 }
 
 void CJavaWrapper::UpdateSpeedInfo(int speed, int fuel, int hp, int mileage, int engine, int light, int belt, int lock)
 {
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);;
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
-
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_updateSpeedInfo) return;
     env->CallVoidMethod(this->activity, this->s_updateSpeedInfo, speed, fuel, hp, mileage, engine, light, belt, lock);
 }
 

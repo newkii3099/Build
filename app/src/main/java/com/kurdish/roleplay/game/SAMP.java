@@ -185,13 +185,25 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
     }
 
     public void showDialog(int dialogId, int dialogTypeId, byte[] bArr, byte[] bArr2, byte[] bArr3, byte[] bArr4) {
+        if (dialogId == -1 || dialogId == 65535) {
+            runOnUiThread(() -> {
+                if (this.mDialog != null) this.mDialog.Hide();
+            });
+            return;
+        }
         final String caption     = new String(bArr,  StandardCharsets.UTF_8);
         final String content     = new String(bArr2, StandardCharsets.UTF_8);
         final String leftBtnText = new String(bArr3, StandardCharsets.UTF_8);
         final String rightBtnText= new String(bArr4, StandardCharsets.UTF_8);
 
         runOnUiThread(() -> {
-            this.mDialog.show(dialogId, dialogTypeId, caption, content, leftBtnText, rightBtnText);
+            if (caption.trim().isEmpty() && content.trim().isEmpty() && leftBtnText.trim().isEmpty() && rightBtnText.trim().isEmpty()) {
+                if (this.mDialog != null) this.mDialog.Hide();
+                return;
+            }
+            if (this.mDialog != null) {
+                this.mDialog.show(dialogId, dialogTypeId, caption, content, leftBtnText, rightBtnText);
+            }
         });
     }
 

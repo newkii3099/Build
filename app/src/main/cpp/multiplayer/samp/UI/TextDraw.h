@@ -109,5 +109,7 @@ public:
     CRect m_rectArea;
     bool m_bHovered;
     uint32_t m_dwHoverColor;
+    uint8_t m_byteSnapshotAttempts;
+    uint32_t m_dwLastSnapshotAttempt;
 };
 #pragma pack(pop)
