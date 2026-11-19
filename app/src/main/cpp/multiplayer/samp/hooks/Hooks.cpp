@@ -1485,46 +1485,53 @@ stFile* NvFOpen(const char *r1)
     strncpy(lastFile, r1, sizeof(lastFile) - 1);
     lastFile[sizeof(lastFile) - 1] = '\0';
 
+    char cleanR1[1024];
+    strncpy(cleanR1, r1, sizeof(cleanR1) - 1);
+    cleanR1[sizeof(cleanR1) - 1] = '\0';
+    for (char *p = cleanR1; *p; ++p) {
+        if (*p == '\\') *p = '/';
+    }
+
     char path[1024]{};
 
     // If absolute path
-    if (r1[0] == '/' || strstr(r1, "emulated") != nullptr)
+    if (cleanR1[0] == '/' || strstr(cleanR1, "emulated") != nullptr)
     {
-        snprintf(path, sizeof(path), "%s", r1);
+        snprintf(path, sizeof(path), "%s", cleanR1);
     }
     else
     {
-        snprintf(path, sizeof(path), "%s%s", g_pszStorage, r1);
+        snprintf(path, sizeof(path), "%s%s", g_pszStorage, cleanR1);
     }
 
     // SA-MP Network & Multiplayer file redirects (MANDATORY)
     // GTA SA hardcodes data/script/mainv1.scm (singleplayer campaign 3MB).
     // SAMP requires its own network script (SAMP/main.scm 96KB) & ide definitions.
-    if (!strncmp(r1, "data/script/mainv1.scm", 22) || !strncmp(r1, "data/script/main.scm", 20))
+    if (!strncmp(cleanR1, "data/script/mainv1.scm", 22) || !strncmp(cleanR1, "data/script/main.scm", 20))
     {
         snprintf(path, sizeof(path), "%sSAMP/main.scm", g_pszStorage);
     }
-    else if (!strncmp(r1, "data/script/scriptv1.img", 24) || !strncmp(r1, "data/script/script.img", 22))
+    else if (!strncmp(cleanR1, "data/script/scriptv1.img", 24) || !strncmp(cleanR1, "data/script/script.img", 22))
     {
         snprintf(path, sizeof(path), "%sSAMP/script.img", g_pszStorage);
     }
-    else if (!strncmp(r1, "data/peds.ide", 13))
+    else if (!strncmp(cleanR1, "data/peds.ide", 13))
     {
         snprintf(path, sizeof(path), "%sSAMP/peds.ide", g_pszStorage);
     }
-    else if (!strncmp(r1, "data/vehicles.ide", 17))
+    else if (!strncmp(cleanR1, "data/vehicles.ide", 17))
     {
         snprintf(path, sizeof(path), "%sSAMP/vehicles.ide", g_pszStorage);
     }
-    else if (!strncmp(r1, "data/gta.dat", 12))
+    else if (!strncmp(cleanR1, "data/gta.dat", 12))
     {
         snprintf(path, sizeof(path), "%sSAMP/gta.dat", g_pszStorage);
     }
-    else if (!strncmp(r1, "data/handling.cfg", 17))
+    else if (!strncmp(cleanR1, "data/handling.cfg", 17))
     {
         snprintf(path, sizeof(path), "%sSAMP/handling.cfg", g_pszStorage);
     }
-    else if (!strncmp(r1, "data/weapon.dat", 15))
+    else if (!strncmp(cleanR1, "data/weapon.dat", 15))
     {
         snprintf(path, sizeof(path), "%sSAMP/weapon.dat", g_pszStorage);
     }
@@ -1532,7 +1539,7 @@ stFile* NvFOpen(const char *r1)
     FILE *f = fopen(path, "rb");
     if (!f && strstr(path, "com.kurdish.roleplay")) {
         char altPath[1024];
-        snprintf(altPath, sizeof(altPath), "%s%s", g_pszStorage, r1);
+        snprintf(altPath, sizeof(altPath), "%s%s", g_pszStorage, cleanR1);
         f = fopen(altPath, "rb");
         if (f) {
             FLog("[NvFOpen] Opened via g_pszStorage fallback: '%s'", altPath);
@@ -2022,6 +2029,43 @@ uint32_t TextureDatabaseRuntime__LoadFullTexture_hook(uintptr_t thiz, uint32_t e
     return 0;
 }
 
+// Fix for CPlane::PreRender crash in FxSystem_c::AddParticle
+void (*CVehicle__PreRender)(uintptr_t thiz) = nullptr;
+void (*CPlane__PreRender_orig)(uintptr_t thiz) = nullptr;
+void CPlane__PreRender_hook(uintptr_t thiz)
+{
+    if (!thiz) return;
+    if (!CVehicle__PreRender) {
+        CVehicle__PreRender = (void(*)(uintptr_t))CHook::getSym("_ZN8CVehicle9PreRenderEv");
+    }
+    if (CVehicle__PreRender) {
+        CVehicle__PreRender(thiz);
+    }
+}
+
+// Safety guards for FxSystem_c::AddParticle to prevent null/corrupt dereference
+void (*FxSystem_c__AddParticle1_orig)(uintptr_t thiz, void* p1, void* p2, float f1, void* p3, float f2, float f3, float f4, uint8_t u1) = nullptr;
+void FxSystem_c__AddParticle1_hook(uintptr_t thiz, void* p1, void* p2, float f1, void* p3, float f2, float f3, float f4, uint8_t u1)
+{
+    if (!thiz) return;
+    uintptr_t bp = *(uintptr_t*)(thiz + 0x10);
+    if (!bp || bp < 0x10000) return;
+    if (FxSystem_c__AddParticle1_orig) {
+        FxSystem_c__AddParticle1_orig(thiz, p1, p2, f1, p3, f2, f3, f4, u1);
+    }
+}
+
+void (*FxSystem_c__AddParticle2_orig)(uintptr_t thiz, void* p1, void* p2, float f1, void* p3, float f2, float f3, float f4, uint8_t u1) = nullptr;
+void FxSystem_c__AddParticle2_hook(uintptr_t thiz, void* p1, void* p2, float f1, void* p3, float f2, float f3, float f4, uint8_t u1)
+{
+    if (!thiz) return;
+    uintptr_t bp = *(uintptr_t*)(thiz + 0x10);
+    if (!bp || bp < 0x10000) return;
+    if (FxSystem_c__AddParticle2_orig) {
+        FxSystem_c__AddParticle2_orig(thiz, p1, p2, f1, p3, f2, f3, f4, u1);
+    }
+}
+
 void InstallCrashFixHooks()
 {
     // some crashfixes
@@ -2040,6 +2084,11 @@ void InstallCrashFixHooks()
     CHook::InlineHook("_ZN9EmuShader6SelectEb", &EmuShader_Select_hook, &EmuShader_Select);
 
     CHook::InlineHook("_ZN12CAnimManager19UncompressAnimationEP19CAnimBlendHierarchy", &CAnimManager_UncompressAnimation_hook,&CAnimManager_UncompressAnimation);
+
+    // CPlane::PreRender and FxSystem particle safety guards
+    CHook::InlineHook("_ZN6CPlane9PreRenderEv", &CPlane__PreRender_hook, &CPlane__PreRender_orig);
+    CHook::InlineHook("_ZN10FxSystem_c11AddParticleEP5RwV3dS1_fP11FxPrtMult_cfffh", &FxSystem_c__AddParticle1_hook, &FxSystem_c__AddParticle1_orig);
+    CHook::InlineHook("_ZN10FxSystem_c11AddParticleEP11RwMatrixTagP5RwV3dfP11FxPrtMult_cfffh", &FxSystem_c__AddParticle2_hook, &FxSystem_c__AddParticle2_orig);
 
     //more crashfix
     CHook::InlineHook(g_libGTASA + 0x496798, &TidyUpModelInfo2_hook, &TidyUpModelInfo2_orig);
