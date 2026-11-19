@@ -4036,7 +4036,7 @@ struct ImFont
     // [Internal] Members: Cold ~24-52 bytes
     // Conceptually Sources[] is the list of font sources merged to create this font.
     ImGuiID                     FontId;             // Unique identifier for the font
-    float                       LegacySize;         // 4     // in  // Font size passed to AddFont(). Use for old code calling PushFont() expecting to use that size. (use ImGui::GetFontBaked() to get font baked at current bound size).
+    union { float LegacySize; float FontSize; };    // in  // Font size passed to AddFont(). (FontSize aliased for backwards compatibility)
     ImVector<ImFontConfig*>     Sources;            // 16    // in  // List of sources. Pointers within OwnerAtlas->Sources[]
     ImWchar                     EllipsisChar;       // 2-4   // out // Character used for ellipsis rendering ('...'). If you ever want to temporarily swap this for an alternative/dummy char, make sure to clear EllipsisAutoBake.
     ImWchar                     FallbackChar;       // 2-4   // out // Character used if a glyph isn't found (U+FFFD, '?')
