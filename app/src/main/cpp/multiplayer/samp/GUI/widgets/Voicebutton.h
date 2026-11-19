@@ -33,7 +33,7 @@ public:
 		if (countdown > 0 && recording() == 1) countdown--;
 		if (countdown == 0 && recording() == 1) setRecording(0);
 		renderer->drawImage(absolutePosition(), absolutePosition() + size(),
-			recording() ? m_texture_micro_on->raster : m_texture_micro_off->raster);
+			(ImTextureID)(recording() ? m_texture_micro_on->raster : m_texture_micro_off->raster));
 
 		//MyLog2("%f,%f",absolutePosition(), absolutePosition() + size());
 		//MyLog2("countdown %d", countdown);
