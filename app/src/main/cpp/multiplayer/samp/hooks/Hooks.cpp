@@ -2031,38 +2031,14 @@ uint32_t TextureDatabaseRuntime__LoadFullTexture_hook(uintptr_t thiz, uint32_t e
 
 // Fix for CPlane::PreRender crash in FxSystem_c::AddParticle
 void (*CVehicle__PreRender)(uintptr_t thiz) = nullptr;
-void (*CPlane__PreRender_orig)(uintptr_t thiz) = nullptr;
 void CPlane__PreRender_hook(uintptr_t thiz)
 {
     if (!thiz) return;
     if (!CVehicle__PreRender) {
-        CVehicle__PreRender = (void(*)(uintptr_t))CHook::getSym("_ZN8CVehicle9PreRenderEv");
+        CVehicle__PreRender = (void(*)(uintptr_t))(g_libGTASA + 0x6D9660);
     }
     if (CVehicle__PreRender) {
         CVehicle__PreRender(thiz);
-    }
-}
-
-// Safety guards for FxSystem_c::AddParticle to prevent null/corrupt dereference
-void (*FxSystem_c__AddParticle1_orig)(uintptr_t thiz, void* p1, void* p2, float f1, void* p3, float f2, float f3, float f4, uint8_t u1) = nullptr;
-void FxSystem_c__AddParticle1_hook(uintptr_t thiz, void* p1, void* p2, float f1, void* p3, float f2, float f3, float f4, uint8_t u1)
-{
-    if (!thiz) return;
-    uintptr_t bp = *(uintptr_t*)(thiz + 0x10);
-    if (!bp || bp < 0x10000) return;
-    if (FxSystem_c__AddParticle1_orig) {
-        FxSystem_c__AddParticle1_orig(thiz, p1, p2, f1, p3, f2, f3, f4, u1);
-    }
-}
-
-void (*FxSystem_c__AddParticle2_orig)(uintptr_t thiz, void* p1, void* p2, float f1, void* p3, float f2, float f3, float f4, uint8_t u1) = nullptr;
-void FxSystem_c__AddParticle2_hook(uintptr_t thiz, void* p1, void* p2, float f1, void* p3, float f2, float f3, float f4, uint8_t u1)
-{
-    if (!thiz) return;
-    uintptr_t bp = *(uintptr_t*)(thiz + 0x10);
-    if (!bp || bp < 0x10000) return;
-    if (FxSystem_c__AddParticle2_orig) {
-        FxSystem_c__AddParticle2_orig(thiz, p1, p2, f1, p3, f2, f3, f4, u1);
     }
 }
 
@@ -2085,10 +2061,17 @@ void InstallCrashFixHooks()
 
     CHook::InlineHook("_ZN12CAnimManager19UncompressAnimationEP19CAnimBlendHierarchy", &CAnimManager_UncompressAnimation_hook,&CAnimManager_UncompressAnimation);
 
-    // CPlane::PreRender and FxSystem particle safety guards
-    CHook::InlineHook("_ZN6CPlane9PreRenderEv", &CPlane__PreRender_hook, &CPlane__PreRender_orig);
-    CHook::InlineHook("_ZN10FxSystem_c11AddParticleEP5RwV3dS1_fP11FxPrtMult_cfffh", &FxSystem_c__AddParticle1_hook, &FxSystem_c__AddParticle1_orig);
-    CHook::InlineHook("_ZN10FxSystem_c11AddParticleEP11RwMatrixTagP5RwV3dfP11FxPrtMult_cfffh", &FxSystem_c__AddParticle2_hook, &FxSystem_c__AddParticle2_orig);
+    // CPlane / Ambient Plane crash fixes:
+    // 1. Disable ambient plane generation & init (singleplayer random flying planes that crash in SAMP)
+    CHook::Write(g_libGTASA + 0x6CFDE0, (uint32_t)0xD65F03C0); // RET at CPlane::DoPlaneGenerationAndRemoval
+    CHook::Write(g_libGTASA + 0x6D0944, (uint32_t)0xD65F03C0); // RET at CPlane::InitPlaneGenerationAndRemoval
+    CHook::Write(g_libGTASA + 0x884B58, (uint8_t)0);           // CPlane::GenPlane_Active = false
+
+    // 2. Redirect CPlane::PreRender entry directly to CVehicle::PreRender (bypasses broken singleplayer contrail logic)
+    CHook::Redirect(g_libGTASA + 0x6CDCBC, &CPlane__PreRender_hook);
+
+    // 3. Patch CPlane vtable PreRender slot (0x831418) to CPlane__PreRender_hook
+    CHook::Write(g_libGTASA + 0x831418, (uintptr_t)&CPlane__PreRender_hook);
 
     //more crashfix
     CHook::InlineHook(g_libGTASA + 0x496798, &TidyUpModelInfo2_hook, &TidyUpModelInfo2_orig);
