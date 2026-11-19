@@ -19,7 +19,7 @@ void ImGuiRenderer::drawRect(const ImVec2& a, const ImVec2& b, const ImColor& co
     if (fill)
         m_drawList->AddRectFilled(a, b, color, radius);
     else
-        m_drawList->AddRect(a, b, color, radius, 0, thickness);
+        m_drawList->AddRect(a, b, color, radius, thickness);
 }
 
 

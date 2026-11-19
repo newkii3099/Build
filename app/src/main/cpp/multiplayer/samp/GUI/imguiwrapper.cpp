@@ -281,7 +281,7 @@ void ImGuiWrapper::renderDrawData(ImDrawData* draw_data)
 				clip_rect.w = pcmd->ClipRect.y;
 				SetScissorRect((void*)&clip_rect);
 
-				RwRenderStateSet(rwRENDERSTATETEXTURERASTER, (void*)pcmd->TextureId);
+				RwRenderStateSet(rwRENDERSTATETEXTURERASTER, (void*)pcmd->GetTexID());
 				RwIm2DRenderIndexedPrimitive(rwPRIMTYPETRILIST,
 					&m_vertexBuffer[vtx_offset], (RwInt32)cmd_list->VtxBuffer.Size,
 					(RwImVertexIndex*)idx_buffer, pcmd->ElemCount);
@@ -333,7 +333,7 @@ bool ImGuiWrapper::createFontTexture()
 	}
 
 	m_fontRaster = RwRasterSetFromImage(m_fontRaster, font_img);
-	io.Fonts->TexID = (ImTextureID*)m_fontRaster;
+	io.Fonts->SetTexID((ImTextureID)m_fontRaster);
 
 	RwImageDestroy(font_img);
 
@@ -350,7 +350,10 @@ void ImGuiWrapper::destroyFontTexture()
 		ImGuiIO& io = ImGui::GetIO();
 		RwRasterDestroy(m_fontRaster);
 		m_fontRaster = nullptr;
-		io.Fonts->TexID = (ImTextureID)0;
+		if (io.Fonts->TexData)
+		{
+			io.Fonts->SetTexID((ImTextureID)0);
+		}
 	}
 
 }
