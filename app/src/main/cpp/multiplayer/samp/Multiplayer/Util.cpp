@@ -2888,10 +2888,14 @@ void RenderEntity(CEntityGTA* entity)
     if(entity->IsVehicle())
     {
         CVisibilityPlugins::SetupVehicleVariables(entity->m_pRwClump);
+        // Do not invoke virtual PreRender on vehicles!
+        // Calling PreRender on dummy snapshot vehicles causes crashes (e.g. CPlane contrail particles in FxSystem_c::AddParticle).
     }
-
-    // CEntity::PreRender
-    ((void (*)(CEntityGTA*))(*(uintptr_t*)( *(uintptr*)(entity) + 0x90 )))(entity);
+    else
+    {
+        // CEntity::PreRender
+        ((void (*)(CEntityGTA*))(*(uintptr_t*)( *(uintptr*)(entity) + 0x90 )))(entity);
+    }
 
     // CRenderer::RenderOneNonRoad
     (( void (*)(CEntityGTA*))(g_libGTASA + 0x4B5430))(entity);

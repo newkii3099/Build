@@ -131,9 +131,19 @@ RwTexture* CSnapShotHelper::CreatePedSnapShot(int iModel, uint32_t dwColor, CVec
     // RwTextureCreate
     RwTexture* bufferTexture = RwTextureCreate(raster);
 
-    CPlayerPed* pPed = new CPlayerPed(208, 0, 0.0f, 0.0f, 0.0f, 0.0f);
+    CPlayerPed* pPed = nullptr;
+    try {
+        pPed = new CPlayerPed(208, 0, 0.0f, 0.0f, 0.0f, 0.0f);
+    } catch (...) {
+        pPed = nullptr;
+    }
 
-    if (!raster || !bufferTexture || !pPed) return 0;
+    if (!raster || !bufferTexture || !pPed || !pPed->m_pPed) {
+        if (pPed) delete pPed;
+        if (bufferTexture) RwTextureDestroy(bufferTexture);
+        else if (raster) RwRasterDestroy(raster);
+        return 0;
+    }
 
     float posZ = iModel == 162 ? 50.15f : 50.05f;
     float posY = fZoom * -2.25f;
@@ -209,16 +219,25 @@ RwTexture* CSnapShotHelper::CreateVehicleSnapShot(int iModel, uint32_t dwColor, 
         iModel = 537;
     }
 
-    CVehicle* pVehicle = new CVehicle(iModel, 0.0f, 0.0f, 50.0f, 0.0f, false, false);
+    CVehicle* pVehicle = nullptr;
+    try {
+        pVehicle = new CVehicle(iModel, 0.0f, 0.0f, 50.0f, 0.0f, false, false);
+    } catch (...) {
+        pVehicle = nullptr;
+    }
 
     if (!raster || !bufferTexture || !pVehicle || !pVehicle->m_pVehicle) {
         FLog("somethign went wrong in snapshot");
+        if (pVehicle) delete pVehicle;
+        if (bufferTexture) RwTextureDestroy(bufferTexture);
+        else if (raster) RwRasterDestroy(raster);
         return 0;
     }
 
     //pVehicle->m_pVehicle->SetGravityProcessing(false);
     pVehicle->m_pVehicle->SetCollisionChecking(false);
-    float radius = CModelInfo::GetModelInfo(iModel)->m_pColModel->GetBoundRadius();
+    auto pModelInfo = CModelInfo::GetModelInfo(iModel);
+    float radius = (pModelInfo && pModelInfo->m_pColModel) ? pModelInfo->m_pColModel->GetBoundRadius() : 5.0f;
     float posY = (-1.0f - (radius + radius)) * fZoom;
     if (pVehicle->GetVehicleSubtype() == VEHICLE_SUBTYPE_BOAT) {
         posY = -5.5f - radius * 2.5f;

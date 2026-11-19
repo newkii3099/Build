@@ -2030,16 +2030,12 @@ uint32_t TextureDatabaseRuntime__LoadFullTexture_hook(uintptr_t thiz, uint32_t e
 }
 
 // Fix for CPlane::PreRender crash in FxSystem_c::AddParticle
-void (*CVehicle__PreRender)(uintptr_t thiz) = nullptr;
+void (*CPlane__PreRender_orig)(uintptr_t thiz) = nullptr;
 void CPlane__PreRender_hook(uintptr_t thiz)
 {
-    if (!thiz) return;
-    if (!CVehicle__PreRender) {
-        CVehicle__PreRender = (void(*)(uintptr_t))(g_libGTASA + 0x6D9660);
-    }
-    if (CVehicle__PreRender) {
-        CVehicle__PreRender(thiz);
-    }
+    // In SAMP, CPlane contrail particle systems are not initialized,
+    // which causes FxSystem_c::AddParticle to crash with SIGSEGV (0xe40152933359).
+    // Return safely without emitting contrail particles.
 }
 
 void InstallCrashFixHooks()
@@ -2067,11 +2063,8 @@ void InstallCrashFixHooks()
     CHook::Write(g_libGTASA + 0x6D0944, (uint32_t)0xD65F03C0); // RET at CPlane::InitPlaneGenerationAndRemoval
     CHook::Write(g_libGTASA + 0x884B58, (uint8_t)0);           // CPlane::GenPlane_Active = false
 
-    // 2. Redirect CPlane::PreRender entry directly to CVehicle::PreRender (bypasses broken singleplayer contrail logic)
-    CHook::Redirect(g_libGTASA + 0x6CDCBC, &CPlane__PreRender_hook);
-
-    // 3. Patch CPlane vtable PreRender slot (0x831418) to CPlane__PreRender_hook
-    CHook::Write(g_libGTASA + 0x831418, (uintptr_t)&CPlane__PreRender_hook);
+    // 2. Hook CPlane::PreRender via symbol to prevent contrail particle crashes
+    CHook::InlineHook("_ZN6CPlane9PreRenderEv", &CPlane__PreRender_hook, &CPlane__PreRender_orig);
 
     //more crashfix
     CHook::InlineHook(g_libGTASA + 0x496798, &TidyUpModelInfo2_hook, &TidyUpModelInfo2_orig);
