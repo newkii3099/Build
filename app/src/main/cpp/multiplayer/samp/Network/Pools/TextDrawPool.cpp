@@ -1,4 +1,5 @@
 #include "samp/main.h"
+#include "samp/Multiplayer/Multiplayer.h"
 #include "samp/Network/Network.h"
 #include "samp/Network/Pools/TextDrawPool.h"
 #include "samp/Multiplayer/Util.h"
