@@ -185,9 +185,8 @@ void CJavaWrapper::HideHud()
 
 void CJavaWrapper::ShowSpeed()
 {
-    JNIEnv* env = GetEnv();
-    if (!env || !this->activity || !this->s_showSpeed) return;
-    env->CallVoidMethod(this->activity, this->s_showSpeed);
+    // Permanently disabled
+    return;
 }
 
 void CJavaWrapper::HideSpeed()

@@ -59,7 +59,9 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
     public void showHud() { runOnUiThread(() -> { mHud.ShowHud(); }); }
     public void hideHud() { runOnUiThread(() -> { mHud.HideHud(); }); }
 
-    public void showSpeed() { runOnUiThread(() -> { mSpeedometer.ShowSpeed(); }); }
+    public void showSpeed() {
+        // Permanently disabled
+    }
 
     public void hideSpeed() { runOnUiThread(() -> { mSpeedometer.HideSpeed(); }); }
     public void showTabWindow() { runOnUiThread(() -> mTab.show(true)); }
