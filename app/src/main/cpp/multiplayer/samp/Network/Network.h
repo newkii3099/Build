@@ -53,6 +53,7 @@ typedef unsigned short OBJECTID;
 #include "samp/Network/Pools/ActorPool.h"
 #include "samp/Network/Pools/PlayerBubblePool.h"
 #include "samp/Network/Pools/TextLabelPool.h"
+#include "samp/Network/Pools/TextDrawPool.h"
 
 class CNetGame
 {
@@ -114,6 +115,7 @@ public:
 	CMenuPool* GetMenuPool() { return m_pPools->pMenuPool; }
 	CPlayerBubblePool* GetPlayerBubblePool() { return m_pPools->pPlayerBubblePool; }
 	C3DTextLabelPool* GetTextLabelPool() { return m_pPools->pTextLabelPool; }
+	CTextDrawPool* GetTextDrawPool() { return m_pPools ? m_pPools->pTextDrawPool : nullptr; }
 
 	void SendDialogResponse(uint16_t wDialogID, uint8_t byteButtonID, uint16_t wListBoxItem, const char* szInput);
 	void SendChatMessage(const char* szMsg);
@@ -181,6 +183,7 @@ private:
 		CPickupPool			*pPickupPool;
 		CActorPool			*pActorPool;
 		C3DTextLabelPool	*pTextLabelPool;
+		CTextDrawPool		*pTextDrawPool;
 	} *m_pPools;
 
     void Packet_UnoccupiedSync(Packet *pkt);

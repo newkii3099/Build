@@ -148,6 +148,9 @@ void Render2dStuff_hook()
     Render2dStuff();
     MainLoop();
     ShowHud();
+    if (pNetGame && pNetGame->GetTextDrawPool()) {
+        pNetGame->GetTextDrawPool()->Draw();
+    }
     if (pUI) pUI->render();
 }
 
@@ -452,12 +455,13 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
         }
         else
         {
-            //if (pNetGame && pNetGame->GetTextDrawPool())
-           // {
-            //    if (!pNetGame->GetTextDrawPool()->onTouchEvent(type, num, posX, posY)) {
-             //       return AND_TouchEvent(1, 0, 0, 0);
-            //    }
-           // }
+            if (pNetGame && pNetGame->GetTextDrawPool())
+            {
+                if (!pNetGame->GetTextDrawPool()->onTouchEvent(type, num, posX, posY)) {
+                    AND_TouchEvent(1, 0, 0, 0);
+                    return;
+                }
+            }
         }
 	}
 

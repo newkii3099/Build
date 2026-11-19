@@ -139,6 +139,7 @@ void CNetGame::InitializePools()
 	m_pPools->pPickupPool = new CPickupPool();
 	m_pPools->pActorPool = new CActorPool();
 	m_pPools->pTextLabelPool = new C3DTextLabelPool();
+	m_pPools->pTextDrawPool = new CTextDrawPool();
 }
 
 void CNetGame::UninitializePools()
@@ -183,6 +184,12 @@ void CNetGame::UninitializePools()
 	{
 		delete m_pPools->pTextLabelPool;
 		m_pPools->pTextLabelPool = nullptr;
+	}
+
+	if (m_pPools->pTextDrawPool)
+	{
+		delete m_pPools->pTextDrawPool;
+		m_pPools->pTextDrawPool = nullptr;
 	}
 
 	if (m_pPools) {
@@ -485,6 +492,10 @@ void CNetGame::ProcessPools()
 
 	if (GetMenuPool()) {
 		GetMenuPool()->Process();
+	}
+
+	if (GetTextDrawPool()) {
+		GetTextDrawPool()->SnapshotProcess();
 	}
 
 }	
@@ -1054,7 +1065,10 @@ void CNetGame::ResetActorPool()
 // 0.3.7
 void CNetGame::ResetTextDrawPool()
 {
-
+	if (m_pPools && m_pPools->pTextDrawPool) {
+		delete m_pPools->pTextDrawPool;
+		m_pPools->pTextDrawPool = new CTextDrawPool();
+	}
 }
 // 0.3.7
 void CNetGame::ResetGangZonePool()

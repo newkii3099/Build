@@ -60,12 +60,16 @@ ButtonPanel::ButtonPanel()
     m_bOpen->setCallback([]() { OpenButton = true; });
     m_bClose->setCallback([]() { OpenButton = false; });
     m_bEsc->setCallback([m_bEsc]() {
+        if (pScoreBoard && pScoreBoard->m_bToggle) {
+            pScoreBoard->Close();
+        }
         if (pNetGame && m_bEsc->visible()) {
-            //CTextDrawPool *pTextDrawPool = pNetGame->GetTextDrawPool();
-           // if (pTextDrawPool) {
-            //    pTextDrawPool->SetSelectState(false, 0);
-			//}
-		}});
+            CTextDrawPool *pTextDrawPool = pNetGame->GetTextDrawPool();
+            if (pTextDrawPool) {
+                pTextDrawPool->SetSelectState(false, 0);
+            }
+        }
+    });
 	m_bAlt->setCallback([m_bAlt]() {
 		if(m_bAlt->visible())
 			LocalPlayerKeys.bKeys[ePadKeys::KEY_WALK] = true;

@@ -2,7 +2,11 @@
 #include "samp/Multiplayer/Multiplayer.h"
 #include "samp/Multiplayer/Util.h"
 #include "gta-reversed/game_sa/RenderWare/RenderWare.h"
+#include "gta-reversed/game_sa/VisibilityPlugins.h"
 #include "samp/GUI/gui.h"
+#include <unordered_map>
+#include <string>
+#include <algorithm>
 
 extern UI* pUI;
 extern CSnapShotHelper* pSnapShotHelper;
@@ -74,7 +78,7 @@ CTextDraw::~CTextDraw()
 
 uintptr_t LoadFromTxdSlot(const char* szSlot, const char* szTexture)
 {
-    RwTexture* tex;
+    RwTexture* tex = nullptr;
     if (strncmp(szSlot, "none", 5u))
     {
         /*uintptr_t v10 = ((int (*)(const char*))(g_libGTASA + 0x55BB85))(szSlot);
@@ -126,6 +130,15 @@ uintptr_t LoadFromTxdSlot(const char* szSlot, const char* szTexture)
 
 void CTextDraw::Draw()
 {
+    if (m_TextDrawData.dwStyle == 5) {
+        if (m_TextDrawData.iTextureSlot == -1) {
+            SnapshotProcess();
+        }
+        if (m_TextDrawData.iTextureSlot != -1) {
+            return DrawTextured();
+        }
+    }
+
     if (m_TextDrawData.iTextureSlot != -1) {
         return DrawTextured();
     }
@@ -135,6 +148,57 @@ void CTextDraw::Draw()
     }
 
     return DrawDefault();
+}
+
+static std::string ReplaceKey(const std::string& input)
+{
+    static const std::unordered_map<std::string, std::string> keyMap = {
+        {"~k~~PED_ANSWER_PHONE~", "TAB"},
+        {"~k~~VEHICLE_FIREWEAPON_ALT~", "ALT GR / LCTRL / NUM0"},
+        {"~k~~PED_DUCK~", "C"},
+        {"~k~~VEHICLE_HORN~", "H / CAPSLOCK"},
+        {"~k~~PED_FIREWEAPON~", "LCTRL / LMB"},
+        {"~k~~VEHICLE_FIREWEAPON~", "LALT"},
+        {"~k~~PED_SPRINT~", "SPC"},
+        {"~k~~VEHICLE_ACCELERATE~", "W"},
+        {"~k~~VEHICLE_ENTER_EXIT~", "ENTER"},
+        {"~k~~PED_JUMPING~", "LSHIFT"},
+        {"~k~~VEHICLE_BRAKE~", "S"},
+        {"~k~~VEHICLE_LOOKRIGHT~", "E"},
+        {"~k~~PED_LOCK_TARGET~", "RMB"},
+        {"~k~~VEHICLE_HANDBRAKE~", "SPC"},
+        {"~k~~VEHICLE_LOOKLEFT~", "Q"},
+        {"~k~~PED_LOOKBEHIND~", "NUM1 / MMB"},
+        {"~k~~VEHICLE_LOOKBEHIND~", "2"},
+        {"~k~~TOGGLE_SUBMISSIONS~", "2"},
+        {"~k~~SNEAK_ABOUT~", "LALT"},
+        {"~k~~VEHICLE_TURRETUP~", "NUM8"},
+        {"~k~~VEHICLE_TURRETDOWN~", "NUM2"},
+        {"~k~~VEHICLE_TURRETLEFT~", "NUM4"},
+        {"~k~~VEHICLE_TURRETRIGHT~", "NUM6"},
+        {"~k~~CONVERSATION_YES~", "Y"},
+        {"~k~~CONVERSATION_NO~", "N"},
+        {"~k~~GROUP_CONTROL_BWD~", "H"},
+        {"~k~~GROUP_CONTROL_FWD~", "G"},
+        {"~k~~GO_FORWARD~", "UP"},
+        {"~k~~VEHICLE_STEERUP~", "UP"},
+        {"~k~~GO_BACK~", "DOWN"},
+        {"~k~~VEHICLE_STEERDOWN~", "DOWN"},
+        {"~k~~GO_LEFT~", "LEFT"},
+        {"~k~~VEHICLE_STEERLEFT~", "LEFT"},
+        {"~k~~GO_RIGHT~", "RIGHT"},
+        {"~k~~VEHICLE_STEERRIGHT~", "RIGHT"}
+    };
+
+    std::string output = input;
+    for (const auto& pair : keyMap) {
+        std::string::size_type pos = 0;
+        while ((pos = output.find(pair.first, pos)) != std::string::npos) {
+            output.replace(pos, pair.first.length(), pair.second);
+            pos += pair.second.length();
+        }
+    }
+    return output;
 }
 
 void CTextDraw::DrawDefault()
@@ -195,7 +259,8 @@ void CTextDraw::DrawDefault()
 
     float fUseY = iScreenHeight - ((448.0 - m_TextDrawData.fY) * (iScreenHeight * fVertHudScale));
     float fUseX = iScreenWidth - ((640.0 - m_TextDrawData.fX) * (iScreenWidth * fHorizHudScale));
-    CFont::PrintString(fUseX, fUseY, (const char*)m_szText);
+    std::string text = ReplaceKey(m_szText);
+    CFont::PrintString(fUseX, fUseY, text.c_str());
 
     CFont::SetEdge(0);
 
@@ -225,6 +290,8 @@ void CTextDraw::DrawDefault()
 
 void CTextDraw::DrawTextured()
 {
+    if (m_TextDrawData.iTextureSlot < 0 || m_TextDrawData.iTextureSlot >= 200) return;
+
     float scaleX = (float)(RsGlobal->maximumWidth) * (1.0f / 640.0f);
     float scaleY = (float)(RsGlobal->maximumHeight) * (1.0f / 448.0f);
 
@@ -247,12 +314,15 @@ void CTextDraw::DrawTextured()
             1.0f, 1.0f };
 
     if (m_bHovered) {
-        if(TextDrawTexture[m_TextDrawData.iTextureSlot] != 0)DrawTextureUV(TextDrawTexture[m_TextDrawData.iTextureSlot], &m_rectArea, m_dwHoverColor,
-                                                                           m_TextDrawData.dwStyle == 5 ? uv_reflected : uv_normal);
+        uint32_t dwReversed = __builtin_bswap32(m_dwHoverColor | (0x000000FF));
+        if (TextDrawTexture[m_TextDrawData.iTextureSlot] != 0)
+            DrawTextureUV(TextDrawTexture[m_TextDrawData.iTextureSlot], &m_rectArea, dwReversed,
+                          m_TextDrawData.dwStyle == 5 ? uv_reflected : uv_normal);
     }
     else {
-        if(TextDrawTexture[m_TextDrawData.iTextureSlot] != 0)DrawTextureUV(TextDrawTexture[m_TextDrawData.iTextureSlot], &m_rectArea, m_TextDrawData.dwLetterColor,
-                                                                           m_TextDrawData.dwStyle == 5 ? uv_reflected : uv_normal);
+        if (TextDrawTexture[m_TextDrawData.iTextureSlot] != 0)
+            DrawTextureUV(TextDrawTexture[m_TextDrawData.iTextureSlot], &m_rectArea, m_TextDrawData.dwLetterColor,
+                          m_TextDrawData.dwStyle == 5 ? uv_reflected : uv_normal);
     }
 }
 
@@ -296,21 +366,22 @@ void CTextDraw::SnapshotProcess()
         return;
     }
 
+    if (!pSnapShotHelper) {
+        return;
+    }
+
     uintptr_t snapshot = 0;
 
     // PED MODEL
     if (IsValidPedModel(m_TextDrawData.wModelID))
     {
-        /*if (!IsExistinfoForModel(m_TextDrawData.wModelID))
-            m_TextDrawData.wModelID = 0;*/
-
         snapshot = (uintptr_t)pSnapShotHelper->CreatePedSnapShot(
                 m_TextDrawData.wModelID,
                 m_TextDrawData.dwBackgroundColor,
                 &m_TextDrawData.vecRot,
                 m_TextDrawData.fZoom);
     }
-        // VEHICLE MODEL
+    // VEHICLE MODEL
     else if (m_TextDrawData.wModelID >= 400 && m_TextDrawData.wModelID <= 611)
     {
         snapshot = (uintptr_t)pSnapShotHelper->CreateVehicleSnapShot(
@@ -322,7 +393,7 @@ void CTextDraw::SnapshotProcess()
                 m_TextDrawData.wColor2
         );
     }
-        // OBJECT MODEL
+    // OBJECT MODEL
     else
     {
         if (!CModelInfo::GetModelInfo(m_TextDrawData.wModelID))
@@ -337,7 +408,17 @@ void CTextDraw::SnapshotProcess()
 
     if (snapshot)
     {
-        m_TextDrawData.iTextureSlot = GetFreeTextDrawTextureSlot();
-        TextDrawTexture[m_TextDrawData.iTextureSlot] = snapshot;
+        int slot = GetFreeTextDrawTextureSlot();
+        if (slot >= 0 && slot < 200) {
+            m_TextDrawData.iTextureSlot = slot;
+            TextDrawTexture[slot] = snapshot;
+        } else {
+            m_TextDrawData.iTextureSlot = -1;
+        }
+    }
+
+    CCamera* pTheCamera = reinterpret_cast<CCamera*>(g_libGTASA + 0x9F86F8);
+    if (pTheCamera && pTheCamera->m_pRwCamera) {
+        CVisibilityPlugins::SetRenderWareCamera(pTheCamera->m_pRwCamera);
     }
 }
