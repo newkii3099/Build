@@ -135,7 +135,7 @@ public class DialogManager {
     }
 
     public void show(int i, int i2, String str, String str2, String str3, String str4) {
-        if (i == -1 || i == 65535 || ((str == null || str.trim().isEmpty()) && (str2 == null || str2.trim().isEmpty()) && (str3 == null || str3.trim().isEmpty()) && (str4 == null || str4.trim().isEmpty()))) {
+        if (i == -1) {
             Hide();
             return;
         }
