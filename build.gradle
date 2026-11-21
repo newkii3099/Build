@@ -5,6 +5,7 @@ buildscript {
     }
     repositories {
         google()
+        maven { url 'https://maven.aliyun.com/repository/public' }
         mavenCentral()
         maven {
             url 'https://artifacts.applovin.com/android'
@@ -28,11 +29,12 @@ buildscript {
 
 allprojects {
     repositories {
+        google()
+        maven { url 'https://maven.aliyun.com/repository/public' }
         mavenCentral()
         maven { url 'https://jitpack.io' }
         maven { url 'https://mint.splunk.com/gradle/'}
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        google()
         jcenter()
     }
 }
