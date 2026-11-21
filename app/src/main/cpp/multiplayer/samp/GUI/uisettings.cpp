@@ -72,8 +72,8 @@ ImColor UISettings::m_buttonFocusedColor = ImColor(75, 82, 96, 220);
 ImColor UISettings::m_keyboardBackgroundColor = ImColor(16, 20, 26, 235);
 
 /* dialog */
-ImColor UISettings::m_dialogBackgroundColor = ImColor(18, 22, 30, 235);
-ImColor UISettings::m_dialogTitleBackgroundColor = ImColor(35, 42, 54, 245);
+ImColor UISettings::m_dialogBackgroundColor = ImColor(7, 13, 22, 240);
+ImColor UISettings::m_dialogTitleBackgroundColor = ImColor(0, 35, 75, 230);
 
 void UISettings::Initialize(const ImVec2& display_size)
 {

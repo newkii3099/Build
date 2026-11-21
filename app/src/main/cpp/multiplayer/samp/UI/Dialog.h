@@ -18,6 +18,7 @@ private:
 	public:
 		DialogButton1();
 
+		virtual void draw(ImGuiRenderer* renderer) override;
 		virtual void touchPopEvent() override;
 	};
 
@@ -26,6 +27,7 @@ private:
 	public:
 		DialogButton2();
 
+		virtual void draw(ImGuiRenderer* renderer) override;
 		virtual void touchPopEvent() override;
 	};
 

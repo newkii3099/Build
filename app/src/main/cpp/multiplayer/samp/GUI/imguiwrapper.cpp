@@ -45,7 +45,7 @@ bool ImGuiWrapper::initialize()
 
     Log::addParameter("Loading font: %s", m_fontPath.c_str());
     ImFontConfig fontCfg;
-    fontCfg.GlyphExtraAdvanceX = UISettings::outlineSize();
+    fontCfg.GlyphExtraSpacing.x = UISettings::outlineSize();
 
     static const ImWchar ranges[] =
     {
@@ -281,7 +281,7 @@ void ImGuiWrapper::renderDrawData(ImDrawData* draw_data)
 				clip_rect.w = pcmd->ClipRect.y;
 				SetScissorRect((void*)&clip_rect);
 
-				RwRenderStateSet(rwRENDERSTATETEXTURERASTER, (void*)pcmd->GetTexID());
+				RwRenderStateSet(rwRENDERSTATETEXTURERASTER, (void*)pcmd->TextureId);
 				RwIm2DRenderIndexedPrimitive(rwPRIMTYPETRILIST,
 					&m_vertexBuffer[vtx_offset], (RwInt32)cmd_list->VtxBuffer.Size,
 					(RwImVertexIndex*)idx_buffer, pcmd->ElemCount);
@@ -333,7 +333,7 @@ bool ImGuiWrapper::createFontTexture()
 	}
 
 	m_fontRaster = RwRasterSetFromImage(m_fontRaster, font_img);
-	io.Fonts->SetTexID((ImTextureID)m_fontRaster);
+	io.Fonts->TexID = (ImTextureID*)m_fontRaster;
 
 	RwImageDestroy(font_img);
 
@@ -350,10 +350,7 @@ void ImGuiWrapper::destroyFontTexture()
 		ImGuiIO& io = ImGui::GetIO();
 		RwRasterDestroy(m_fontRaster);
 		m_fontRaster = nullptr;
-		if (io.Fonts->TexData)
-		{
-			io.Fonts->SetTexID((ImTextureID)0);
-		}
+		io.Fonts->TexID = (ImTextureID)0;
 	}
 
 }

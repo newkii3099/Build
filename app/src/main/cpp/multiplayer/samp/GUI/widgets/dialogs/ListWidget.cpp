@@ -97,7 +97,20 @@ void ListWidget::ItemWidget::performLayout()
 
 void ListWidget::ItemWidget::draw(ImGuiRenderer* renderer)
 {
-	if (this->selected()) renderer->drawRect(absolutePosition(), absolutePosition() + size(), ImColor(0xF5, 0x91, 0x32)/*ImColor(0.7f, 0.1f, 0.1f)*/, true);
+	if (this->selected())
+	{
+		ImVec2 pMin = absolutePosition();
+		ImVec2 pMax = absolutePosition() + size();
+		// AAA Electric Blue Reshade Selection Bar
+		renderer->drawRectFilledMulticolor(pMin, pMax,
+			ImColor(0, 140, 230, 175), ImColor(0, 85, 175, 120),
+			ImColor(0, 60, 145, 120), ImColor(0, 110, 200, 175));
+		// Left neon cyan indicator bar
+		renderer->drawRect(pMin, ImVec2(pMin.x + 3.0f, pMax.y), ImColor(0, 245, 255, 255), true);
+		// Top and bottom subtle border lines
+		renderer->drawLine(pMin, ImVec2(pMax.x, pMin.y), ImColor(0, 215, 255, 150), 1.0f);
+		renderer->drawLine(ImVec2(pMin.x, pMax.y), pMax, ImColor(0, 215, 255, 150), 1.0f);
+	}
 	ListBoxItem::draw(renderer);
 }
 

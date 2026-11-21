@@ -179,7 +179,7 @@ void Plugin::MainLoop()
 
             if (!Plugin::muteStatus)
             {
-                if (ImGui::ImageButton("##mic_voice", Plugin::recordStatus ? (ImTextureID)MicroIcon::tActiveIcon->raster :
+                if (ImGui::ImageButton(Plugin::recordStatus ? (ImTextureID)MicroIcon::tActiveIcon->raster :
                     (ImTextureID)MicroIcon::tPassiveIcon->raster, vecButSize))
                 {
                     if (PluginConfig::GetMicroEnable())
@@ -222,7 +222,7 @@ void Plugin::MainLoop()
             }
             else
             {
-                if (ImGui::ImageButton("##mic_muted", (ImTextureID)MicroIcon::tMutedIcon->raster, vecButSize))
+                if (ImGui::ImageButton((ImTextureID)MicroIcon::tMutedIcon->raster, vecButSize))
                 {
                     // ~ none
                 }

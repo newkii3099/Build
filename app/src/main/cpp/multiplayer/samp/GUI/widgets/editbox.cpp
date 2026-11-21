@@ -21,10 +21,15 @@ void EditBox::performLayout()
 
 void EditBox::draw(ImGuiRenderer* renderer)
 {
-	renderer->drawRect(
-		absolutePosition() + ImVec2(UISettings::outlineSize(), UISettings::outlineSize()), 
-		(absolutePosition() + size()) - ImVec2(UISettings::outlineSize(), UISettings::outlineSize()), 
-		ImColor(0.287f, 0.287f, 0.287f, 0.890f)/*ImColor(0xF5, 0x91, 0x32)*/, false, UISettings::outlineSize());//
+	ImVec2 pMin = absolutePosition() + ImVec2(UISettings::outlineSize(), UISettings::outlineSize());
+	ImVec2 pMax = (absolutePosition() + size()) - ImVec2(UISettings::outlineSize(), UISettings::outlineSize());
+
+	// AAA Cyber Dark Obsidian Input Field
+	renderer->drawRect(pMin, pMax, ImColor(8, 16, 28, 220), true, 4.0f);
+	// Glowing Electric Cyan Border
+	renderer->drawRect(pMin, pMax, ImColor(0, 190, 245, 175), false, 4.0f, 1.2f);
+	// Left accent marker
+	renderer->drawRect(pMin + ImVec2(1.0f, 2.0f), ImVec2(pMin.x + 3.0f, pMax.y - 2.0f), ImColor(0, 235, 255, 230), true, 1.0f);
 
 	Widget::draw(renderer);
 }
