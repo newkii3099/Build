@@ -1,5 +1,7 @@
 package com.kurdish.roleplay.game;
 
+import com.kurdish.roleplay.game.ui.inventory.InventoryManager;
+
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -43,6 +45,7 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
     Tab mTab = null;
     Hud mHud = null;
     Speedometer mSpeedometer = null;
+    private InventoryManager mInventory = null;
 
     private float mLastDisplayRefreshRate = -1.0f;
     private int mLastEffectiveFPSLimit = -1;
@@ -68,6 +71,29 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
     public void setTabStat(int id, String name, int score, int ping) { runOnUiThread(() -> mTab.setStat(id, name, score, ping) ); }
 
     public native void sendDialogResponse(int i, int i2, int i3, byte[] str);
+    public native void sendCommand(String command);
+
+    public InventoryManager getInventory() {
+        return mInventory;
+    }
+
+    public void toggleInventory() {
+        runOnUiThread(() -> {
+            if (mInventory != null) mInventory.toggle();
+        });
+    }
+
+    public void showInventory() {
+        runOnUiThread(() -> {
+            if (mInventory != null) mInventory.show();
+        });
+    }
+
+    public void hideInventory() {
+        runOnUiThread(() -> {
+            if (mInventory != null) mInventory.hide();
+        });
+    }
 
     public static SAMP getInstance() {
         return instance;
@@ -312,6 +338,7 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
             mHud = new Hud(this);
             mSpeedometer = new Speedometer(this);
             mTab = new Tab(this);
+            mInventory = new InventoryManager(this);
             instance = this;
             mHeightProvider = new HeightProvider(this).init(getWindow().getDecorView()).setHeightListener(this);
         } catch (Throwable t) {
@@ -351,14 +378,23 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
 
     @Override
     public void onBackPressed() {
+        if (mInventory != null && mInventory.isOpen()) {
+            mInventory.hide();
+            return;
+        }
         super.onBackPressed();
         onEventBackPressed();
     }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK)
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (mInventory != null && mInventory.isOpen()) {
+                mInventory.hide();
+                return true;
+            }
             onEventBackPressed();
+        }
         return super.onKeyDown(keyCode, event);
     }
 

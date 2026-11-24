@@ -87,6 +87,15 @@ public class Hud {
             });
         }
 
+        View hudInventoryBtn = hud_layout.findViewById(R.id.hud_inventory_btn);
+        if (hudInventoryBtn != null) {
+            hudInventoryBtn.setOnClickListener(v -> {
+                if (com.kurdish.roleplay.game.SAMP.getInstance() != null) {
+                    com.kurdish.roleplay.game.SAMP.getInstance().toggleInventory();
+                }
+            });
+        }
+
         startUpdatingTime();
         fetchOnline();
 

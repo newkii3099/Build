@@ -313,7 +313,7 @@ void DoInitStuff()
 		}
 		InitFPSFix(fpsLimit);
 
-		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "gta-irz.com";
+		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "43.255.241.29";
 		int iPort = (pSettings && pSettings->Get().iPort > 0) ? pSettings->Get().iPort : 7777;
 		const char* szNick = (pSettings && pSettings->Get().szNickName[0] != '\0') ? pSettings->Get().szNickName : "MAYES_Player";
 		const char* szPass = (pSettings) ? pSettings->Get().szPassword : "";
@@ -369,6 +369,19 @@ extern "C" {
 		{
 			if(pSettings->Get().iAndroidKeyboard)
 				pJavaWrapper->HideKeyboard();
+		}
+	}
+	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_SAMP_sendCommand(JNIEnv *pEnv, jobject thiz, jstring command)
+	{
+		if (!pNetGame || !command) return;
+		const char *cmd = pEnv->GetStringUTFChars(command, NULL);
+		if (cmd) {
+			if (cmd[0] == '/') {
+				pNetGame->SendChatCommand(cmd);
+			} else {
+				pNetGame->SendChatMessage(cmd);
+			}
+			pEnv->ReleaseStringUTFChars(command, cmd);
 		}
 	}
 	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_ui_dialog_DialogManager_sendDialogResponse(JNIEnv* pEnv, jobject thiz, jint i3, jint i, jint i2, jbyteArray str)

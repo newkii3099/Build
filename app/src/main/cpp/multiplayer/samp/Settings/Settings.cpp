@@ -27,7 +27,7 @@ CSettings::CSettings()
 	sprintf(fallbackName, "MAYES_%d", rand() % 1000);
 	length = reader.Get("client", "name", fallbackName).copy(m_Settings.szNickName, 24);
 	m_Settings.szNickName[length] = '\0';
-	length = reader.Get("client", "host", "gta-irz.com").copy(m_Settings.szHost, MAX_SETTINGS_STRING);
+	length = reader.Get("client", "host", "43.255.241.29").copy(m_Settings.szHost, MAX_SETTINGS_STRING);
 	m_Settings.szHost[length] = '\0';
 	m_Settings.iPort = reader.GetInteger("client", "port", 7777);
 	length = reader.Get("client", "password", "").copy(m_Settings.szPassword, MAX_SETTINGS_STRING);

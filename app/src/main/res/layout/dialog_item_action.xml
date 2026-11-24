@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="260dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_inv_action_dialog"
+    android:padding="14dp">
+
+    <ImageView
+        android:id="@+id/dialog_act_icon"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/dialog_act_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/prompt_regular"
+        android:textColor="#38BDF8"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/dialog_act_icon"
+        app:layout_constraintTop_toTopOf="@id/dialog_act_icon" />
+
+    <TextView
+        android:id="@+id/dialog_act_amount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:fontFamily="@font/prompt_regular"
+        android:textColor="#94A3B8"
+        android:textSize="9.5sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/dialog_act_icon"
+        app:layout_constraintTop_toBottomOf="@id/dialog_act_name" />
+
+    <View
+        android:id="@+id/dialog_act_line"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="10dp"
+        android:background="#26FFFFFF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_act_icon" />
+
+    <LinearLayout
+        android:id="@+id/dialog_act_btn_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_act_line">
+
+        <TextView
+            android:id="@+id/btn_action_use"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginVertical="2dp"
+            android:background="@drawable/bg_glass_modern"
+            android:fontFamily="@font/prompt_regular"
+            android:gravity="center"
+            android:text="ใช้งานไอเทม"
+            android:textColor="#34D399"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/btn_action_hotbar"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginVertical="2dp"
+            android:background="@drawable/bg_glass_modern"
+            android:fontFamily="@font/prompt_regular"
+            android:gravity="center"
+            android:text="ใส่คีย์ลัด (Hotbar 1-7)"
+            android:textColor="#38BDF8"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/btn_action_give"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginVertical="2dp"
+            android:background="@drawable/bg_glass_modern"
+            android:fontFamily="@font/prompt_regular"
+            android:gravity="center"
+            android:text="มอบให้ผู้เล่นใกล้เคียง"
+            android:textColor="#E2E8F0"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/btn_action_drop"
+            android:layout_width="match_parent"
+            android:layout_height="32dp"
+            android:layout_marginVertical="2dp"
+            android:background="@drawable/bg_glass_modern"
+            android:fontFamily="@font/prompt_regular"
+            android:gravity="center"
+            android:text="ทิ้งลงบนพื้น"
+            android:textColor="#F87171"
+            android:textSize="11sp" />
+
+        <TextView
+            android:id="@+id/btn_action_cancel"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/prompt_regular"
+            android:gravity="center"
+            android:text="ย้อนกลับ"
+            android:textColor="#94A3B8"
+            android:textSize="10sp" />
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
