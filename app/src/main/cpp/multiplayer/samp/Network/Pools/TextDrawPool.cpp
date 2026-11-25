@@ -7,6 +7,8 @@
 #include <algorithm>
 
 extern CNetGame* pNetGame;
+extern CGame* pGame;
+extern UI* pUI;
 
 CTextDrawPool::CTextDrawPool()
 {
