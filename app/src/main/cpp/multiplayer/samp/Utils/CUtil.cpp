@@ -99,7 +99,7 @@ RwTexture* CUtil::LoadTextureFromTxdFile(const char* txdName, const char* textur
     if (it == s_txdCache.end()) {
         uintptr_t dict = 0;
         const char* names[2] = { txdName, lowerTxd.c_str() };
-        const char* dirs[] = { "models/txd/", "txd/", "texdb/", "SAMP/txd/", "SAMP/", "models/" };
+        const char* dirs[] = { "models/txd/", "txd/", "texdb/", "SAMP/txd/", "SAMP/", "models/", "" };
 
         for (int n = 0; n < 2 && !dict; n++) {
             if (n == 1 && lowerTxd == txdName) continue;
@@ -109,6 +109,13 @@ RwTexture* CUtil::LoadTextureFromTxdFile(const char* txdName, const char* textur
                     dict = ((uintptr_t(*)(const char*))(g_libGTASA + 0x5500A4))(fullPath.c_str()); // CFileLoader::LoadTexDictionary
                     FLog("[TXD] Loaded custom .txd file '%s' -> 0x%lx", fullPath.c_str(), (unsigned long)dict);
                     break;
+                }
+            }
+            if (!dict) {
+                std::string dlPath = std::string("/storage/emulated/0/Download/") + names[n] + ".txd";
+                if (FileExistsReadable(dlPath)) {
+                    dict = ((uintptr_t(*)(const char*))(g_libGTASA + 0x5500A4))(dlPath.c_str());
+                    FLog("[TXD] Loaded custom .txd file '%s' -> 0x%lx", dlPath.c_str(), (unsigned long)dict);
                 }
             }
         }

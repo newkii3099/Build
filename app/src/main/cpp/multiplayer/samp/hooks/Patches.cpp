@@ -1811,4 +1811,7 @@ void ApplyGlobalPatches()
     CHook::RET("_ZN7CWanted14ReportCrimeNowE10eCrimeTypeRK7CVectorb"); // CWanted::ReportCrimeNow
 
     CHook::RET("_ZN8CCarCtrl18GenerateRandomCarsEv");
+
+    // Hide vanilla GTA Mobile native top-right player HUD (clock, money, red HP bar, weapon icon)
+    CHook::RET("_ZN17CWidgetPlayerInfo4DrawEv");
 }

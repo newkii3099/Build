@@ -81,6 +81,15 @@ private:
     double m_lastActivityTime = 0.0;
 
     // Tab & Toggle button touch rectangles
+    enum PressedButton {
+        BTN_NONE = 0,
+        BTN_TAB_CHAT,
+        BTN_TAB_SMS,
+        BTN_TOGGLE
+    };
+    PressedButton m_pressedBtn = BTN_NONE;
+    ImVec2 m_pressStartPos = ImVec2(0.0f, 0.0f);
+
     ImVec2 m_tabChatMin = ImVec2(0.0f, 0.0f);
     ImVec2 m_tabChatMax = ImVec2(0.0f, 0.0f);
     ImVec2 m_tabSmsMin = ImVec2(0.0f, 0.0f);

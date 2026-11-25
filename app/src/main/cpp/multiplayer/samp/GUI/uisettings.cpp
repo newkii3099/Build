@@ -38,7 +38,7 @@ int UISettings::m_chatDispMesssages = 9;
 int UISettings::m_chatMaxMessages = 30;
 ImVec2 UISettings::m_chatPos = ImVec2(110.0f, 45.0f);
 ImVec2 UISettings::m_chatSize = ImVec2(299.0f, 0.0f);
-ImVec2 UISettings::m_chatItemSize = ImVec2(400.0f, 13.0f);
+ImVec2 UISettings::m_chatItemSize = ImVec2(400.0f, 14.5f);
 
 /* spawn */
 ImVec2 UISettings::m_spawnPos = ImVec2(200.0f, 420.0f);

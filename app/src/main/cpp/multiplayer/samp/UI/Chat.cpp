@@ -576,43 +576,72 @@ void Chat::touchPopEvent()
     pUI->keyboard()->show(this);
 }
 
+static bool pointInRect(const ImVec2& p, const ImVec2& minR, const ImVec2& maxR)
+{
+    return maxR.x > minR.x && maxR.y > minR.y &&
+           p.x >= minR.x && p.x <= maxR.x &&
+           p.y >= minR.y && p.y <= maxR.y;
+}
+
 void Chat::touchEvent(const ImVec2& pos, TouchType type)
 {
     markActivity();
 
-    // Check touches on Toggle button (works both when expanded and when collapsed)
-    if (pos.x >= m_toggleMin.x && pos.x <= m_toggleMax.x &&
-        pos.y >= m_toggleMin.y && pos.y <= m_toggleMax.y)
+    float scaleX = (UISettings::scaleFactor().x > 0.0f) ? UISettings::scaleFactor().x : 1.0f;
+    float scaleY = (UISettings::scaleFactor().y > 0.0f) ? UISettings::scaleFactor().y : 1.0f;
+    float maxTapMoveSq = (18.0f * scaleX) * (18.0f * scaleX) + (18.0f * scaleY) * (18.0f * scaleY);
+
+    if (type == TouchType::push)
     {
-        if (type == TouchType::pop)
-        {
-            toggleVisibility();
+        m_pressedBtn = BTN_NONE;
+        m_pressStartPos = pos;
+        if (pointInRect(pos, m_toggleMin, m_toggleMax)) {
+            m_pressedBtn = BTN_TOGGLE;
+            return;
         }
-        return;
+        if (m_showingChat) {
+            if (pointInRect(pos, m_tabChatMin, m_tabChatMax)) {
+                m_pressedBtn = BTN_TAB_CHAT;
+                return;
+            }
+            if (pointInRect(pos, m_tabSmsMin, m_tabSmsMax)) {
+                m_pressedBtn = BTN_TAB_SMS;
+                return;
+            }
+        }
+    }
+    else if (type == TouchType::move)
+    {
+        if (m_pressedBtn != BTN_NONE) {
+            float dx = pos.x - m_pressStartPos.x;
+            float dy = pos.y - m_pressStartPos.y;
+            if (dx * dx + dy * dy > maxTapMoveSq) {
+                m_pressedBtn = BTN_NONE;
+            }
+            return;
+        }
+    }
+    else if (type == TouchType::pop)
+    {
+        PressedButton btn = m_pressedBtn;
+        m_pressedBtn = BTN_NONE;
+        if (btn != BTN_NONE) {
+            float dx = pos.x - m_pressStartPos.x;
+            float dy = pos.y - m_pressStartPos.y;
+            if (dx * dx + dy * dy <= maxTapMoveSq) {
+                if (btn == BTN_TOGGLE && pointInRect(pos, m_toggleMin, m_toggleMax)) {
+                    toggleVisibility();
+                } else if (m_showingChat && btn == BTN_TAB_CHAT && pointInRect(pos, m_tabChatMin, m_tabChatMax)) {
+                    switchTab(TAB_CHAT);
+                } else if (m_showingChat && btn == BTN_TAB_SMS && pointInRect(pos, m_tabSmsMin, m_tabSmsMax)) {
+                    switchTab(TAB_SMS);
+                }
+            }
+            return;
+        }
     }
 
     if (!m_showingChat) return;
-
-    // Check touches on CHAT / SMS tabs
-    if (pos.x >= m_tabChatMin.x && pos.x <= m_tabChatMax.x &&
-        pos.y >= m_tabChatMin.y && pos.y <= m_tabChatMax.y)
-    {
-        if (type == TouchType::pop)
-        {
-            switchTab(TAB_CHAT);
-        }
-        return;
-    }
-
-    if (pos.x >= m_tabSmsMin.x && pos.x <= m_tabSmsMax.x &&
-        pos.y >= m_tabSmsMin.y && pos.y <= m_tabSmsMax.y)
-    {
-        if (type == TouchType::pop)
-        {
-            switchTab(TAB_SMS);
-        }
-        return;
-    }
 
     ListBox::touchEvent(pos, type);
 }
@@ -766,12 +795,12 @@ void Chat::draw(ImGuiRenderer* renderer)
     );
     renderer->drawText(smsTextPos, smsTextCol, smsLabel, false, fontSize);
 
-    // Toggle Hide Button ("💬 ซ่อน")
+    // Toggle Hide Button ("ซ่อน")
     ImColor toggleBg(0, 0, 0, 30);
     ImColor toggleTextCol(200, 200, 200, 220);
     renderer->drawRect(m_toggleMin, m_toggleMax, toggleBg, true, tabH / 2.0f);
 
-    std::string toggleLabel = "💬 ซ่อน";
+    std::string toggleLabel = "ซ่อน";
     ImVec2 toggleLabelSz = renderer->calculateTextSize(toggleLabel, fontSize);
     ImVec2 toggleTextPos = ImVec2(
         m_toggleMin.x + (tabW - toggleLabelSz.x) / 2.0f,
