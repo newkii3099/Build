@@ -70,11 +70,19 @@ void CTextDrawPool::SetSelectState(bool bState, uint32_t dwColor)
 		m_bSelectState = true;
 		m_dwHoverColor = dwColor;
 		m_wClickedTextDrawID = 0xFFFF;
+		if (pGame) {
+			pGame->DisplayHUD(false);
+			if (pGame->FindPlayerPed()) pGame->FindPlayerPed()->TogglePlayerControllable(false);
+		}
 	}
 	else {
 		m_bSelectState = false;
 		m_dwHoverColor = 0;
 		m_wClickedTextDrawID = 0xFFFF;
+		if (pGame) {
+			pGame->DisplayHUD(true);
+			if (pGame->FindPlayerPed()) pGame->FindPlayerPed()->TogglePlayerControllable(true);
+		}
 
 		SendClick(0xFFFF);
 
@@ -103,46 +111,43 @@ bool CTextDrawPool::onTouchEvent(int type, int num, int x, int y)
 
 	m_wClickedTextDrawID = 0xFFFF;
 
-	for (int i = 0; i < MAX_TEXT_DRAWS; i++) {
-		if (m_bSlotState[i] && m_pTextDraw[i]) {
-			CTextDraw* pTextDraw = m_pTextDraw[i];
-			pTextDraw->m_bHovered = false;
-			pTextDraw->m_dwHoverColor = 0;
+	for (int i = MAX_TEXT_DRAWS - 1; i >= 0; i--) {
+		if (!m_bSlotState[i] || !m_pTextDraw[i]) continue;
 
-			if (pTextDraw->m_TextDrawData.byteSelectable && pTextDraw->m_TextDrawData.bHasRectArea) {
-				CRect* rect = &pTextDraw->m_rectArea;
-				if (rect) {
-					float left = std::min(rect->left, rect->right);
-					float right = std::max(rect->left, rect->right);
-					float top = std::min(rect->top, rect->bottom);
-					float bottom = std::max(rect->top, rect->bottom);
+		CTextDraw* pTextDraw = m_pTextDraw[i];
+		pTextDraw->m_bHovered = false;
+		pTextDraw->m_dwHoverColor = 0;
 
-					if (x >= left && x <= right && y >= top && y <= bottom) {
-						switch (type) {
-							case 2: // push / touch down
-							case 3: // move
-								m_wClickedTextDrawID = 0xFFFF;
-								pTextDraw->m_bHovered = true;
-								pTextDraw->m_dwHoverColor = m_dwHoverColor;
-								break;
+		if (pTextDraw->m_TextDrawData.byteSelectable && pTextDraw->m_TextDrawData.bHasRectArea) {
+			CRect* rect = &pTextDraw->m_rectArea;
+			float left = std::min(rect->left, rect->right);
+			float right = std::max(rect->left, rect->right);
+			float top = std::min(rect->top, rect->bottom);
+			float bottom = std::max(rect->top, rect->bottom);
 
-							case 1: // pop / touch up
-								m_wClickedTextDrawID = (uint16_t)i;
-								pTextDraw->m_bHovered = false;
-								pTextDraw->m_dwHoverColor = 0;
-								break;
-						}
-					}
+			if (x >= left && x <= right && y >= top && y <= bottom) {
+				switch (type) {
+					case 2: // push
+					case 3: // move
+						m_wClickedTextDrawID = 0xFFFF;
+						pTextDraw->m_bHovered = true;
+						pTextDraw->m_dwHoverColor = m_dwHoverColor;
+						break;
+
+					case 1: // pop
+						m_wClickedTextDrawID = (uint16_t)i;
+						if (pUI) pUI->PushToBufferedQueueTextDrawPressed((uint16_t)i);
+						else SendClick((uint16_t)i);
+						pTextDraw->m_bHovered = false;
+						pTextDraw->m_dwHoverColor = 0;
+						break;
 				}
+				return false;
 			}
 		}
 	}
 
-	if (m_wClickedTextDrawID != 0xFFFF) {
-		SendClick(m_wClickedTextDrawID);
-	}
-
-	return false; // Consume touch event so game does not process walk/shoot
+	return false; // Consume touch event while in SelectTextDraw mode
 }
 
 void CTextDrawPool::SnapshotProcess()

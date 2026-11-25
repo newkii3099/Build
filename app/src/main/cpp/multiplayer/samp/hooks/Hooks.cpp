@@ -148,6 +148,24 @@ void Render2dStuff_hook()
     Render2dStuff();
     MainLoop();
     ShowHud();
+
+    if (pNetGame) {
+        CTextDrawPool* pTextDrawPool = pNetGame->GetTextDrawPool();
+        if (pTextDrawPool) {
+            pTextDrawPool->SnapshotProcess();
+
+            RwRenderStateSet(rwRENDERSTATEZTESTENABLE, (void*)FALSE);
+            RwRenderStateSet(rwRENDERSTATEZWRITEENABLE, (void*)FALSE);
+            RwRenderStateSet(rwRENDERSTATEVERTEXALPHAENABLE, (void*)TRUE);
+            RwRenderStateSet(rwRENDERSTATESRCBLEND, (void*)rwBLENDSRCALPHA);
+            RwRenderStateSet(rwRENDERSTATEDESTBLEND, (void*)rwBLENDINVSRCALPHA);
+            RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)rwRENDERSTATENARENDERSTATE);
+            RwRenderStateSet(rwRENDERSTATECULLMODE, (void*)rwCULLMODECULLNONE);
+
+            pTextDrawPool->Draw();
+        }
+    }
+
     if (pUI) pUI->render();
 }
 
@@ -428,6 +446,14 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 
 	if (pGame->IsGamePaused())
 		return AND_TouchEvent(type, num, posX, posY);
+
+	if (pNetGame && pNetGame->GetTextDrawPool())
+	{
+		if (!pNetGame->GetTextDrawPool()->onTouchEvent(type, num, posX, posY)) {
+			AND_TouchEvent(1, 0, 0, 0);
+			return;
+		}
+	}
 
 	if (pUI != nullptr)
 	{

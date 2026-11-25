@@ -82,10 +82,10 @@ void CFont::PrintString(float fX, float fY, const uint16_t* szText)
 
 void CFont::PrintString(float posX, float posY, const char* string)
 {
-	uint16_t* gxt_string = new uint16_t[0xFF];
+	if (!string || !string[0]) return;
+	uint16_t gxt_string[0x200];
 	CFont::AsciiToGxtChar(string, gxt_string);
 	((void (*)(float, float, uint16_t*))(g_libGTASA + 0x5D6EC4))(posX, posY, gxt_string);
-	delete gxt_string;
 	((void (*)())(g_libGTASA + 0x5D6090))();//53411C ; _DWORD CFont::RenderFontBuffer(CFont *__hidden this)
 }
 

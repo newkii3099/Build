@@ -204,6 +204,7 @@ static std::string ReplaceKey(const std::string& input)
 void CTextDraw::DrawDefault()
 {
     if (!m_szText || !strlen(m_szText)) return;
+    if (!RsGlobal || RsGlobal->maximumWidth <= 0 || RsGlobal->maximumHeight <= 0) return;
 
     //CFont::AsciiToGxtChar(m_szText, m_gxtString);
     int iScreenWidth = RsGlobal->maximumWidth;
@@ -291,6 +292,7 @@ void CTextDraw::DrawDefault()
 void CTextDraw::DrawTextured()
 {
     if (m_TextDrawData.iTextureSlot < 0 || m_TextDrawData.iTextureSlot >= 200) return;
+    if (!RsGlobal || RsGlobal->maximumWidth <= 0 || RsGlobal->maximumHeight <= 0) return;
 
     float scaleX = (float)(RsGlobal->maximumWidth) * (1.0f / 640.0f);
     float scaleY = (float)(RsGlobal->maximumHeight) * (1.0f / 448.0f);
