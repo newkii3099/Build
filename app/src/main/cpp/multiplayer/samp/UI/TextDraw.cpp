@@ -84,6 +84,9 @@ uintptr_t LoadFromTxdSlot(const char* szSlot, const char* szTexture)
     if (strncmp(szSlot, "none", 5u))
     {
         tex = (RwTexture*)CUtil::LoadTextureFromDB(szSlot, szTexture);
+        if (!tex) {
+            tex = (RwTexture*)CUtil::LoadTextureFromTxdFile(szSlot, szTexture);
+        }
     }
 
     static char *texdb[8] = { "samp", "mobile", "txd", "menu", "gta3", "gta_int", "player", "playerhi" };

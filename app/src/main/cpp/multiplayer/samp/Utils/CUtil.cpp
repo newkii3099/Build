@@ -3,6 +3,11 @@
 //
 
 #include <dlfcn.h>
+#include <algorithm>
+#include <cctype>
+#include <cstdio>
+#include <unordered_map>
+#include <unordered_set>
 #include "CUtil.h"
 #include "gta-reversed/game_sa/Textures/TextureDatabaseRuntime.h"
 
@@ -24,20 +29,102 @@ uintptr_t CUtil::FindLib(const char* libname)
     return 0;
 }
 
+static bool FileExistsReadable(const std::string& fullPath)
+{
+    FILE* f = fopen(fullPath.c_str(), "rb");
+    if (f) {
+        fclose(f);
+        return true;
+    }
+    return false;
+}
+
+static std::string ToLowerAscii(const char* s)
+{
+    std::string out = s ? s : "";
+    std::transform(out.begin(), out.end(), out.begin(),
+                   [](unsigned char c) { return (char)std::tolower(c); });
+    return out;
+}
+
 RwTexture* CUtil::LoadTextureFromDB(const char* dbname, const char* texture)
 {
+    if (!dbname || !dbname[0] || !texture || !texture[0]) {
+        return nullptr;
+    }
+
+    static std::unordered_set<std::string> s_attemptedDbs;
+    std::string lowerDb = ToLowerAscii(dbname);
+
     TextureDatabaseRuntime* db_handle = TextureDatabaseRuntime::GetDatabase(dbname);
-    if(!db_handle)
-    {
-        FLog("Error: Database not found! (%s)", dbname);
+    if (!db_handle && lowerDb != dbname) {
+        db_handle = TextureDatabaseRuntime::GetDatabase(lowerDb.c_str());
+    }
+
+    if (!db_handle && s_attemptedDbs.find(lowerDb) == s_attemptedDbs.end()) {
+        s_attemptedDbs.insert(lowerDb);
+        const char* candidates[2] = { dbname, lowerDb.c_str() };
+        for (int i = 0; i < 2; i++) {
+            if (i == 1 && lowerDb == dbname) continue;
+            std::string relTxt = std::string("texdb/") + candidates[i] + "/" + candidates[i] + ".txt";
+            if (FileExistsReadable(BuildStoragePath(relTxt.c_str()))) {
+                FLog("[TXD] Loading custom TextureDatabase: %s", candidates[i]);
+                db_handle = TextureDatabaseRuntime::Load(candidates[i], false, TextureDatabaseFormat::DF_Default);
+                if (db_handle) break;
+            }
+        }
+    }
+
+    if (!db_handle) {
         return nullptr;
     }
 
     TextureDatabaseRuntime::Register(db_handle);
-
     auto tex = CUtil::GetTexture(texture);
     TextureDatabaseRuntime::Unregister(db_handle);
 
+    return tex;
+}
+
+RwTexture* CUtil::LoadTextureFromTxdFile(const char* txdName, const char* texture)
+{
+    if (!txdName || !txdName[0] || !texture || !texture[0]) {
+        return nullptr;
+    }
+
+    static std::unordered_map<std::string, uintptr_t> s_txdCache;
+    std::string lowerTxd = ToLowerAscii(txdName);
+
+    auto it = s_txdCache.find(lowerTxd);
+    if (it == s_txdCache.end()) {
+        uintptr_t dict = 0;
+        const char* names[2] = { txdName, lowerTxd.c_str() };
+        const char* dirs[] = { "models/txd/", "txd/", "texdb/", "SAMP/txd/", "SAMP/", "models/" };
+
+        for (int n = 0; n < 2 && !dict; n++) {
+            if (n == 1 && lowerTxd == txdName) continue;
+            for (const char* dir : dirs) {
+                std::string fullPath = BuildStoragePath((std::string(dir) + names[n] + ".txd").c_str());
+                if (FileExistsReadable(fullPath)) {
+                    dict = ((uintptr_t(*)(const char*))(g_libGTASA + 0x5500A4))(fullPath.c_str()); // CFileLoader::LoadTexDictionary
+                    FLog("[TXD] Loaded custom .txd file '%s' -> 0x%lx", fullPath.c_str(), (unsigned long)dict);
+                    break;
+                }
+            }
+        }
+        s_txdCache[lowerTxd] = dict;
+        it = s_txdCache.find(lowerTxd);
+    }
+
+    uintptr_t dict = it->second;
+    if (!dict) {
+        return nullptr;
+    }
+
+    RwTexture* tex = ((RwTexture*(*)(uintptr_t, const char*))(g_libGTASA + 0x76CD30))(dict, texture); // RwTexDictionaryFindNamedTexture
+    if (tex) {
+        ++tex->refCount;
+    }
     return tex;
 }
 

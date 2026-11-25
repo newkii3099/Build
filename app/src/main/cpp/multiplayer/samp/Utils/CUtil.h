@@ -25,6 +25,8 @@ public:
 
     static RwTexture *LoadTextureFromDB(const char *dbname, const char *texture);
 
+    static RwTexture *LoadTextureFromTxdFile(const char *txdName, const char *texture);
+
     static RwTexture* GetTexture(const char* name);
 
     static void __fastcall TransformPoint(RwV3d &result, const CSimpleTransform &t, const RwV3d &v);
