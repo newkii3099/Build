@@ -135,6 +135,38 @@ void RenderEffects() {
 void ShowHud()
 {
     *(uint8_t*)(g_libGTASA + 0x9F13E8) = 1;
+
+    if (!pNetGame || !pGame) return;
+
+    CPlayerPool *pPlayerPool = pNetGame->GetPlayerPool();
+    if (!pPlayerPool) return;
+
+    CPlayerPed *pPed = pGame->FindPlayerPed();
+    if (!pPed) return;
+
+    CWeapon *pWeapon = pPed->GetCurrentWeaponSlot();
+    if (!pWeapon) return;
+
+    if (!pJavaWrapper) return;
+
+    static uint32_t dwLastHudUpdate = 0;
+    uint32_t dwNow = GetTickCount();
+    if (dwNow - dwLastHudUpdate >= 50) {
+        dwLastHudUpdate = dwNow;
+        pJavaWrapper->ShowHud();
+        pJavaWrapper->UpdateHudInfo(
+                (int)pPed->GetHealth(),
+                (int)pPed->GetArmour(),
+                pWeapon->dwType,
+                pWeapon->dwAmmoInClip,
+                pWeapon->dwAmmo,
+                pGame->GetLocalMoney(),
+                pUI ? pUI->GetEat() : 0,
+                pUI ? pUI->GetDrink() : 0,
+                pUI ? pUI->GetBankMoney() : 0,
+                (int)pPlayerPool->GetLocalPlayerID()
+        );
+    }
 }
 void MainLoop();
 void(*Render2dStuff)();
@@ -163,6 +195,9 @@ void Render2dStuff_hook()
             RwRenderStateSet(rwRENDERSTATECULLMODE, (void*)rwCULLMODECULLNONE);
 
             pTextDrawPool->Draw();
+
+            // Flush font buffer so all textdraw strings are rendered to screen
+            ((void (*)())(g_libGTASA + 0x6CCEA0))();
         }
     }
 

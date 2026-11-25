@@ -430,7 +430,7 @@ void CTextDraw::SnapshotProcess()
         }
     }
 
-    CCamera* pTheCamera = reinterpret_cast<CCamera*>(g_libGTASA + 0x9F86F8);
+    CCamera* pTheCamera = reinterpret_cast<CCamera*>(g_libGTASA + 0xBBA8D0);
     if (pTheCamera && pTheCamera->m_pRwCamera) {
         CVisibilityPlugins::SetRenderWareCamera(pTheCamera->m_pRwCamera);
     }
