@@ -846,8 +846,9 @@ void CCam__Process_hook(uintptr_t thiz)
         return;
     }
 
-    CVector vecSavedSpeed;
+    CVector vecSavedSpeed{};
     CVehicle* pVeh = nullptr;
+    bool bModifiedVehSpeed = false;
 
     float v6 = *(float*)(g_libGTASA + 0x879434);
 
@@ -855,22 +856,21 @@ void CCam__Process_hook(uintptr_t thiz)
         if (auto playerPool = pNetGame->GetPlayerPool()) {
             if (auto localPlayer = playerPool->GetLocalPlayer()) {
                 CPlayerPed* pPed = localPlayer->GetPlayerPed();
-                CVehicleGTA* contactVeh = (CVehicleGTA*)pPed->GetEntityUnderPlayer();
-                VEHICLEID vehicleId = pNetGame->GetVehiclePool()->FindIDFromGtaPtr(contactVeh);
-                CVehicle* pVeh = pNetGame->GetVehiclePool()->GetAt(vehicleId);
+                if (pPed && pNetGame->GetVehiclePool()) {
+                    CVehicleGTA* contactVeh = (CVehicleGTA*)pPed->GetEntityUnderPlayer();
+                    VEHICLEID vehicleId = pNetGame->GetVehiclePool()->FindIDFromGtaPtr(contactVeh);
+                    pVeh = pNetGame->GetVehiclePool()->GetAt(vehicleId);
 
-                if (pVeh && pVeh->m_pVehicle) {
-                    CVector vecSavedSpeed = pVeh->m_pVehicle->m_vecMoveSpeed;
+                    if (pVeh && pVeh->m_pVehicle) {
+                        vecSavedSpeed = pVeh->m_pVehicle->m_vecMoveSpeed;
 
-                    pVeh->m_pVehicle->m_vecMoveSpeed.x *= 6.0f;
-                    pVeh->m_pVehicle->m_vecMoveSpeed.y *= 6.0f;
-                    pVeh->m_pVehicle->m_vecMoveSpeed.z *= 6.0f;
+                        pVeh->m_pVehicle->m_vecMoveSpeed.x *= 6.0f;
+                        pVeh->m_pVehicle->m_vecMoveSpeed.y *= 6.0f;
+                        pVeh->m_pVehicle->m_vecMoveSpeed.z *= 6.0f;
+                        bModifiedVehSpeed = true;
 
-                    CCam__Process(thiz);
-
-                    pVeh->m_pVehicle->m_vecMoveSpeed = vecSavedSpeed;
-
-                    *(float*)(g_libGTASA + 0x879434) = 200.0f;
+                        *(float*)(g_libGTASA + 0x879434) = 200.0f;
+                    }
                 }
             }
         }
@@ -878,7 +878,7 @@ void CCam__Process_hook(uintptr_t thiz)
 
     CCam__Process(thiz);
 
-    if (pVeh && pVeh->m_pVehicle) {
+    if (bModifiedVehSpeed && pVeh && pVeh->m_pVehicle) {
         pVeh->m_pVehicle->m_vecMoveSpeed = vecSavedSpeed;
         *(float*)(g_libGTASA + 0x879434) = v6;
     }

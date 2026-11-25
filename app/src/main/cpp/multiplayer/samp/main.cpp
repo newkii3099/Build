@@ -55,6 +55,7 @@ MaterialTextGenerator* pMaterialTextGenerator = nullptr;
 bool bDebug = false;
 bool bGameInited = false;
 bool bNetworkInited = false;
+bool bIsTouchCameraButt = false;
 
 uintptr_t g_libGTASA = 0x00;
 uintptr_t g_libSAMP = 0x00;
@@ -422,6 +423,30 @@ extern "C"
         else {
             CFirstPersonCamera::Toggle();
         }
+    }
+extern "C"
+    JNIEXPORT void JNICALL
+    Java_com_kurdish_roleplay_game_ui_Hud_clickKeyboard(JNIEnv *env, jobject thiz, jboolean isJavaShowing) {
+        if (!pUI || !pUI->keyboard()) return;
+        bool isOpen = (pSettings && pSettings->Get().iAndroidKeyboard)
+                ? (isJavaShowing == JNI_TRUE)
+                : pUI->keyboard()->visible();
+        if (isOpen) {
+            pUI->keyboard()->hide();
+        } else {
+            if (pUI->chat()) {
+                pUI->chat()->markActivity();
+            }
+            pUI->keyboard()->show(pUI->chat());
+        }
+    }
+extern "C"
+    JNIEXPORT void JNICALL
+    Java_com_kurdish_roleplay_game_ui_Hud_clickInventoryBag(JNIEnv *env, jobject thiz) {
+        if (!pNetGame || !pNetGame->GetPlayerPool()) return;
+        CLocalPlayer *pPlayer = pNetGame->GetPlayerPool()->GetLocalPlayer();
+        if (!pPlayer) return;
+        LocalPlayerKeys.bKeys[ePadKeys::KEY_YES] = true;
     }
 }
 

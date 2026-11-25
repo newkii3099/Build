@@ -28,7 +28,7 @@
             android:ems="10"
             android:hint="พิมพ์ข้อความหรือคำสั่ง /..."
             android:textColorHint="#80FFFFFF"
-            android:imeOptions="actionUnspecified|actionGo|actionSend|actionDone|flagNoFullscreen|flagNoExtractUi"
+            android:imeOptions="actionSend|flagNoFullscreen|flagNoExtractUi"
             android:inputType="text"
             android:paddingHorizontal="10dp"
             android:singleLine="true"

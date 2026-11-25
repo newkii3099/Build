@@ -1930,8 +1930,8 @@ int GetVehicleSubtype(CVehicleGTA* pGtaVehicle)
 #include "gta-reversed/game_sa/Models/ModelInfo.h"
 uintptr_t GetModelInfoByID(int iModelID)
 {
-	if (iModelID < 0 || iModelID > 20000) {
-		return false;
+	if (iModelID < 0 || iModelID >= 20000) {
+		return 0;
 	}
 
 	uintptr_t *dwModelArray = reinterpret_cast<uintptr_t *>(CModelInfo::ms_modelInfoPtrs);
@@ -1962,7 +1962,7 @@ int GetModelRefCounts(int iModel)
 // 0.3.7
 bool IsValidPedModel(uint modelID)
 {
-    if(modelID < 0 || modelID > 20000) return false;
+    if(modelID >= 20000) return false;
     auto dwModelArray = CModelInfo::ms_modelInfoPtrs;
 
     uintptr_t ModelInfo = reinterpret_cast<uintptr_t>(dwModelArray[modelID]);
@@ -2299,9 +2299,13 @@ void DrawTextureUV(uintptr_t texture, CRect* rect, uint32_t dwColor, float *uv)
 	if (texture)
 	{
 		RwRenderStateSet(rwRENDERSTATETEXTUREFILTER, (void*)rwFILTERLINEAR);
+		// CSprite2d::Draw expects `this` (RwTexture**), not raw RwTexture*
+		struct {
+			uintptr_t m_pTexture;
+		} sprite{ texture };
 		// CSprite2d::Draw(CRect  const& posn, CRGBA  const& color, float u1, float v1, float u2, float v2, float u3, float v3, float u4, float v4);
-		((void(*)(uintptr_t, CRect*, uint32_t*, float, float, float, float, float, float, float, float))
-			(g_libGTASA + 0x5F7908))(texture, rect, &dwColor, uv[0], uv[1], uv[2], uv[3], uv[4], uv[5], uv[6], uv[7]);
+		((void(*)(void*, CRect*, uint32_t*, float, float, float, float, float, float, float, float))
+			(g_libGTASA + 0x5F7908))(&sprite, rect, &dwColor, uv[0], uv[1], uv[2], uv[3], uv[4], uv[5], uv[6], uv[7]);
 	}
 }
 
@@ -2549,7 +2553,7 @@ void DestroyAtomicOrClump(uintptr_t rwObject)
 {
     if (rwObject)
     {
-        int type = *(int *)(rwObject);
+        uint8_t type = *(uint8_t *)(rwObject);
 
         if (type == 1)
         {

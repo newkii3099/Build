@@ -89,7 +89,7 @@ public:
 
     void LoadTexture();
 
-    void SnapshotProcess();
+    bool SnapshotProcess();
 
 
 

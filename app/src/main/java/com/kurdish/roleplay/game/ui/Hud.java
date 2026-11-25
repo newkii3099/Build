@@ -52,6 +52,8 @@ public class Hud {
     public TextView textPlayers, PlayerId;
 
     private native void clickCameraMode();
+    private native void clickKeyboard(boolean isJavaShowing);
+    private native void clickInventoryBag();
 
 
     public Hud(Activity aactivity) {
@@ -76,27 +78,30 @@ public class Hud {
         PlayerId = hud_layout.findViewById(R.id.yourid);
         hud_ammo = hud_layout.findViewById(R.id.weapon_ammo_text);
         time = hud_layout.findViewById(R.id.realTime);
-        hud_camera_butt.setOnClickListener(v -> clickCameraMode());
+
+        View hudCameraTarget = hud_layout.findViewById(R.id.hud_camera_container);
+        if (hudCameraTarget == null) hudCameraTarget = hud_camera_butt;
+        if (hudCameraTarget != null) {
+            hudCameraTarget.setOnClickListener(v -> clickCameraMode());
+        }
         if (hud_weapon != null) {
             hud_weapon.setOnClickListener(v -> WeaponChanged());
         }
 
-        View hudKeyboardBtn = hud_layout.findViewById(R.id.hud_keyboard_btn);
+        View hudKeyboardBtn = hud_layout.findViewById(R.id.hud_keyboard_container);
+        if (hudKeyboardBtn == null) hudKeyboardBtn = hud_layout.findViewById(R.id.hud_keyboard_btn);
         if (hudKeyboardBtn != null) {
             hudKeyboardBtn.setOnClickListener(v -> {
-                if (com.kurdish.roleplay.game.SAMP.getInstance() != null) {
-                    com.kurdish.roleplay.game.SAMP.getInstance().toggleKeyboard();
-                }
+                com.kurdish.roleplay.game.SAMP samp = com.kurdish.roleplay.game.SAMP.getInstance();
+                boolean javaShowing = samp != null && samp.isKeyboardShowing();
+                clickKeyboard(javaShowing);
             });
         }
 
-        View hudInventoryBtn = hud_layout.findViewById(R.id.hud_inventory_btn);
+        View hudInventoryBtn = hud_layout.findViewById(R.id.hud_inventory_container);
+        if (hudInventoryBtn == null) hudInventoryBtn = hud_layout.findViewById(R.id.hud_inventory_btn);
         if (hudInventoryBtn != null) {
-            hudInventoryBtn.setOnClickListener(v -> {
-                if (com.kurdish.roleplay.game.SAMP.getInstance() != null) {
-                    com.kurdish.roleplay.game.SAMP.getInstance().toggleInventory();
-                }
-            });
+            hudInventoryBtn.setOnClickListener(v -> clickInventoryBag());
         }
 
         startUpdatingTime();

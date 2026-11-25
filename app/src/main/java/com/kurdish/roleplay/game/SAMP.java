@@ -303,6 +303,10 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
         }
     }
 
+    public boolean isKeyboardShowing() {
+        return mKeyboard != null && mKeyboard.IsShowing();
+    }
+
     public void showKeyboard() {
         runOnUiThread(() -> {
             Log.d("AXL", "showKeyboard()");

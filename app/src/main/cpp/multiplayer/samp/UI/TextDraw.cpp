@@ -55,11 +55,6 @@ CTextDraw::CTextDraw(TEXT_DRAW_TRANSMIT* pTextDrawTransmit, const char* szText)
     m_TextDrawData.iTextureSlot = -1;
     SetText(szText);
 
-    if (m_TextDrawData.dwStyle == 4) {
-        m_TextDrawData.iTextureSlot = GetFreeTextDrawTextureSlot();
-        LoadTexture();
-    }
-
     m_TextDrawData.bHasRectArea = false;
     m_rectArea.left = 0.0f;
     m_rectArea.right = 0.0f;
@@ -359,30 +354,30 @@ void CTextDraw::LoadTexture()
 }
 
 #include "gta-reversed/game_sa/Models/ModelInfo.h"
-void CTextDraw::SnapshotProcess()
+bool CTextDraw::SnapshotProcess()
 {
     if (m_TextDrawData.dwStyle != 5 || m_TextDrawData.iTextureSlot != -1) {
-        return;
+        return false;
     }
 
     if (m_byteSnapshotAttempts >= 3) {
-        return;
+        return false;
     }
 
     uint32_t dwNow = GetTickCount();
     if (dwNow - m_dwLastSnapshotAttempt < 1500) {
-        return;
+        return false;
     }
     m_dwLastSnapshotAttempt = dwNow;
     m_byteSnapshotAttempts++;
 
     if (!pSnapShotHelper) {
-        return;
+        return false;
     }
 
     if (m_TextDrawData.wModelID == 0 || m_TextDrawData.wModelID == 31278 || m_TextDrawData.wModelID == 0xFFFF) {
         m_byteSnapshotAttempts = 3;
-        return;
+        return false;
     }
 
     uintptr_t snapshot = 0;
@@ -411,7 +406,7 @@ void CTextDraw::SnapshotProcess()
     // OBJECT MODEL
     else
     {
-        if (!CModelInfo::GetModelInfo(m_TextDrawData.wModelID))
+        if (m_TextDrawData.wModelID >= CModelInfo::NUM_MODEL_INFOS || !CModelInfo::GetModelInfo(m_TextDrawData.wModelID))
             m_TextDrawData.wModelID = 18631;
         snapshot = (uintptr_t)pSnapShotHelper->CreateObjectSnapShot(
                 m_TextDrawData.wModelID,
@@ -428,6 +423,7 @@ void CTextDraw::SnapshotProcess()
             m_TextDrawData.iTextureSlot = slot;
             TextDrawTexture[slot] = snapshot;
         } else {
+            RwTextureDestroy(reinterpret_cast<RwTexture*>(snapshot));
             m_TextDrawData.iTextureSlot = -1;
         }
     }
@@ -436,4 +432,5 @@ void CTextDraw::SnapshotProcess()
     if (pTheCamera && pTheCamera->m_pRwCamera) {
         CVisibilityPlugins::SetRenderWareCamera(pTheCamera->m_pRwCamera);
     }
+    return true;
 }

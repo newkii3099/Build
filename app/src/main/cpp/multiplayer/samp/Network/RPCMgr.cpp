@@ -334,9 +334,21 @@ void ClientMessage(RPCParameters *rpcParams)
 		szMsg[dwStrLen] = '\0';
 		Log::addParameter("szMsg", szMsg);
 
-		if (strncmp(szMsg, "$MS|", 4) == 0)
+		const char* payload = nullptr;
+		if (strncmp(szMsg, "$MS|", 4) == 0) {
+			payload = szMsg + 4;
+		} else if (dwColor == 0x010101FF && (
+				strncmp(szMsg, "|H|", 3) == 0 ||
+				strcmp(szMsg, "|IC") == 0 ||
+				strncmp(szMsg, "|IB|", 4) == 0 ||
+				strncmp(szMsg, "|IH|", 4) == 0 ||
+				strcmp(szMsg, "|ID") == 0)) {
+			// Fallback for servers missing the $MS prefix on hidden sync messages
+			payload = szMsg + 1;
+		}
+
+		if (payload != nullptr)
 		{
-			const char* payload = szMsg + 4;
 			if (strncmp(payload, "H|", 2) == 0)
 			{
 				int eat = 0, drink = 0;

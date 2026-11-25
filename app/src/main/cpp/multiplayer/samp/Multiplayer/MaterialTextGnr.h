@@ -27,10 +27,12 @@ public:
 
 private:
 	void SetUpScene();
+	bool EnsureSceneReady();
 	void Render(const char* text, const ImVec2& size, int font_size, bool bold,
 		const ImColor& font_color, const ImColor& background_color, int align);
 	void GetMaterialSize(int size, int* x, int* y);
 
     RwCamera* m_camera;
 	RwFrame* m_frame;
+	bool m_bCameraAttached = false;
 };

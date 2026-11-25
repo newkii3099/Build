@@ -46,7 +46,10 @@ public:
     static CBaseModelInfo* GetModelInfo(const char* name, int32* index = nullptr);
     static int32 GetModelInfoIndex(const char* name);
 
-    static CBaseModelInfo* GetModelInfo(int index) { return ms_modelInfoPtrs[index]; }
+    static CBaseModelInfo* GetModelInfo(int index) {
+        if (index < 0 || index >= NUM_MODEL_INFOS) return nullptr;
+        return ms_modelInfoPtrs[index];
+    }
     static auto GetPedModelInfo(int32_t index) { return GetModelInfo(index)->AsPedModelInfoPtr(); }
     static auto GetVehicleModelInfo(int32_t index) { return GetModelInfo(index)->AsVehicleModelInfoPtr(); }
     static void SetModelInfo(int index, CBaseModelInfo* pInfo) { ms_modelInfoPtrs[index] = pInfo; }

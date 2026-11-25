@@ -22,22 +22,13 @@
 extern UI *pUI;
 extern CGame* pGame;
 bool CStreaming::TryLoadModel(int modelId) {
-    if(!CStreaming::GetInfo(modelId).IsLoaded()) {
+    if (modelId < 0 || modelId >= (int)TOTAL_DFF_MODEL_IDS)
+        return false;
+    if (!CStreaming::GetInfo(modelId).IsLoaded()) {
         CStreaming::RequestModel(modelId, STREAMING_GAME_REQUIRED | STREAMING_KEEP_IN_MEMORY);
         CStreaming::LoadAllRequestedModels(false);
-
-        uint32 count = 0;
-        while (!CStreaming::GetInfo(modelId).IsLoaded()) {
-            count++;
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-            if (count > 30) {
-                //CChatWindow::DebugMessage("{ff0000} Error loading model %d", modelId);
-                return false;
-            }
-        }
     }
-    return true;
+    return CStreaming::GetInfo(modelId).IsLoaded();
 }
 
 // Finishes loading all channels. (So both channels will be `IDLE` after it returns)

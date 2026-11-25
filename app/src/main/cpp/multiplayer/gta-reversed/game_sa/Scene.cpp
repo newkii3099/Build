@@ -3,5 +3,4 @@
 //
 
 #include "Scene.h"
-
-CScene Scene;
+// Live game CScene resides at g_libGTASA + 0xCD0868 (accessed via GetGameScene()).

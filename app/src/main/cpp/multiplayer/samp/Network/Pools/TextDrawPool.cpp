@@ -154,9 +154,12 @@ bool CTextDrawPool::onTouchEvent(int type, int num, int x, int y)
 
 void CTextDrawPool::SnapshotProcess()
 {
+	int processed = 0;
 	for (int i = 0; i < MAX_TEXT_DRAWS; i++) {
 		if (m_bSlotState[i] && m_pTextDraw[i]) {
-			m_pTextDraw[i]->SnapshotProcess();
+			if (m_pTextDraw[i]->SnapshotProcess()) {
+				if (++processed >= 4) break;
+			}
 		}
 	}
 }

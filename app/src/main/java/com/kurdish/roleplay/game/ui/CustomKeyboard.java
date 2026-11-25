@@ -117,20 +117,27 @@ public class CustomKeyboard {
 
         mInputEt.setOnEditorActionListener(new EditText.OnEditorActionListener() {
             @Override
-            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent)
+            public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent)
             {
-                if(i== EditorInfo.IME_ACTION_DONE || i == EditorInfo.IME_ACTION_NEXT)
+                boolean isEnterKey = (keyEvent != null
+                        && keyEvent.getAction() == KeyEvent.ACTION_DOWN
+                        && (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER
+                            || keyEvent.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER));
+                boolean isImeAction = (actionId == EditorInfo.IME_ACTION_DONE
+                        || actionId == EditorInfo.IME_ACTION_NEXT
+                        || actionId == EditorInfo.IME_ACTION_SEND
+                        || actionId == EditorInfo.IME_ACTION_GO
+                        || actionId == EditorInfo.IME_ACTION_UNSPECIFIED);
+                if (isImeAction || isEnterKey)
                 {
                     Editable editableText = mInputEt.getText();
-                    if(editableText != null)
+                    if (editableText != null)
                     {
                         String str = editableText.toString();
-
                         mInputEt.setText("");
-
                         OnInputEnd(str);
                     }
-
+                    return true;
                 }
                 return false;
             }
@@ -174,16 +181,20 @@ public class CustomKeyboard {
         mIsShowing = true;
         updateInputLayoutPosition(mLastKeyboardHeight);
 
-        mInputLayout.setVisibility(View.INVISIBLE);
-
-        mInputEt.requestFocus();
-        InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(mInputEt, InputMethodManager.SHOW_IMPLICIT);
-
-        if(mAnimTask != null)
+        if (mAnimTask != null)
         {
             mInputLayout.removeCallbacks(mAnimTask);
             mAnimTask = null;
+        }
+
+        mInputLayout.setVisibility(View.VISIBLE);
+        mInputLayout.bringToFront();
+        mInputEt.setFocusable(true);
+        mInputEt.setFocusableInTouchMode(true);
+        mInputEt.requestFocus();
+        InputMethodManager imm = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.showSoftInput(mInputEt, InputMethodManager.SHOW_IMPLICIT);
         }
 
         mAnimTask = new Runnable() {
@@ -191,6 +202,10 @@ public class CustomKeyboard {
             public void run() {
                 mInputLayout.setVisibility(View.VISIBLE);
                 mInputEt.requestFocus();
+                InputMethodManager mgr = (InputMethodManager) mContext.getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (mgr != null) {
+                    mgr.showSoftInput(mInputEt, InputMethodManager.SHOW_IMPLICIT);
+                }
             }
         };
 

@@ -11,6 +11,7 @@ public:
 
 private:
     void SetUpScene();
+    bool EnsureSceneReady();
     //void ProcessCamera(uintptr_t pRwObject, uint32_t dwColor);
 
     RwCamera* m_camera;
@@ -18,4 +19,5 @@ private:
     RwFrame* m_frame;
     RwRaster* m_zBuffer;
     uintptr_t m_raster;
+    bool m_bCameraAttached = false;
 };

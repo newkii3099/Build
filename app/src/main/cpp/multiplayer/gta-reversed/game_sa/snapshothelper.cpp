@@ -23,23 +23,22 @@ CSnapShotHelper::CSnapShotHelper()
 
 void CSnapShotHelper::SetUpScene()
 {
-    // RpLightCreate
     m_light = RpLightCreate(2);
-    if (m_light == 0) return;
-    float rwColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    // RpLightSetColor
-    RpLightSetColor(m_light, reinterpret_cast<const RwRGBAReal *>(rwColor));
+    if (m_light) {
+        float rwColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        RpLightSetColor(m_light, reinterpret_cast<const RwRGBAReal *>(rwColor));
+    }
 
     m_zBuffer = RwRasterCreate(256, 256, 0, rwRASTERTYPEZBUFFER);
     m_camera = RwCameraCreate();
     m_frame = RwFrameCreate();
+
+    if (!m_camera || !m_frame || !m_zBuffer) return;
+
     CVector v = { 0.0f, 0.0f, 50.0f };
     RwFrameTranslate(m_frame, &v, rwCOMBINEPRECONCAT);
     CVector v1 = { 1.0f, 0.0f, 0.0f };
     RwFrameRotate(m_frame, &v1, 90.0f, rwCOMBINEPRECONCAT);
-
-    if (!m_camera) return;
-    if (!m_frame) return;
 
     m_camera->zBuffer = m_zBuffer;
 
@@ -49,14 +48,34 @@ void CSnapShotHelper::SetUpScene()
     RwV2d view = { 0.5f, 0.5f };
     RwCameraSetViewWindow(m_camera, &view);
     RwCameraSetProjection(m_camera, rwPERSPECTIVE);
-    RpWorldAddCamera(Scene.m_pRpWorld, m_camera);
+
+    if (Scene.m_pRpWorld) {
+        RpWorldAddCamera(Scene.m_pRpWorld, m_camera);
+        m_bCameraAttached = true;
+    }
+}
+
+bool CSnapShotHelper::EnsureSceneReady()
+{
+    if (!Scene.m_pRpWorld || !m_camera || !m_light || !m_zBuffer) {
+        return false;
+    }
+    if (!m_bCameraAttached) {
+        RpWorldAddCamera(Scene.m_pRpWorld, m_camera);
+        m_bCameraAttached = true;
+    }
+    return true;
 }
 
 // 0.3.7
 RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, CVector* vecRot, float fZoom)
 {
-    if(iModel > 20000) return nullptr;
-    CStreaming::TryLoadModel(iModel);
+    if (iModel <= 0 || iModel >= 20000 || !EnsureSceneReady()) {
+        return nullptr;
+    }
+    if (!CStreaming::TryLoadModel(iModel)) {
+        return nullptr;
+    }
 
     auto pRwObject = ModelInfoCreateInstance(iModel);
     if (pRwObject == nullptr) {
@@ -64,43 +83,52 @@ RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, C
     }
 
     RwRaster* raster = RwRasterCreate(256, 256, 32, rwRASTERFORMAT8888 | rwRASTERTYPECAMERATEXTURE);
-    // RwTextureCreate
+    if (!raster) {
+        DestroyAtomicOrClump(reinterpret_cast<uintptr_t>(pRwObject));
+        return nullptr;
+    }
     RwTexture* bufferTexture = RwTextureCreate(raster);
+    if (!bufferTexture) {
+        RwRasterDestroy(raster);
+        DestroyAtomicOrClump(reinterpret_cast<uintptr_t>(pRwObject));
+        return nullptr;
+    }
 
-    if (!raster || !bufferTexture) return nullptr;
-
-    CVector vec;
-    vec.x = 0.0f;
-    vec.y = 0.0f;
-    vec.z = 0.0f;
-
-    float fRadius = CModelInfo::GetModelInfo(iModel)->m_pColModel->GetBoundRadius();
-    CVector vecCenter = CModelInfo::GetModelInfo(iModel)->m_pColModel->GetBoundCenter();
+    auto pModelInfo = CModelInfo::GetModelInfo(iModel);
+    float fRadius = (pModelInfo && pModelInfo->m_pColModel) ? pModelInfo->m_pColModel->GetBoundRadius() : 1.0f;
+    CVector vecCenter = (pModelInfo && pModelInfo->m_pColModel) ? pModelInfo->m_pColModel->GetBoundCenter() : CVector{ 0.0f, 0.0f, 0.0f };
     RwFrame* parent = static_cast<RwFrame *>(pRwObject->parent);
-    if(!parent) return nullptr;
-    fZoom = (-0.1f - fRadius * 2.25f) * fZoom;
-    if (parent)
+    if (!parent) {
+        RwTextureDestroy(bufferTexture);
+        DestroyAtomicOrClump(reinterpret_cast<uintptr_t>(pRwObject));
+        return nullptr;
+    }
+
+    float safeZoom = (fZoom > 0.0f) ? fZoom : 1.0f;
+    float camDist = (-0.1f - fRadius * 2.25f) * safeZoom;
+    RwV3d v = {
+            -vecCenter.x,
+            camDist,
+            50.0f - vecCenter.z
+    };
+    RwFrameTranslate(parent, &v, rwCOMBINEPRECONCAT);
+    if (iModel == 18631) {
+        RwV3d axisY = { 0.0f, 1.0f, 0.0f };
+        RwFrameRotate(parent, &axisY, 180.0f, rwCOMBINEPRECONCAT);
+    }
+    else if (vecRot)
     {
-        RwV3d v = {
-                -vecCenter.x + vecRot->x,
-                fZoom + vecRot->y,
-                50.0f - vecCenter.z - vecRot->z
-        };
-        RwFrameTranslate(parent, &v, rwCOMBINEPRECONCAT);
-        if (iModel == 18631) {
-            RwFrameRotate(parent, &vec, 180.0f,rwCOMBINEPRECONCAT);
+        if (vecRot->x != 0.0f) {
+            RwV3d axisX = { 1.0f, 0.0f, 0.0f };
+            RwFrameRotate(parent, &axisX, vecRot->x, rwCOMBINEPRECONCAT);
         }
-        else
-        {
-            if (vecRot->x != 0.0f) {
-                RwFrameRotate(parent, &vec, vecRot->x,rwCOMBINEPRECONCAT);
-            }
-            if (vecRot->y != 0.0f) {
-                RwFrameRotate(parent, &vec, vecRot->y,rwCOMBINEPRECONCAT);
-            }
-            if (vecRot->z != 0.0f) {
-                RwFrameRotate(parent, &vec, vecRot->z,rwCOMBINEPRECONCAT);
-            }
+        if (vecRot->y != 0.0f) {
+            RwV3d axisY = { 0.0f, 1.0f, 0.0f };
+            RwFrameRotate(parent, &axisY, vecRot->y, rwCOMBINEPRECONCAT);
+        }
+        if (vecRot->z != 0.0f) {
+            RwV3d axisZ = { 0.0f, 0.0f, 1.0f };
+            RwFrameRotate(parent, &axisZ, vecRot->z, rwCOMBINEPRECONCAT);
         }
     }
     m_camera->frameBuffer = raster;
@@ -125,6 +153,7 @@ RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, C
 // 0.3.7
 RwTexture* CSnapShotHelper::CreatePedSnapShot(int iModel, uint32_t dwColor, CVector* vecRot, float fZoom)
 {
+    if (!EnsureSceneReady()) return nullptr;
     FLog("Ped snapshot: %d", iModel);
 
     RwRaster* raster = RwRasterCreate(256, 256, 32, rwRASTERFORMAT8888 | rwRASTERTYPECAMERATEXTURE);
@@ -208,6 +237,7 @@ RwTexture* CSnapShotHelper::CreatePedSnapShot(int iModel, uint32_t dwColor, CVec
 
 RwTexture* CSnapShotHelper::CreateVehicleSnapShot(int iModel, uint32_t dwColor, CVector* vecRot, float fZoom, uint32_t dwColor1, uint32_t dwColor2)
 {
+    if (!EnsureSceneReady()) return nullptr;
     RwRaster* raster = RwRasterCreate(256, 256, 32, rwRASTERFORMAT8888 | rwRASTERTYPECAMERATEXTURE);
     // RwTextureCreate
     RwTexture* bufferTexture = RwTextureCreate(raster);

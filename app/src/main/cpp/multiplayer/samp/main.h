@@ -43,7 +43,7 @@ void SetStoragePath(const char* path);
 std::string BuildStoragePath(const char* relativePath);
 
 void FLog(const char* fmt, ...);
-static bool bIsTouchCameraButt = false;
+extern bool bIsTouchCameraButt;
 void MyLog(const char* fmt, ...);
 void MyLog2(const char* fmt, ...);
 void ChatLog(const char* fmt, ...);

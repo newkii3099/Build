@@ -29,7 +29,20 @@ void MaterialTextGenerator::SetUpScene()
     RwV2d view = { 0.5f, 0.5f };
     RwCameraSetViewWindow(m_camera, &view);
     RwCameraSetProjection(m_camera, rwPERSPECTIVE);
-    RpWorldAddCamera(Scene.m_pRpWorld, m_camera);
+    if (Scene.m_pRpWorld) {
+        RpWorldAddCamera(Scene.m_pRpWorld, m_camera);
+        m_bCameraAttached = true;
+    }
+}
+
+bool MaterialTextGenerator::EnsureSceneReady()
+{
+    if (!Scene.m_pRpWorld || !m_camera) return false;
+    if (!m_bCameraAttached) {
+        RpWorldAddCamera(Scene.m_pRpWorld, m_camera);
+        m_bCameraAttached = true;
+    }
+    return true;
 }
 
 void MaterialTextGenerator::Render(const char* text, const ImVec2& size, int font_size, bool bold,
@@ -80,6 +93,7 @@ const ImColor fix_color(uint32_t color)
 
 RwTexture* MaterialTextGenerator::Generate(const char* text, int size, int font_size, bool bold, uint32_t font_color, uint32_t background_color, int alignment)
 {
+	if (!EnsureSceneReady()) return nullptr;
 	int width, height;
 	GetMaterialSize(size, &width, &height);
 	RwRaster* raster = RwRasterCreate(width, height, 32, rwRASTERFORMAT8888 | rwRASTERTYPECAMERATEXTURE);

@@ -22,10 +22,12 @@ CVector* RwMatrixMultiplyByVector(CVector* out, RwMatrix* mat, CVector* in)
 }
 void CFirstPersonCamera::ProcessCameraOnFoot(uintptr_t pCam, CPlayerPed* pPed)
 {
-    if (!m_bEnabled)
+    if (!m_bEnabled || !pPed || !pPed->m_pPed)
     {
         return;
     }
+
+    pPed->ProcessHeadMatrix();
 
     CVector* pVec = (CVector*)(pCam + 372);
 
@@ -34,15 +36,19 @@ void CFirstPersonCamera::ProcessCameraOnFoot(uintptr_t pCam, CPlayerPed* pPed)
     vecOffset.y = 0.1f;
     vecOffset.z = 0.1f;
 
-
-    CVector vecOut;
-    RwMatrixMultiplyByVector(&vecOut, &(pPed->m_HeadBoneMatrix), &vecOffset);
-
-    if (vecOut.x != vecOut.x || vecOut.y != vecOut.y || vecOut.z != vecOut.z)
-    {
-        pPed->GetBonePosition(4, &vecOut);
+    CVector vecOut{0.0f, 0.0f, 0.0f};
+    const auto& hp = pPed->m_HeadBoneMatrix.pos;
+    if (hp.x != 0.0f || hp.y != 0.0f || hp.z != 0.0f) {
+        RwMatrixMultiplyByVector(&vecOut, &(pPed->m_HeadBoneMatrix), &vecOffset);
     }
-    if (vecOut.x != vecOut.x || vecOut.y != vecOut.y || vecOut.z != vecOut.z)
+
+    if ((vecOut.x == 0.0f && vecOut.y == 0.0f && vecOut.z == 0.0f) ||
+        vecOut.x != vecOut.x || vecOut.y != vecOut.y || vecOut.z != vecOut.z)
+    {
+        pPed->GetBonePosition(5, &vecOut);
+    }
+    if ((vecOut.x == 0.0f && vecOut.y == 0.0f && vecOut.z == 0.0f) ||
+        vecOut.x != vecOut.x || vecOut.y != vecOut.y || vecOut.z != vecOut.z)
     {
         return;
     }
@@ -51,7 +57,9 @@ void CFirstPersonCamera::ProcessCameraOnFoot(uintptr_t pCam, CPlayerPed* pPed)
     pVec->y = vecOut.y;
     pVec->z = vecOut.z;
 
-    ((RwCamera*(*)(RwCamera*, float))(g_libGTASA + 0x7656B8))(Scene.m_pRwCamera, 0.2f);
+    if (Scene.m_pRwCamera) {
+        ((RwCamera*(*)(RwCamera*, float))(g_libGTASA + 0x7656B8))(Scene.m_pRwCamera, 0.2f);
+    }
 }
 
 CVector vecAtSaved;
@@ -60,7 +68,7 @@ bool bsaved = false;
 
 void CFirstPersonCamera::ProcessCameraInVeh(uintptr_t pCam, CPlayerPed* pPed, CVehicle* pVeh)
 {
-    if (!m_bEnabled || !pPed->GetGtaVehicle())
+    if (!m_bEnabled || !pPed || !pPed->m_pPed || !pPed->GetGtaVehicle())
     {
         return;
     }
@@ -80,11 +88,15 @@ void CFirstPersonCamera::ProcessCameraInVeh(uintptr_t pCam, CPlayerPed* pPed, CV
         vecOffset.x = 0.05f;
         vecOffset.y = 0.3f;
         vecOffset.z = 0.45f;
-        ((RwCamera * (*)(RwCamera*, float))(g_libGTASA + 0x7656B8))(Scene.m_pRwCamera, 0.3f);
+        if (Scene.m_pRwCamera) {
+            ((RwCamera * (*)(RwCamera*, float))(g_libGTASA + 0x7656B8))(Scene.m_pRwCamera, 0.3f);
+        }
     }
     else
     {
-        ((RwCamera * (*)(RwCamera*, float))(g_libGTASA + 0x7656B8))(Scene.m_pRwCamera, 0.01f);
+        if (Scene.m_pRwCamera) {
+            ((RwCamera * (*)(RwCamera*, float))(g_libGTASA + 0x7656B8))(Scene.m_pRwCamera, 0.01f);
+        }
     }
 
     CVector vecOut;

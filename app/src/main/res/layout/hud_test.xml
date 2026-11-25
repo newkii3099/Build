@@ -368,10 +368,13 @@
         <!-- ⌨️ Modern Floating Keyboard Button (Translucent Sky Blue Glass) -->
         <FrameLayout
             android:id="@+id/hud_keyboard_container"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginEnd="6dp"
             android:background="@drawable/bg_key_sky_glass"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
             android:elevation="4dp">
 
             <ImageView
@@ -379,19 +382,22 @@
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:layout_gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="false"
+                android:focusable="false"
                 android:src="@drawable/ic_keyboard"
                 app:tint="#FFFFFF" />
         </FrameLayout>
 
         <!-- 🎒 Modern Floating Inventory Bag Button -->
         <FrameLayout
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:id="@+id/hud_inventory_container"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginEnd="6dp"
             android:background="@drawable/bg_glass_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
             android:elevation="4dp">
 
             <ImageView
@@ -399,18 +405,21 @@
                 android:layout_width="18dp"
                 android:layout_height="18dp"
                 android:layout_gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="false"
+                android:focusable="false"
                 android:src="@drawable/ic_inv_bag"
                 app:tint="@color/mint_accent" />
         </FrameLayout>
 
         <!-- 📷 Modern Floating Camera View Button -->
         <FrameLayout
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:id="@+id/hud_camera_container"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:background="@drawable/bg_glass_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?android:attr/selectableItemBackgroundBorderless"
             android:elevation="4dp">
 
             <ImageView
@@ -418,9 +427,8 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?android:attr/selectableItemBackgroundBorderless"
+                android:clickable="false"
+                android:focusable="false"
                 android:src="@drawable/camera_butt"
                 app:tint="@color/mint_accent" />
         </FrameLayout>

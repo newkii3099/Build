@@ -8,6 +8,8 @@
 
 #include "gta-reversed/game_sa/common.h"
 
+extern uintptr_t g_libGTASA;
+
 class CScene {
 public:
     RpWorld*  m_pRpWorld;
@@ -15,4 +17,8 @@ public:
 };
 VALIDATE_SIZE(CScene, 0x10);
 
-extern CScene Scene;
+inline CScene& GetGameScene() {
+    return *reinterpret_cast<CScene*>(g_libGTASA + 0xCD0868);
+}
+
+#define Scene GetGameScene()
