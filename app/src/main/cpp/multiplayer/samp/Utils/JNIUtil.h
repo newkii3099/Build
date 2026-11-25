@@ -5,7 +5,7 @@
 #include "samp/main.h"
 
 #define EXCEPTION_CHECK(env) \
-	if ((env)->ExceptionCheck()) \ 
+	if ((env)->ExceptionCheck()) \
 	{ \
 		(env)->ExceptionDescribe(); \
 		(env)->ExceptionClear(); \
@@ -57,6 +57,11 @@ public:
 	void ShowEditObject();
 	void HideEditObject();
 
+	void ClearInventorySync();
+	void SetInventoryBagSlot(int slot, int itemId, const std::string& nameUtf8, int amount, int maxStack);
+	void SetInventoryHotbarSlot(int hotbarSlot, int itemId, const std::string& nameUtf8, int amount);
+	void RefreshInventorySync();
+
     jobject activity;
     jmethodID s_setPauseState;
     jmethodID s_showLoadingScreen;
@@ -77,6 +82,10 @@ public:
     jmethodID s_updateSpeedInfo;
     jmethodID s_showSpeed;
     jmethodID s_hideSpeed;
+    jmethodID s_clearInventory;
+    jmethodID s_setInventoryBagSlot;
+    jmethodID s_setInventoryHotbarSlot;
+    jmethodID s_refreshInventory;
 };
 
 extern CJavaWrapper* g_pJavaWrapper;

@@ -74,8 +74,8 @@ CTextDraw::CTextDraw(TEXT_DRAW_TRANSMIT* pTextDrawTransmit, const char* szText)
 // 0.3.7
 CTextDraw::~CTextDraw()
 {
-    if (m_TextDrawData.iTextureSlot != -1 && m_TextDrawData.iTextureSlot != 0x0 && TextDrawTexture[m_TextDrawData.iTextureSlot]) RwTextureDestroy((RwTexture*)TextDrawTexture[m_TextDrawData.iTextureSlot]);
     DestroyTextDrawTexture(m_TextDrawData.iTextureSlot);
+    m_TextDrawData.iTextureSlot = -1;
 }
 
 uintptr_t LoadFromTxdSlot(const char* szSlot, const char* szTexture)
@@ -83,11 +83,7 @@ uintptr_t LoadFromTxdSlot(const char* szSlot, const char* szTexture)
     RwTexture* tex = nullptr;
     if (strncmp(szSlot, "none", 5u))
     {
-        /*uintptr_t v10 = ((int (*)(const char*))(g_libGTASA + 0x55BB85))(szSlot);
-        CallFunction<void>(g_libGTASA + 0x55BD6C + 1);
-        CallFunction<void>(g_libGTASA + 0x55BD6C + 1, v10, 0);
-        tex = CallFunction<RwTexture*>(g_libGTASA + 0x1B2558 + 1, szTexture, 0);
-        CallFunction<void>(g_libGTASA + 0x55BDA8 + 1);*/
+        tex = (RwTexture*)CUtil::LoadTextureFromDB(szSlot, szTexture);
     }
 
     static char *texdb[8] = { "samp", "mobile", "txd", "menu", "gta3", "gta_int", "player", "playerhi" };
@@ -101,9 +97,9 @@ uintptr_t LoadFromTxdSlot(const char* szSlot, const char* szTexture)
         }
     }
 
-    if (FindedLibrary == false)
+    if (!tex && FindedLibrary == false)
     {
-        if(!tex) tex = (RwTexture*)LoadTexture(szTexture);
+        tex = (RwTexture*)LoadTexture(szTexture);
     }
 
     if(!tex) tex = (RwTexture*)LoadTexture(std::string(std::string(szTexture) + "_" + szSlot).c_str());
@@ -120,11 +116,6 @@ uintptr_t LoadFromTxdSlot(const char* szSlot, const char* szTexture)
         std::string str = szTexture;
         std::transform(str.begin(), str.end(), str.begin(), ::toupper);
         tex = (RwTexture*)LoadTexture(std::string(str + "_" + szSlot).c_str());
-    }
-
-    if(!tex)
-    {
-        tex = (RwTexture*)CUtil::LoadTextureFromDB(szSlot, szTexture);
     }
 
     return (uintptr_t)tex;
@@ -334,9 +325,12 @@ void CTextDraw::SetText(const char* szText)
     strncpy(m_szText, szText, 800);
     m_szText[800] = 0;
 
-    if (m_TextDrawData.dwStyle == 4 && m_TextDrawData.iTextureSlot != -1)
+    if (m_TextDrawData.dwStyle == 4)
     {
-        DestroyTextDrawTexture(m_TextDrawData.iTextureSlot);
+        if (m_TextDrawData.iTextureSlot != -1) {
+            DestroyTextDrawTexture(m_TextDrawData.iTextureSlot);
+        }
+        m_TextDrawData.iTextureSlot = GetFreeTextDrawTextureSlot();
         LoadTexture();
     }
 }
@@ -380,6 +374,11 @@ void CTextDraw::SnapshotProcess()
     m_byteSnapshotAttempts++;
 
     if (!pSnapShotHelper) {
+        return;
+    }
+
+    if (m_TextDrawData.wModelID == 0 || m_TextDrawData.wModelID == 31278 || m_TextDrawData.wModelID == 0xFFFF) {
+        m_byteSnapshotAttempts = 3;
         return;
     }
 
@@ -430,7 +429,7 @@ void CTextDraw::SnapshotProcess()
         }
     }
 
-    CCamera* pTheCamera = reinterpret_cast<CCamera*>(g_libGTASA + 0xBBA8D0);
+    CCamera* pTheCamera = reinterpret_cast<CCamera*>(g_libGTASA + 0x9F86F8);
     if (pTheCamera && pTheCamera->m_pRwCamera) {
         CVisibilityPlugins::SetRenderWareCamera(pTheCamera->m_pRwCamera);
     }

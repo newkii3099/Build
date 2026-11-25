@@ -365,11 +365,10 @@ extern "C" {
 	}
 	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_SAMP_onEventBackPressed(JNIEnv *pEnv, jobject thiz)
 	{
-		if(pSettings)
-		{
-			if(pSettings->Get().iAndroidKeyboard)
-				pJavaWrapper->HideKeyboard();
-		}
+		if (pJavaWrapper)
+			pJavaWrapper->HideKeyboard();
+		if (pUI && pUI->keyboard() && pUI->keyboard()->visible())
+			pUI->keyboard()->hide();
 	}
 	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_SAMP_sendCommand(JNIEnv *pEnv, jobject thiz, jstring command)
 	{

@@ -122,11 +122,10 @@ void Keyboard::show(Widget* caller)
 
 void Keyboard::hide()
 {
-    if(pSettings->Get().iAndroidKeyboard)
-    {
+    if (pJavaWrapper) {
         pJavaWrapper->HideKeyboard();
     }
-    else {
+    if (this->visible()) {
         this->setVisible(false);
         pGame->EnableGameInput(true);
     }

@@ -271,6 +271,7 @@ public class InventoryManager {
             if (btnGive != null) {
                 btnGive.setOnClickListener(v -> {
                     dialog.dismiss();
+                    hide();
                     sendServerCommand("/inv give " + slotPosition);
                 });
             }
@@ -280,6 +281,7 @@ public class InventoryManager {
             if (btnDrop != null) {
                 btnDrop.setOnClickListener(v -> {
                     dialog.dismiss();
+                    hide();
                     sendServerCommand("/inv drop " + slotPosition);
                 });
             }
@@ -316,16 +318,43 @@ public class InventoryManager {
         builder.show();
     }
 
+    public void clearAllSlots() {
+        for (int i = 0; i < TOTAL_BAG_SLOTS; i++) {
+            bagItems.set(i, new InventoryItem(i, 0, "", 0, 100, 0));
+        }
+        for (int i = 0; i < TOTAL_HOTBAR_SLOTS; i++) {
+            hotbarItems.set(i, new InventoryItem(i, 0, "", 0, 100, 0));
+        }
+    }
+
     public void setBagSlot(int slot, int itemId, String name, int amount, int maxStack) {
         if (slot < 0 || slot >= TOTAL_BAG_SLOTS) return;
+        if (itemId <= 0 || amount <= 0) {
+            bagItems.set(slot, new InventoryItem(slot, 0, "", 0, 100, 0));
+            return;
+        }
         int iconRes = getIconForItem(itemId);
-        bagItems.set(slot, new InventoryItem(slot, itemId, name, amount, maxStack, iconRes));
+        bagItems.set(slot, new InventoryItem(slot, itemId, name, amount, maxStack > 0 ? maxStack : 100, iconRes));
     }
 
     public void setHotbarSlot(int hotbarSlot, int itemId, String name, int amount) {
         if (hotbarSlot < 0 || hotbarSlot >= TOTAL_HOTBAR_SLOTS) return;
+        if (itemId <= 0) {
+            hotbarItems.set(hotbarSlot, new InventoryItem(hotbarSlot, 0, "", 0, 100, 0));
+            return;
+        }
         int iconRes = getIconForItem(itemId);
         hotbarItems.set(hotbarSlot, new InventoryItem(hotbarSlot, itemId, name, amount, 100, iconRes));
+    }
+
+    public void refreshUI() {
+        activity.runOnUiThread(() -> {
+            if (rootLayout != null && rootLayout.getVisibility() == View.VISIBLE) {
+                updateCapacityBadge();
+                updateAllHotbarUI();
+                if (adapter != null) adapter.notifyDataSetChanged();
+            }
+        });
     }
 
     public void updateCapacityBadge() {
@@ -339,19 +368,25 @@ public class InventoryManager {
     }
 
     public int getIconForItem(int itemId) {
-        // Weapons 1-46
-        if (itemId >= 1 && itemId <= 46) {
-            int resId = activity.getResources().getIdentifier("weapon_" + itemId, "drawable", activity.getPackageName());
+        // Server weapons use ITEM_WEAPON_BASE (10) + weaponId -> 11..56
+        if (itemId >= 11 && itemId <= 56) {
+            int wepId = itemId - 10;
+            int resId = activity.getResources().getIdentifier("weapon_" + wepId, "drawable", activity.getPackageName());
             if (resId != 0) return resId;
         }
-        // Food / Drink
-        if (itemId >= 50 && itemId <= 70) {
+        // Drinks (Juice = 4)
+        if (itemId == 4) {
+            return R.drawable.drink;
+        }
+        // Food (1..3: Egg/Fish/Pizza) & Vegetables/Fruits (61..90)
+        if ((itemId >= 1 && itemId <= 3) || (itemId >= 61 && itemId <= 90)) {
             return R.drawable.eat;
         }
         return R.drawable.ic_inv_bag;
     }
 
     public void show() {
+        sendServerCommand("/_msync");
         activity.runOnUiThread(() -> {
             if (rootLayout != null) {
                 updateCapacityBadge();

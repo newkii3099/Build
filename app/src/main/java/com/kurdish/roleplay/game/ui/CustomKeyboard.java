@@ -207,6 +207,9 @@ public class CustomKeyboard {
 
     public void HideInputLayout()
     {
+        if (!mIsShowing && mInputLayout != null && mInputLayout.getVisibility() == View.GONE) {
+            return;
+        }
 
         mCurrentHistoryMessage = 0;
 

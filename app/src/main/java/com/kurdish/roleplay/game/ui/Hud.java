@@ -77,12 +77,15 @@ public class Hud {
         hud_ammo = hud_layout.findViewById(R.id.weapon_ammo_text);
         time = hud_layout.findViewById(R.id.realTime);
         hud_camera_butt.setOnClickListener(v -> clickCameraMode());
+        if (hud_weapon != null) {
+            hud_weapon.setOnClickListener(v -> WeaponChanged());
+        }
 
         View hudKeyboardBtn = hud_layout.findViewById(R.id.hud_keyboard_btn);
         if (hudKeyboardBtn != null) {
             hudKeyboardBtn.setOnClickListener(v -> {
                 if (com.kurdish.roleplay.game.SAMP.getInstance() != null) {
-                    com.kurdish.roleplay.game.SAMP.getInstance().showKeyboard();
+                    com.kurdish.roleplay.game.SAMP.getInstance().toggleKeyboard();
                 }
             });
         }
@@ -195,9 +198,10 @@ public class Hud {
                 new Formatter().format("weapon_%d", Integer.valueOf(weaponid)).toString(),
                 "drawable",
                 activity.getPackageName());
-        hud_weapon.setImageResource(id);
+        if (id != 0) {
+            hud_weapon.setImageResource(id);
+        }
         hud_ammo.setText(String.format("%s / %s", ammo, ammoinclip));
-        hud_weapon.setOnClickListener(v -> WeaponChanged());
     }
 
     public void ShowHud() {
@@ -205,7 +209,9 @@ public class Hud {
             visibilityBeforePause = View.VISIBLE;
             return;
         }
-        Util.ShowLayout(hud_layout, true);
+        if (hud_layout != null && hud_layout.getVisibility() != View.VISIBLE) {
+            Util.ShowLayout(hud_layout, true);
+        }
     }
 
     public void HideHud() {
@@ -213,7 +219,9 @@ public class Hud {
             visibilityBeforePause = View.GONE;
             return;
         }
-        Util.HideLayout(hud_layout, true);
+        if (hud_layout != null && hud_layout.getVisibility() != View.GONE) {
+            Util.HideLayout(hud_layout, true);
+        }
     }
 
     public void setPaused(boolean pause) {

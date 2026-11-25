@@ -49,6 +49,7 @@ CLocalPlayer::CLocalPlayer()
 	ResetAllSyncAttributes();
 
 	m_bInRCMode = false;
+	m_bMayesSyncSent = false;
 
 	m_surfData.bIsActive = false;
 	m_surfData.pSurfInst = 0;
@@ -454,6 +455,7 @@ void CLocalPlayer::ResetAllSyncAttributes()
 	m_byteCurInterior = 0;
 	m_LastVehicle = 0xFFFF;
 	m_bInRCMode = false;
+	m_bMayesSyncSent = false;
 
 	memset(&m_SpawnInfo, 0, sizeof(PLAYER_SPAWN_INFO));
 	memset(&m_ofSync, 0, sizeof(ONFOOT_SYNC_DATA));
@@ -603,6 +605,11 @@ bool CLocalPlayer::Spawn()
     *(uint8_t*)(g_libGTASA + 0x9F13E8) = 0;
     pJavaWrapper->ShowHud();
     pJavaWrapper->HideSpeed();
+
+    if (!m_bMayesSyncSent && pNetGame) {
+        m_bMayesSyncSent = true;
+        pNetGame->SendChatCommand("/_msync");
+    }
 
 	// voice
 	SpeakerList::Show();

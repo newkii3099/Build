@@ -334,6 +334,49 @@ void ClientMessage(RPCParameters *rpcParams)
 		szMsg[dwStrLen] = '\0';
 		Log::addParameter("szMsg", szMsg);
 
+		if (strncmp(szMsg, "$MS|", 4) == 0)
+		{
+			const char* payload = szMsg + 4;
+			if (strncmp(payload, "H|", 2) == 0)
+			{
+				int eat = 0, drink = 0;
+				uint32_t bank = 0;
+				if (sscanf(payload + 2, "%d|%d|%u", &eat, &drink, &bank) == 3 && pUI)
+				{
+					pUI->SetEat((float)eat);
+					pUI->SetDrink((float)drink);
+					pUI->SetBankMoney(bank);
+				}
+			}
+			else if (strcmp(payload, "IC") == 0)
+			{
+				if (pJavaWrapper) pJavaWrapper->ClearInventorySync();
+			}
+			else if (strncmp(payload, "IB|", 3) == 0)
+			{
+				int slot = -1, itemId = 0, amount = 0, maxStack = 100, offset = 0;
+				if (sscanf(payload + 3, "%d|%d|%d|%d|%n", &slot, &itemId, &amount, &maxStack, &offset) >= 4 && offset > 0)
+				{
+					std::string nameUtf8 = Encoding::cp2utf(payload + 3 + offset);
+					if (pJavaWrapper) pJavaWrapper->SetInventoryBagSlot(slot, itemId, nameUtf8, amount, maxStack);
+				}
+			}
+			else if (strncmp(payload, "IH|", 3) == 0)
+			{
+				int hslot = -1, itemId = 0, amount = 0, offset = 0;
+				if (sscanf(payload + 3, "%d|%d|%d|%n", &hslot, &itemId, &amount, &offset) >= 3 && offset > 0)
+				{
+					std::string nameUtf8 = Encoding::cp2utf(payload + 3 + offset);
+					if (pJavaWrapper) pJavaWrapper->SetInventoryHotbarSlot(hslot, itemId, nameUtf8, amount);
+				}
+			}
+			else if (strcmp(payload, "ID") == 0)
+			{
+				if (pJavaWrapper) pJavaWrapper->RefreshInventorySync();
+			}
+			return;
+		}
+
 		if (pUI) pUI->chat()->addClientMessage(Encoding::cp2utf(szMsg), UI::fixcolor(dwColor));
 	}
 }

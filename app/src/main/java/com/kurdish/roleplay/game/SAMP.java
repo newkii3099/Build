@@ -95,6 +95,40 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
         });
     }
 
+    public void clearInventorySync() {
+        runOnUiThread(() -> {
+            if (mInventory != null) mInventory.clearAllSlots();
+        });
+    }
+
+    public void setInventoryBagSlot(int slot, int itemId, byte[] nameUtf8, int amount, int maxStack) {
+        String name = "";
+        if (nameUtf8 != null && nameUtf8.length > 0) {
+            name = new String(nameUtf8, StandardCharsets.UTF_8);
+        }
+        final String finalName = name;
+        runOnUiThread(() -> {
+            if (mInventory != null) mInventory.setBagSlot(slot, itemId, finalName, amount, maxStack);
+        });
+    }
+
+    public void setInventoryHotbarSlot(int hotbarSlot, int itemId, byte[] nameUtf8, int amount) {
+        String name = "";
+        if (nameUtf8 != null && nameUtf8.length > 0) {
+            name = new String(nameUtf8, StandardCharsets.UTF_8);
+        }
+        final String finalName = name;
+        runOnUiThread(() -> {
+            if (mInventory != null) mInventory.setHotbarSlot(hotbarSlot, itemId, finalName, amount);
+        });
+    }
+
+    public void refreshInventorySync() {
+        runOnUiThread(() -> {
+            if (mInventory != null) mInventory.refreshUI();
+        });
+    }
+
     public static SAMP getInstance() {
         return instance;
     }
@@ -273,6 +307,18 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
         runOnUiThread(() -> {
             Log.d("AXL", "showKeyboard()");
             mKeyboard.ShowInputLayout();
+        });
+    }
+
+    public void toggleKeyboard() {
+        runOnUiThread(() -> {
+            if (mKeyboard != null) {
+                if (mKeyboard.IsShowing()) {
+                    mKeyboard.HideInputLayout();
+                } else {
+                    mKeyboard.ShowInputLayout();
+                }
+            }
         });
     }
 

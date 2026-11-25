@@ -70,45 +70,54 @@ CJavaWrapper::CJavaWrapper(JNIEnv *env, jobject activity)
     s_showSpeed = env->GetMethodID(clas, "showSpeed", "()V");
     s_hideSpeed = env->GetMethodID(clas, "hideSpeed", "()V");
 
+    s_clearInventory = env->GetMethodID(clas, "clearInventorySync", "()V");
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    s_setInventoryBagSlot = env->GetMethodID(clas, "setInventoryBagSlot", "(II[BII)V");
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    s_setInventoryHotbarSlot = env->GetMethodID(clas, "setInventoryHotbarSlot", "(II[BI)V");
+    if (env->ExceptionCheck()) env->ExceptionClear();
+    s_refreshInventory = env->GetMethodID(clas, "refreshInventorySync", "()V");
+    if (env->ExceptionCheck()) env->ExceptionClear();
+
     env->DeleteLocalRef(clas);
 }
 
 void CJavaWrapper::ShowKeyboard()
 {
-    JNIEnv* p;
-    javaVM->GetEnv((void**)&p, JNI_VERSION_1_6);
+    JNIEnv* p = GetEnv();
+    if (!p || !activity || !s_showInputLayout) return;
     p->CallVoidMethod(activity, s_showInputLayout);
     EXCEPTION_CHECK(p);
 }
 
 void CJavaWrapper::HideKeyboard()
 {
-    JNIEnv* p;
-    javaVM->GetEnv((void**)&p, JNI_VERSION_1_6);
+    JNIEnv* p = GetEnv();
+    if (!p || !activity || !s_hideInputLayout) return;
     p->CallVoidMethod(activity, s_hideInputLayout);
     EXCEPTION_CHECK(p);
 }
 
 void CJavaWrapper::ShowLoadingScreen()
 {
-    JNIEnv* p;
-    javaVM->GetEnv((void**)&p, JNI_VERSION_1_6);
+    JNIEnv* p = GetEnv();
+    if (!p || !activity || !s_showLoadingScreen) return;
     p->CallVoidMethod(activity, s_showLoadingScreen);
     EXCEPTION_CHECK(p);
 }
 
 void CJavaWrapper::HideLoadingScreen()
 {
-    JNIEnv* p;
-    javaVM->GetEnv((void**)&p, JNI_VERSION_1_6);
+    JNIEnv* p = GetEnv();
+    if (!p || !activity || !s_hideLoadingScreen) return;
     p->CallVoidMethod(activity, s_hideLoadingScreen);
     EXCEPTION_CHECK(p);
 }
 
 void CJavaWrapper::SetPauseState(bool pause)
 {
-    JNIEnv* p;
-    javaVM->GetEnv((void**)&p, JNI_VERSION_1_6);
+    JNIEnv* p = GetEnv();
+    if (!p || !activity || !s_setPauseState) return;
     p->CallVoidMethod(activity, s_setPauseState, pause);
     EXCEPTION_CHECK(p);
 }
@@ -141,46 +150,29 @@ void CJavaWrapper::ShowDialog(int dialogStyle, int dialogID, char* title, char* 
 void CJavaWrapper::UpdateHudInfo(int health, int armour, int weaponid, int ammo, int ammoinclip,
                                  int money, int eat, int drink, int bankMoney, int playerid)
 {
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_updateHudInfo) return;
 
     env->CallVoidMethod(this->activity, this->s_updateHudInfo,
                         health, armour, weaponid, ammo, ammoinclip,
                         money, eat, drink, bankMoney, playerid);
+    EXCEPTION_CHECK(env);
 }
 
 void CJavaWrapper::ShowHud()
 {
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
-    //g_pJavaWrapper->ShowNotification(4, "HUD показан.", 5, "", "Хорошо");
-   // env->CallVoidMethod(this->activity, this->s_showHud);
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_showHud) return;
+    env->CallVoidMethod(this->activity, this->s_showHud);
+    EXCEPTION_CHECK(env);
 }
 
 void CJavaWrapper::HideHud()
 {
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
-    //g_pJavaWrapper->ShowNotification(4, "HUD скрыт.", 5, "", "Хорошо");
-   // env->CallVoidMethod(this->activity, this->s_hideHud);
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_hideHud) return;
+    env->CallVoidMethod(this->activity, this->s_hideHud);
+    EXCEPTION_CHECK(env);
 }
 
 void CJavaWrapper::ShowSpeed()
@@ -226,27 +218,16 @@ bool CJavaWrapper::AddChatMessage(const std::string& nick, const std::string& te
 
 void CJavaWrapper::ShowTabWindow()
 {
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_showTabWindow) return;
     env->CallVoidMethod(this->activity, this->s_showTabWindow);
+    EXCEPTION_CHECK(env);
 }
 
 void CJavaWrapper::SetTabStat(int id, char* name, int score, int ping) {
 
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_setTabStat) return;
 
     jclass strClass = env->FindClass("java/lang/String");
     jmethodID ctorID = env->GetMethodID(strClass, "<init>", "([BLjava/lang/String;)V");
@@ -257,46 +238,72 @@ void CJavaWrapper::SetTabStat(int id, char* name, int score, int ping) {
     jstring jname = (jstring) env->NewObject(strClass, ctorID, bytes, encoding);
 
     env->CallVoidMethod(this->activity, this->s_setTabStat, id, jname, score, ping);
+
+    if (jname) env->DeleteLocalRef(jname);
+    if (bytes) env->DeleteLocalRef(bytes);
+    if (encoding) env->DeleteLocalRef(encoding);
+    if (strClass) env->DeleteLocalRef(strClass);
+    EXCEPTION_CHECK(env);
 }
 
 void CJavaWrapper::exitGame() {
 
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
-
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_exitGame) return;
     env->CallVoidMethod(this->activity, this->s_exitGame);
+    EXCEPTION_CHECK(env);
 }
 
 void CJavaWrapper::ShowEditObject() {
 
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
-
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_showEditObject) return;
     env->CallVoidMethod(this->activity, this->s_showEditObject);
+    EXCEPTION_CHECK(env);
 }
 
 void CJavaWrapper::HideEditObject() {
 
-    JNIEnv* env;
-    javaVM->GetEnv((void**)&env, JNI_VERSION_1_6);
-
-    if (!env)
-    {
-        FLog("No env");
-        return;
-    }
-
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_hideEditObject) return;
     env->CallVoidMethod(this->activity, this->s_hideEditObject);
+    EXCEPTION_CHECK(env);
+}
+
+void CJavaWrapper::ClearInventorySync()
+{
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_clearInventory) return;
+    env->CallVoidMethod(this->activity, this->s_clearInventory);
+    EXCEPTION_CHECK(env);
+}
+
+void CJavaWrapper::SetInventoryBagSlot(int slot, int itemId, const std::string& nameUtf8, int amount, int maxStack)
+{
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_setInventoryBagSlot) return;
+    jbyteArray jName = as_byte_array((unsigned char*)nameUtf8.data(), (int)nameUtf8.size());
+    if (!jName) return;
+    env->CallVoidMethod(this->activity, this->s_setInventoryBagSlot, slot, itemId, jName, amount, maxStack);
+    env->DeleteLocalRef(jName);
+    EXCEPTION_CHECK(env);
+}
+
+void CJavaWrapper::SetInventoryHotbarSlot(int hotbarSlot, int itemId, const std::string& nameUtf8, int amount)
+{
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_setInventoryHotbarSlot) return;
+    jbyteArray jName = as_byte_array((unsigned char*)nameUtf8.data(), (int)nameUtf8.size());
+    if (!jName) return;
+    env->CallVoidMethod(this->activity, this->s_setInventoryHotbarSlot, hotbarSlot, itemId, jName, amount);
+    env->DeleteLocalRef(jName);
+    EXCEPTION_CHECK(env);
+}
+
+void CJavaWrapper::RefreshInventorySync()
+{
+    JNIEnv* env = GetEnv();
+    if (!env || !this->activity || !this->s_refreshInventory) return;
+    env->CallVoidMethod(this->activity, this->s_refreshInventory);
+    EXCEPTION_CHECK(env);
 }

@@ -324,6 +324,7 @@ private:
 	VEHICLEID			m_CurrentVehicle;
 
 	bool				m_bPerformingStuffAnim;
+	bool				m_bMayesSyncSent;
 
 	struct {
 		CVector vecOffsetPos;

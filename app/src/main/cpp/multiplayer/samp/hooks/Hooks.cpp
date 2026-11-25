@@ -150,10 +150,14 @@ void ShowHud()
     if (!pJavaWrapper) return;
 
     static uint32_t dwLastHudUpdate = 0;
+    static bool s_bHudRequested = false;
     uint32_t dwNow = GetTickCount();
     if (dwNow - dwLastHudUpdate >= 50) {
         dwLastHudUpdate = dwNow;
-        pJavaWrapper->ShowHud();
+        if (!s_bHudRequested && pNetGame->GetGameState() == GAMESTATE_CONNECTED) {
+            s_bHudRequested = true;
+            pJavaWrapper->ShowHud();
+        }
         pJavaWrapper->UpdateHudInfo(
                 (int)pPed->GetHealth(),
                 (int)pPed->GetArmour(),
@@ -197,7 +201,7 @@ void Render2dStuff_hook()
             pTextDrawPool->Draw();
 
             // Flush font buffer so all textdraw strings are rendered to screen
-            ((void (*)())(g_libGTASA + 0x6CCEA0))();
+            ((void (*)())(g_libGTASA + 0x5D6090))();
         }
     }
 
