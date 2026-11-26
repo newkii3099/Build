@@ -280,7 +280,9 @@ RwTexture* InventoryUI::getCustomItemTexture(int itemId)
 	};
 
 	const char* texName = kItemTexNames[itemId - 61];
-	RwTexture* tex = CUtil::LoadTextureFromTxdFile("mayes_items", texName);
+	RwTexture* tex = CUtil::LoadTextureFromDB("gta", texName);
+	if (!tex) tex = CUtil::LoadTextureFromDB("gta3", texName);
+	if (!tex) tex = CUtil::GetTexture(texName);
 	m_txdCache[itemId] = tex;
 	return tex;
 }

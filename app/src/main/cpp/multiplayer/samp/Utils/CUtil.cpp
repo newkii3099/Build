@@ -67,7 +67,8 @@ RwTexture* CUtil::LoadTextureFromDB(const char* dbname, const char* texture)
         for (int i = 0; i < 2; i++) {
             if (i == 1 && lowerDb == dbname) continue;
             std::string relTxt = std::string("texdb/") + candidates[i] + "/" + candidates[i] + ".txt";
-            if (FileExistsReadable(BuildStoragePath(relTxt.c_str()))) {
+            std::string relTxtDirect = std::string("texdb/") + candidates[i] + ".txt";
+            if (FileExistsReadable(BuildStoragePath(relTxt.c_str())) || FileExistsReadable(BuildStoragePath(relTxtDirect.c_str()))) {
                 FLog("[TXD] Loading custom TextureDatabase: %s", candidates[i]);
                 db_handle = TextureDatabaseRuntime::Load(candidates[i], false, TextureDatabaseFormat::DF_Default);
                 if (db_handle) break;
