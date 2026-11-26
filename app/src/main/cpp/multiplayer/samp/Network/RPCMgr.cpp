@@ -266,22 +266,21 @@ void DialogBox(RPCParameters *rpcParams)
 		break;
 	}
 
-	if (pUI) 
+	if (pUI && pUI->dialog())
+	{
+		pUI->dialog()->hide();
+	}
+
+	if (pJavaWrapper)
 	{
 		if (strcmp(szButton2, "") == 0)
 		{
 			Button2Show = 2;
-			//MyLog("lol %s", szButton2);
 		}
 		else
 		{
 			Button2Show = 1;
-			//MyLog("lol2 %s", szButton2);
 		}
-		pUI->dialog()->show(wDialogID, style, Encoding::cp2utf(szTitle), Encoding::cp2utf(szMessage), Encoding::cp2utf(szButton1), Encoding::cp2utf(szButton2));
-	}
-	else if (pJavaWrapper)
-	{
 		pJavaWrapper->ShowDialog(byteDialogStyle, wDialogID, (char*)Encoding::cp2utf(szTitle).c_str(), (char*) Encoding::cp2utf(szMessage).c_str(), (char*) Encoding::cp2utf(szButton1).c_str(), (char*) Encoding::cp2utf(szButton2).c_str());
 	}
 
@@ -353,6 +352,8 @@ void ClientMessage(RPCParameters *rpcParams)
 		if (strncmp(szMsg, "$MS|", 4) == 0) {
 			payload = szMsg + 4;
 		} else if (dwColor == 0x010101FF && (
+				strncmp(szMsg, "|UI|", 4) == 0 ||
+				strncmp(szMsg, "|INV|", 5) == 0 ||
 				strncmp(szMsg, "|H|", 3) == 0 ||
 				strcmp(szMsg, "|IC") == 0 ||
 				strncmp(szMsg, "|IB|", 4) == 0 ||

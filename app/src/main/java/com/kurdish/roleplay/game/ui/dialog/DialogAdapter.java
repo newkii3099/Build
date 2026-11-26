@@ -26,6 +26,7 @@ public class DialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     public int mCurrentSelectedPosition = 0;
 	
     public View mCurrentSelectedView;
+    public ViewHolder mCurrentSelectedHolder;
     int mFieldsCount = 1;
     boolean mNeedMatchParent = false;
 	
@@ -178,10 +179,13 @@ public class DialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         }
         if (this.mCurrentSelectedPosition == viewHolder.getAdapterPosition()) {
             this.mCurrentSelectedView = viewHolder.mRowBg;
+            this.mCurrentSelectedHolder = viewHolder;
             viewHolder.mRowBg.setVisibility(View.VISIBLE);
+            applyRowTextColors(viewHolder, true);
             this.mOnClickListener.onClick(viewHolder.getAdapterPosition(), viewHolder.mFields[0].getText().toString());
         } else {
             viewHolder.mRowBg.setVisibility(View.GONE);
+            applyRowTextColors(viewHolder, false);
         }
         ViewGroup.LayoutParams layoutParams2 = viewHolder.getMView().getLayoutParams();
         layoutParams2.width = this.mNeedMatchParent ? -1 : -2;
@@ -189,16 +193,23 @@ public class DialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         viewHolder.getMView().setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                if (viewHolder.getAdapterPosition() != DialogAdapter.this.mCurrentSelectedPosition) {
+                int pos = viewHolder.getAdapterPosition();
+                if (pos == RecyclerView.NO_POSITION) return;
+                if (pos != DialogAdapter.this.mCurrentSelectedPosition) {
                     if (DialogAdapter.this.mCurrentSelectedView != null) {
                         DialogAdapter.this.mCurrentSelectedView.startAnimation(DialogAdapter.this.buttonHide);
                         DialogAdapter.this.mCurrentSelectedView.setVisibility(View.GONE);
                     }
-                    int unused = DialogAdapter.this.mCurrentSelectedPosition = viewHolder.getAdapterPosition();
+                    if (DialogAdapter.this.mCurrentSelectedHolder != null) {
+                        applyRowTextColors(DialogAdapter.this.mCurrentSelectedHolder, false);
+                    }
+                    int unused = DialogAdapter.this.mCurrentSelectedPosition = pos;
                     View unused2 = DialogAdapter.this.mCurrentSelectedView = viewHolder.mRowBg;
+                    DialogAdapter.this.mCurrentSelectedHolder = viewHolder;
                     viewHolder.mRowBg.startAnimation(DialogAdapter.this.buttonShow);
                     viewHolder.mRowBg.setVisibility(View.VISIBLE);
-                    DialogAdapter.this.mOnClickListener.onClick(viewHolder.getAdapterPosition(), viewHolder.mFields[0].getText().toString());
+                    applyRowTextColors(viewHolder, true);
+                    DialogAdapter.this.mOnClickListener.onClick(pos, viewHolder.mFields[0].getText().toString());
                 }
                 else if (DialogAdapter.this.mOnDoubleClickListener != null) {
                     view.startAnimation(DialogAdapter.this.buttonScale);
@@ -206,6 +217,15 @@ public class DialogAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
                 }
             }
         });
+    }
+
+    private void applyRowTextColors(ViewHolder holder, boolean selected) {
+        int color = selected ? 0xFF121216 : 0xFFF4F6FA;
+        for (int i = 0; i < 4; i++) {
+            if (holder.mFields[i] != null) {
+                holder.mFields[i].setTextColor(color);
+            }
+        }
     }
 
     public int getItemCount() {

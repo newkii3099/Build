@@ -35,13 +35,15 @@
 					android:id="@+id/dialog_caption"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
+					android:gravity="center"
 					android:lines="1"
 					android:maxLines="1"
 					android:singleLine="true"
 					android:text="Caption"
-					android:textColor="#F8FAFC"
+					android:textColor="#F4F6FA"
 					android:fontFamily="@font/montserrat_bold"
 					android:textSize="36.0px"
+					app:layout_constraintEnd_toEndOf="parent"
 					app:layout_constraintStart_toStartOf="parent"
 					app:layout_constraintTop_toTopOf="parent" />
 
@@ -154,7 +156,7 @@
 							android:paddingEnd="20.0px"
 							android:singleLine="true"
 							android:text="Field1"
-							android:textColor="#38BDF8"
+							android:textColor="#F5A623"
 							android:textSize="32.0px"
 							app:layout_constraintStart_toStartOf="parent"
 							app:layout_constraintTop_toTopOf="parent" />
@@ -169,7 +171,7 @@
 							android:paddingEnd="20.0px"
 							android:singleLine="true"
 							android:text="Field2"
-							android:textColor="#38BDF8"
+							android:textColor="#F5A623"
 							android:textSize="32.0px"
 							app:layout_constraintStart_toEndOf="@+id/dialog_field1"
 							app:layout_constraintTop_toTopOf="parent" />
@@ -184,7 +186,7 @@
 							android:paddingEnd="20.0px"
 							android:singleLine="true"
 							android:text="Field2"
-							android:textColor="#38BDF8"
+							android:textColor="#F5A623"
 							android:textSize="32.0px"
 							app:layout_constraintStart_toEndOf="@+id/dialog_field2"
 							app:layout_constraintTop_toTopOf="parent" />
@@ -199,7 +201,7 @@
 							android:paddingEnd="20.0px"
 							android:singleLine="true"
 							android:text="Field4"
-							android:textColor="#38BDF8"
+							android:textColor="#F5A623"
 							android:textSize="32.0px"
 							app:layout_constraintStart_toEndOf="@+id/dialog_field3"
 							app:layout_constraintTop_toTopOf="parent" />
@@ -311,7 +313,7 @@
 							android:maxLines="1"
 							android:singleLine="true"
 							android:text="ยกเลิก"
-							android:textColor="#BAE6FD"
+							android:textColor="#F4F6FA"
 							android:textSize="32.0px"
 							app:layout_constraintBottom_toBottomOf="parent"
 							app:layout_constraintEnd_toEndOf="parent"
