@@ -397,6 +397,12 @@ void ClientMessage(RPCParameters *rpcParams)
 					}
 				}
 			}
+			else if (strcmp(payload, "INV|HBCLEAR") == 0)
+			{
+				if (pUI && pUI->inventory()) {
+					pUI->inventory()->ClearLiveHotbar();
+				}
+			}
 			else if (strncmp(payload, "INV|HB|", 7) == 0)
 			{
 				int hslot = -1, itemId = 0, modelId = 0, amount = 0, offset = 0;

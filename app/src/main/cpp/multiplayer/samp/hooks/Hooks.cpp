@@ -501,22 +501,23 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 
 	if (pUI != nullptr)
 	{
-		switch (type)
+		bool hudConsumed = false;
+		if (type == 1 || type == 2 || type == 3)
 		{
-			case 2: // push
-				pUI->touchEvent(ImVec2(posX, posY), TouchType::push);
-				break;
+			TouchType ttype = (type == 2) ? TouchType::push : ((type == 3) ? TouchType::move : TouchType::pop);
 
-			case 3: // move
-				pUI->touchEvent(ImVec2(posX, posY), TouchType::move);
-				break;
+			if (!pUI->keyboard()->visible() && !pUI->dialog()->visible() && !(pUI->inventory() && pUI->inventory()->visible())) {
+				if (pUI->inventory() && pUI->inventory()->handleHudTouch(ImVec2(posX, posY), ttype)) {
+					hudConsumed = true;
+				}
+			}
 
-			case 1: // pop
-				pUI->touchEvent(ImVec2(posX, posY), TouchType::pop);
-				break;
+			if (!hudConsumed) {
+				pUI->touchEvent(ImVec2(posX, posY), ttype);
+			}
 		}
 
-        if (pUI->keyboard()->visible() || pUI->dialog()->visible() || (pUI->inventory() && pUI->inventory()->visible())) {
+        if (hudConsumed || pUI->keyboard()->visible() || pUI->dialog()->visible() || (pUI->inventory() && pUI->inventory()->visible())) {
             AND_TouchEvent(1, 0, 0, 0);
             return;
         }

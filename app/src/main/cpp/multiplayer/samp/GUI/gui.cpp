@@ -154,6 +154,9 @@ void UI::drawList()
 
     draw(renderer());
 
+    if (m_inventoryUI && !m_inventoryUI->visible())
+        m_inventoryUI->drawHudHotbar(renderer());
+
     if (pNetGame && pNetGame->GetMenuPool())
         pNetGame->GetMenuPool()->Render(renderer());
 }

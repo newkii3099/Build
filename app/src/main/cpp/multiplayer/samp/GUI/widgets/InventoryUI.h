@@ -46,6 +46,10 @@ public:
 	virtual void draw(ImGuiRenderer* renderer) override;
 	virtual void touchEvent(const ImVec2& pos, TouchType type) override;
 
+	// Gameplay external hotbar (rendered & touched outside the bag window)
+	void drawHudHotbar(ImGuiRenderer* renderer);
+	bool handleHudTouch(const ImVec2& pos, TouchType type);
+
 	// Server sync protocol handlers ($MS|UI|... and $MS|INV|...)
 	void SetServerUIVersion(int version);
 	int GetEffectiveUIVersion() const;
@@ -56,6 +60,7 @@ public:
 		float weight, int category, bool favorite,
 		float rotX, float rotY, float rotZ, float zoom, const std::string& nameUtf8);
 	void SetSyncHotbar(int hslot, int itemId, int modelId, int amount, const std::string& nameUtf8);
+	void ClearLiveHotbar();
 	void FinishSyncAndShow();
 	void CloseFromServer();
 
@@ -73,12 +78,12 @@ private:
 		}
 	};
 
+	bool canShowHudHotbar() const;
 	std::vector<const InvSlotItem*> getFilteredItems() const;
 	bool isItemInHotbar(int itemId) const;
 	void drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, const ImVec2& panelMax);
 	void drawCategoryIcon(ImGuiRenderer* renderer, int tabIndex, const ImVec2& center, float radius, const ImColor& col);
 	void drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const ImVec2& gridMax);
-	void drawHotbarDock(ImGuiRenderer* renderer, const ImVec2& panelMin, const ImVec2& panelMax);
 	void drawStar(ImGuiRenderer* renderer, const ImVec2& center, float r, const ImColor& col);
 	RwTexture* getOrCreateModelSnapshot(int modelId, const CVector& rot, float zoom);
 	RwTexture* getCustomItemTexture(int itemId);
@@ -97,19 +102,28 @@ private:
 	InvHotbarSlot m_hotbar[7];
 
 	int m_activeCategory = 0; // 0=All, 1=Food/Potion, 2=Materials, 3=Equip/Weapon, 4=Other
-	bool m_showHotbar = false;
 	float m_scrollY = 0.0f;
 	float m_maxScrollY = 0.0f;
+	float m_scrollVel = 0.0f;
 
 	// Layout rects computed during layout/draw for crisp hit testing
 	ImVec2 m_panelMin = ImVec2(0, 0);
 	ImVec2 m_panelMax = ImVec2(0, 0);
 	ImVec2 m_gridMin = ImVec2(0, 0);
 	ImVec2 m_gridMax = ImVec2(0, 0);
-	HitRect m_closeBtnRect;
-	HitRect m_tabRects[5];
-	HitRect m_hotbarToggleRect;
-	HitRect m_hotbarSlotRects[7];
+	HitRect m_closeBtnRect{};
+	HitRect m_tabRects[5]{};
+	HitRect m_scrollbarRect{};
+
+	// External HUD hotbar (outside bag)
+	bool m_hudHotbarOpen = false;
+	float m_hotbarAnim = 0.0f;
+	HitRect m_hudArrowRect{};
+	HitRect m_hudHotbarDockRect{};
+	HitRect m_hudHotbarSlotRects[7]{};
+	bool m_hudTouchDown = false;
+	ImVec2 m_hudTouchStart = ImVec2(0, 0);
+	float m_hudDragDist = 0.0f;
 
 	struct CardHit
 	{
@@ -118,9 +132,10 @@ private:
 	};
 	std::vector<CardHit> m_cardHits;
 
-	// Touch tracking
+	// Touch tracking inside bag
 	bool m_touchDown = false;
 	bool m_draggingGrid = false;
+	bool m_draggingScrollbar = false;
 	ImVec2 m_touchStartPos = ImVec2(0, 0);
 	ImVec2 m_lastTouchPos = ImVec2(0, 0);
 	float m_totalDragDist = 0.0f;
