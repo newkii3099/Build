@@ -4,6 +4,7 @@
 #include "samp/Network/Network.h"
 #include "samp/Settings/Settings.h"
 #include "samp/Multiplayer/Multiplayer.h"
+#include "samp/Utils/CUtil.h"
 #include "gta-reversed/game_sa/Models/ModelInfo.h"
 #include "gta-reversed/game_sa/VisibilityPlugins.h"
 #include "gta-reversed/game_sa/Camera.h"
@@ -41,6 +42,12 @@ void InventoryUI::clearSnapshotCache()
 		}
 	}
 	m_snapshotCache.clear();
+	for (auto& kv : m_txdCache) {
+		if (kv.second) {
+			RwTextureDestroy(kv.second);
+		}
+	}
+	m_txdCache.clear();
 }
 
 void InventoryUI::SetServerUIVersion(int version)
@@ -96,10 +103,16 @@ void InventoryUI::AddSyncSlot(int slot, int itemId, int modelId, int amount, int
 	item.zoom = (zoom > 0.05f) ? zoom : 1.0f;
 	item.nameUtf8 = nameUtf8;
 
-	auto it = m_snapshotCache.find(modelId);
-	if (it != m_snapshotCache.end() && it->second) {
-		item.texture = it->second;
-		item.isSnapshot = true;
+	auto txdIt = m_txdCache.find(itemId);
+	if (txdIt != m_txdCache.end() && txdIt->second) {
+		item.texture = txdIt->second;
+		item.isSnapshot = false;
+	} else {
+		auto it = m_snapshotCache.find(modelId);
+		if (it != m_snapshotCache.end() && it->second) {
+			item.texture = it->second;
+			item.isSnapshot = true;
+		}
 	}
 
 	m_pendingItems.push_back(std::move(item));
@@ -115,11 +128,17 @@ void InventoryUI::SetSyncHotbar(int hslot, int itemId, int modelId, int amount, 
 	hb.amount = amount;
 	hb.nameUtf8 = nameUtf8;
 
-	if (modelId > 0) {
-		auto it = m_snapshotCache.find(modelId);
-		if (it != m_snapshotCache.end() && it->second) {
-			hb.texture = it->second;
-			hb.isSnapshot = true;
+	if (itemId > 0) {
+		auto txdIt = m_txdCache.find(itemId);
+		if (txdIt != m_txdCache.end() && txdIt->second) {
+			hb.texture = txdIt->second;
+			hb.isSnapshot = false;
+		} else if (modelId > 0) {
+			auto it = m_snapshotCache.find(modelId);
+			if (it != m_snapshotCache.end() && it->second) {
+				hb.texture = it->second;
+				hb.isSnapshot = true;
+			}
 		}
 	}
 }
@@ -227,9 +246,55 @@ RwTexture* InventoryUI::getOrCreateModelSnapshot(int modelId, const CVector& rot
 	return snap;
 }
 
+RwTexture* InventoryUI::getCustomItemTexture(int itemId)
+{
+	if (itemId < 61 || itemId > 100) return nullptr;
+
+	auto it = m_txdCache.find(itemId);
+	if (it != m_txdCache.end()) {
+		return it->second;
+	}
+
+	static const char* kItemTexNames[40] = {
+		"cabbage", "carrot", "tomato", "potato", "corn", "broccoli", "pumpkin", "cucumber",
+		"eggplant", "chili", "garlic", "onion", "lettuce", "cauliflower", "radish", "watermelon",
+		"strawberry", "pineapple", "mango", "banana", "orange", "grape", "coconut", "durian",
+		"apple", "papaya", "dragon_fruit", "avocado", "lychee", "jackfruit", "stone", "coal",
+		"copper_ore", "iron_ore", "gold_ore", "silver_ore", "diamond", "emerald", "ruby", "quartz"
+	};
+
+	const char* texName = kItemTexNames[itemId - 61];
+	RwTexture* tex = CUtil::LoadTextureFromTxdFile("mayes_items", texName);
+	m_txdCache[itemId] = tex;
+	return tex;
+}
+
 void InventoryUI::ProcessSnapshots()
 {
-	if (!visible() || !pSnapShotHelper) return;
+	if (!visible()) return;
+
+	// Prioritize loading custom TXD icons for items 61..100 (zero 3D snapshot cost)
+	for (auto& item : m_items) {
+		if (!item.texture && item.itemId >= 61 && item.itemId <= 100) {
+			RwTexture* tex = getCustomItemTexture(item.itemId);
+			if (tex) {
+				item.texture = tex;
+				item.isSnapshot = false;
+			}
+		}
+	}
+	for (int i = 0; i < 7; i++) {
+		InvHotbarSlot& hb = m_hotbar[i];
+		if (!hb.texture && hb.itemId >= 61 && hb.itemId <= 100) {
+			RwTexture* tex = getCustomItemTexture(hb.itemId);
+			if (tex) {
+				hb.texture = tex;
+				hb.isSnapshot = false;
+			}
+		}
+	}
+
+	if (!pSnapShotHelper) return;
 
 	int created = 0;
 	for (auto& item : m_items) {
@@ -361,10 +426,10 @@ void InventoryUI::drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, co
 	float titleFontSz = UISettings::fontSize() * 0.58f;
 	float weightFontSz = UISettings::fontSize() * 0.50f;
 
-	// Subtle darker header strip
+	// Subtle translucent header strip
 	ImVec2 hdrMax(panelMax.x, panelMin.y + headerH);
-	renderer->drawRect(panelMin, hdrMax, ImColor(10, 12, 16, 195), true, 10.0f);
-	renderer->drawLine(ImVec2(panelMin.x + 8.0f, hdrMax.y), ImVec2(panelMax.x - 8.0f, hdrMax.y), ImColor(255, 255, 255, 28), 1.0f);
+	renderer->drawRect(panelMin, hdrMax, ImColor(10, 12, 16, 165), true, 10.0f);
+	renderer->drawLine(ImVec2(panelMin.x + 8.0f, hdrMax.y), ImVec2(panelMax.x - 8.0f, hdrMax.y), ImColor(255, 255, 255, 32), 1.0f);
 
 	// Bag icon on top-left
 	float iconSz = headerH * 0.44f;
@@ -473,13 +538,13 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 
 		if (y1 < gridMin.y || y0 > gridMax.y) continue;
 
-		// Card body
-		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1), ImColor(28, 31, 38, 224), true, 5.0f);
-		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1), ImColor(255, 255, 255, 22), false, 5.0f, 1.0f);
+		// Card body (semi-transparent dark glass)
+		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1), ImColor(24, 26, 32, 165), true, 5.0f);
+		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1), ImColor(255, 255, 255, 24), false, 5.0f, 1.0f);
 
 		// Bottom dark footer strip for item name
 		float footY = y1 - footerH;
-		renderer->drawRect(ImVec2(x0, footY), ImVec2(x1, y1), ImColor(13, 15, 20, 240), true, 4.0f);
+		renderer->drawRect(ImVec2(x0, footY), ImVec2(x1, y1), ImColor(12, 14, 18, 192), true, 4.0f);
 
 		// Top-left star badge (favorite or in hotbar)
 		if (item->favorite || isItemInHotbar(item->itemId)) {
@@ -542,7 +607,7 @@ void InventoryUI::drawHotbarDock(ImGuiRenderer* renderer, const ImVec2& panelMin
 		float dockH = 44.0f * scaleY;
 		ImVec2 dockMin(panelMin.x + 8.0f * scaleX, panelMax.y - dockH - 4.0f * scaleY);
 		ImVec2 dockMax(panelMax.x - 8.0f * scaleX, panelMax.y - 4.0f * scaleY);
-		renderer->drawRect(dockMin, dockMax, ImColor(10, 12, 16, 225), true, 6.0f);
+		renderer->drawRect(dockMin, dockMax, ImColor(12, 14, 18, 170), true, 6.0f);
 		renderer->drawRect(dockMin, dockMax, ImColor(245, 166, 35, 95), false, 6.0f, 1.0f);
 
 		float slotSize = dockH - 6.0f * scaleY;
@@ -557,7 +622,7 @@ void InventoryUI::drawHotbarDock(ImGuiRenderer* renderer, const ImVec2& panelMin
 			m_hotbarSlotRects[i].min = ImVec2(sx0, slotY);
 			m_hotbarSlotRects[i].max = ImVec2(sx0 + slotSize, slotY + slotSize);
 
-			renderer->drawRect(m_hotbarSlotRects[i].min, m_hotbarSlotRects[i].max, ImColor(28, 31, 38, 235), true, 5.0f);
+			renderer->drawRect(m_hotbarSlotRects[i].min, m_hotbarSlotRects[i].max, ImColor(24, 26, 32, 175), true, 5.0f);
 			renderer->drawRect(m_hotbarSlotRects[i].min, m_hotbarSlotRects[i].max, ImColor(255, 255, 255, 28), false, 5.0f, 1.0f);
 
 			char numBuf[4];
@@ -609,10 +674,10 @@ void InventoryUI::draw(ImGuiRenderer* renderer)
 	float headerH = 28.0f * scaleY;
 	float dockSpace = m_showHotbar ? (50.0f * scaleY) : (4.0f * scaleY);
 
-	// 1. Main glassmorphic translucent container
+	// 1. Main semi-transparent glassmorphic container (matches reference ~58% opacity)
 	float rounding = 10.0f;
-	renderer->drawRect(m_panelMin, m_panelMax, ImColor(15, 17, 22, 212), true, rounding);
-	renderer->drawRect(m_panelMin, m_panelMax, ImColor(255, 255, 255, 26), false, rounding, 1.1f);
+	renderer->drawRect(m_panelMin, m_panelMax, ImColor(14, 16, 20, 148), true, rounding);
+	renderer->drawRect(m_panelMin, m_panelMax, ImColor(255, 255, 255, 34), false, rounding, 1.1f);
 
 	// 2. Header bar
 	drawHeader(renderer, m_panelMin, m_panelMax);

@@ -376,6 +376,8 @@ public class SAMP extends GTASA implements CustomKeyboard.InputListener, HeightP
             copyAssetIfMissing("Fonts/Prompt-Regular.ttf", new File(getFilesDir(), "Prompt-Regular.ttf"));
             copyAssetIfMissing("chat/fonts/Prompt-Regular.ttf", new File(sampFonts, "Prompt-Regular.ttf"));
             copyAssetIfMissing("chat/fonts/Prompt-Regular.ttf", new File(getFilesDir(), "Prompt-Regular.ttf"));
+            File sampTxd = new File(GameStorage.getSampDirectory(this), "txd");
+            copyAssetIfMissing("SAMP/txd/mayes_items.txd", new File(sampTxd, "mayes_items.txd"));
         } catch (Throwable t) {
             Log.w(TAG, "Error copying font assets", t);
         }

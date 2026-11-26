@@ -81,6 +81,7 @@ private:
 	void drawHotbarDock(ImGuiRenderer* renderer, const ImVec2& panelMin, const ImVec2& panelMax);
 	void drawStar(ImGuiRenderer* renderer, const ImVec2& center, float r, const ImColor& col);
 	RwTexture* getOrCreateModelSnapshot(int modelId, const CVector& rot, float zoom);
+	RwTexture* getCustomItemTexture(int itemId);
 	void clearSnapshotCache();
 
 private:
@@ -124,6 +125,7 @@ private:
 	ImVec2 m_lastTouchPos = ImVec2(0, 0);
 	float m_totalDragDist = 0.0f;
 
-	// Cached 3D snapshots keyed by modelId
+	// Cached 3D snapshots keyed by modelId & custom TXD icons keyed by itemId
 	std::unordered_map<int, RwTexture*> m_snapshotCache;
+	std::unordered_map<int, RwTexture*> m_txdCache;
 };
