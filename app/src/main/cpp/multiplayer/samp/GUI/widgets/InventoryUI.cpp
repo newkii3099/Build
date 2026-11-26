@@ -550,16 +550,16 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 	std::vector<const InvSlotItem*> items = getFilteredItems();
 
 	float u = UISettings::scaleFactor().y;
-	float pad = 8.0f * u;
-	float gap = 5.5f * u;
-	float scrollReserve = 12.0f * u;
+	float pad = 7.0f * u;
+	float gap = 4.5f * u;
+	float scrollReserve = 10.0f * u;
 	float availW = (gridMax.x - gridMin.x) - pad - scrollReserve;
 
-	// 6 columns -> comfortable card sizes & real scrollable height for 30+ items
-	const int cols = 6;
+	// 10 columns -> original compact card size
+	const int cols = 10;
 	float cardW = (availW - gap * (cols - 1)) / (float)cols;
-	float cardH = cardW * 0.94f;
-	float footerH = cardH * 0.26f;
+	float cardH = cardW * 1.00f;
+	float footerH = cardH * 0.27f;
 
 	int totalItems = (int)items.size();
 	int rows = (totalItems + cols - 1) / cols;
