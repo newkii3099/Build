@@ -21,7 +21,7 @@ public:
 	void setParent(Widget* parent) { m_parent = parent; }
 
 	/* visible */
-	bool visible() { return m_visible; }
+	bool visible() const { return m_visible; }
 	void setVisible(bool visible) { m_visible = visible; }
 
 	/* size */

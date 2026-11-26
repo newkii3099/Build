@@ -685,7 +685,7 @@ bool InventoryUI::canShowHudHotbar() const
 	if (pUI->spawn() && pUI->spawn()->visible()) return false;
 	if (pUI->dialog() && pUI->dialog()->visible()) return false;
 	if (pUI->keyboard() && pUI->keyboard()->visible()) return false;
-	if (pUI->playerTabList() && pUI->playerTabList()->visible()) return false;
+	if (pUI->playertablist() && pUI->playertablist()->visible()) return false;
 	return true;
 }
 
