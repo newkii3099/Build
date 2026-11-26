@@ -48,11 +48,11 @@ ImVec2 UISettings::m_spawnSize = ImVec2(240.0f, 50.0f);
 ImVec2 UISettings::m_nametagBarSize = ImVec2(25.0f, 6.0f);
 
 /* dialog */
-ImVec2 UISettings::m_dialogButtonPanelSize = ImVec2(150.0f, 45.0f);
-ImVec2 UISettings::m_dialogMinSize = ImVec2(150.0f, 120.0f);
-ImVec2 UISettings::m_dialogMaxSize = ImVec2(620.0f, 400.0f);
-float UISettings::m_dialogTitleHeight = 20.0f;
-float UISettings::m_dialogListItemHeight = 30.0f;
+ImVec2 UISettings::m_dialogButtonPanelSize = ImVec2(190.0f, 36.0f);
+ImVec2 UISettings::m_dialogMinSize = ImVec2(220.0f, 120.0f);
+ImVec2 UISettings::m_dialogMaxSize = ImVec2(560.0f, 390.0f);
+float UISettings::m_dialogTitleHeight = 28.0f;
+float UISettings::m_dialogListItemHeight = 26.0f;
 
 /* buttonpanel */
 ImVec2 UISettings::m_buttonPanelPos = ImVec2(5.0f, 150.0f/*150.0f*/);

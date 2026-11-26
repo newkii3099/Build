@@ -282,9 +282,9 @@ bool ImGuiRenderer::processInlineHexColor(const char* start, const char* end, Im
 	return false;
 }
 
-void ImGuiRenderer::drawImage(const ImVec2& a, const ImVec2& b, ImTextureID texture)
+void ImGuiRenderer::drawImage(const ImVec2& a, const ImVec2& b, ImTextureID texture, const ImVec2& uv0, const ImVec2& uv1)
 {
-	m_drawList->AddImage(texture, a, b);
+	m_drawList->AddImage(texture, a, b, uv0, uv1);
 }
 
 void ImGuiRenderer::pushClipRect(const ImVec2& min, const ImVec2& max, bool intersect)

@@ -40,6 +40,7 @@ public class SettingsActivity extends Fragment {
     SwitchCompat mKeyboardSwitch;
     SwitchCompat mVoiceSwitch;
     SwitchCompat mFPSSwitch;
+    SwitchCompat mUiVersionSwitch;
     SeekBar mMessagesSeekBar;
     TextView mMessagesText;
     SeekBar mFPSSeekBar;
@@ -88,6 +89,9 @@ public class SettingsActivity extends Fragment {
             mKeyboardSwitch.setChecked(new SharedPreferenceCore().getBoolean(getActivity(), "ANDROID_KEYBOARD"));
             mVoiceSwitch.setChecked(new SharedPreferenceCore().getBoolean(getActivity(), "VOICE"));
             mFPSSwitch.setChecked(new SharedPreferenceCore().getBoolean(getActivity(), "FPS_DISPLAY"));
+            if (mUiVersionSwitch != null) {
+                mUiVersionSwitch.setChecked(ConfigValidator.getUiVersion(getActivity()) == 2);
+            }
 
             int fps = new SharedPreferenceCore().getInt(getActivity(), "FPS_LIMIT");
             switch (fps) {
@@ -127,6 +131,7 @@ public class SettingsActivity extends Fragment {
             mKeyboardSwitch = view.findViewById(R.id.keyboard_switch);
             mFPSSwitch = view.findViewById(R.id.fps_switch);
             mVoiceSwitch = view.findViewById(R.id.voice_switch);
+            mUiVersionSwitch = view.findViewById(R.id.ui_version_switch);
             mMessagesSeekBar = view.findViewById(R.id.messages_seekbar);
             mMessagesText = view.findViewById(R.id.messages_count);
             mFPSSeekBar = view.findViewById(R.id.fps_seekbar);
@@ -244,6 +249,14 @@ public class SettingsActivity extends Fragment {
                 }
             }
         });
+
+        if (mUiVersionSwitch != null) {
+            mUiVersionSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
+                if (getActivity() != null) {
+                    ConfigValidator.setUiVersion(getActivity(), b ? 2 : 1);
+                }
+            });
+        }
 
         mMessagesSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {

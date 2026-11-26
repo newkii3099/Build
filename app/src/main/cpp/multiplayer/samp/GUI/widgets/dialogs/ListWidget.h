@@ -26,6 +26,7 @@ private:
 
 		void performLayout() override;
 		virtual void draw(ImGuiRenderer* renderer) override;
+		virtual void touchPopEvent() override;
 
 	private:
 		std::vector<ItemData> m_itemsData;

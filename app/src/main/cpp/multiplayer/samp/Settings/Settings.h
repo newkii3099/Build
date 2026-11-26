@@ -57,6 +57,7 @@ struct stSettings
 	int iFPSCount;
 
 	bool iDialog;
+	int iUIVersion;
 };
 
 class CSettings

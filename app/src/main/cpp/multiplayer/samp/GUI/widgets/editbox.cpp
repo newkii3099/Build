@@ -24,12 +24,10 @@ void EditBox::draw(ImGuiRenderer* renderer)
 	ImVec2 pMin = absolutePosition() + ImVec2(UISettings::outlineSize(), UISettings::outlineSize());
 	ImVec2 pMax = (absolutePosition() + size()) - ImVec2(UISettings::outlineSize(), UISettings::outlineSize());
 
-	// AAA Cyber Dark Obsidian Input Field
-	renderer->drawRect(pMin, pMax, ImColor(8, 16, 28, 220), true, 4.0f);
-	// Glowing Electric Cyan Border
-	renderer->drawRect(pMin, pMax, ImColor(0, 190, 245, 175), false, 4.0f, 1.2f);
-	// Left accent marker
-	renderer->drawRect(pMin + ImVec2(1.0f, 2.0f), ImVec2(pMin.x + 3.0f, pMax.y - 2.0f), ImColor(0, 235, 255, 230), true, 1.0f);
+	// Clean dark translucent input field matching modern dialog theme
+	renderer->drawRect(pMin, pMax, ImColor(10, 11, 15, 232), true, 5.0f);
+	ImColor borderCol = focused() ? ImColor(245, 166, 35, 220) : ImColor(255, 255, 255, 40);
+	renderer->drawRect(pMin, pMax, borderCol, false, 5.0f, 1.1f);
 
 	Widget::draw(renderer);
 }
@@ -42,5 +40,14 @@ void EditBox::touchPopEvent()
 void EditBox::keyboardEvent(const std::string& input)
 {
 	m_input = input;
-	m_label->setText(Encoding::cp2utf(input));
+	if (m_isPassword) {
+		std::string utf = Encoding::cp2utf(input);
+		size_t chars = 0;
+		for (unsigned char c : utf) {
+			if ((c & 0xC0) != 0x80) chars++;
+		}
+		m_label->setText(std::string(chars, '*'));
+	} else {
+		m_label->setText(Encoding::cp2utf(input));
+	}
 }

@@ -41,6 +41,7 @@ public class HomeFragment extends Fragment {
     private Animation scaleUp;
     private TextView tvHeaderPlayerNick;
     private TextView tvPlayerNickSubtitle;
+    private TextView tvHeaderUiVersion;
 
     private TextView tvServerLiveStatus;
     private TextView tvServerHostname;
@@ -62,7 +63,9 @@ public class HomeFragment extends Fragment {
         View btnNotification = view.findViewById(R.id.btnNotification);
         View btnSettingsTop = view.findViewById(R.id.btnSettingsTop);
         View btnQuickNickname = view.findViewById(R.id.btnQuickNickname);
+        View btnQuickUiVersion = view.findViewById(R.id.btnQuickUiVersion);
         tvHeaderPlayerNick = view.findViewById(R.id.tvHeaderPlayerNick);
+        tvHeaderUiVersion = view.findViewById(R.id.tvHeaderUiVersion);
 
         // ◀️ Left Column Actions
         View btnPlay = view.findViewById(R.id.btnPlay);
@@ -100,12 +103,17 @@ public class HomeFragment extends Fragment {
         attachTouchAnimation(btnNotification);
         attachTouchAnimation(btnSettingsTop);
         attachTouchAnimation(btnQuickNickname);
+        attachTouchAnimation(btnQuickUiVersion);
 
         // 0. Quick Nickname Edit
         if (btnQuickNickname != null) {
             btnQuickNickname.setOnClickListener(v -> showChangeNicknameDialog());
         }
+        if (btnQuickUiVersion != null) {
+            btnQuickUiVersion.setOnClickListener(v -> toggleUiVersionQuick());
+        }
         refreshPlayerNickname();
+        refreshUiVersionBadge();
 
         // 1. Play Button Click -> Launch SAMP Game
         if (btnPlay != null) {
@@ -479,7 +487,32 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         refreshPlayerNickname();
+        refreshUiVersionBadge();
         fetchRealServerStats();
+    }
+
+    private void refreshUiVersionBadge() {
+        if (getContext() == null || tvHeaderUiVersion == null) return;
+        int ver = ConfigValidator.getUiVersion(getContext());
+        if (ver == 2) {
+            tvHeaderUiVersion.setText("UI 2.0 MOD");
+            tvHeaderUiVersion.setTextColor(Color.parseColor("#F59E0B"));
+        } else {
+            tvHeaderUiVersion.setText("UI 1.0 เดิม");
+            tvHeaderUiVersion.setTextColor(Color.parseColor("#94A3B8"));
+        }
+    }
+
+    private void toggleUiVersionQuick() {
+        if (getContext() == null) return;
+        int cur = ConfigValidator.getUiVersion(getContext());
+        int next = (cur == 2) ? 1 : 2;
+        ConfigValidator.setUiVersion(getContext(), next);
+        refreshUiVersionBadge();
+        String msg = (next == 2)
+                ? "สลับเป็นโหมด UI 2.0 (มอดกระเป๋า ImGui) แล้ว"
+                : "สลับเป็นโหมด UI 1.0 (คลาสสิก) แล้ว";
+        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     private void refreshPlayerNickname() {

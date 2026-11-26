@@ -167,6 +167,17 @@ void InitGame(RPCParameters* rpcParams)
 		pUI->voicebutton()->setVisible(true);
 	}
 
+	// Auto-sync Launcher's selected UI version (1.0 Classic / 2.0 Mod ImGui) to server
+	if (pSettings) {
+		int uiVer = (pSettings->Get().iUIVersion == 1) ? 1 : 2;
+		if (pUI && pUI->inventory()) {
+			pUI->inventory()->SetServerUIVersion(uiVer);
+		}
+		char uiSyncCmd[32];
+		snprintf(uiSyncCmd, sizeof(uiSyncCmd), "/_uimode %d", uiVer);
+		pNetGame->SendChatCommand(uiSyncCmd);
+	}
+
 	/*if (pVoice && pVoice->recorder()->active())
 	{
 		if (pUI) {
@@ -227,6 +238,7 @@ void DialogBox(RPCParameters *rpcParams)
 	
 	if (wDialogID == -1 || wDialogID < 0 || (uint16_t)wDialogID == 65535 || (uint16_t)wDialogID == 0xFFFF || (szTitle[0] == '\0' && szMessage[0] == '\0' && szButton1[0] == '\0'))
 	{
+		if (pUI && pUI->dialog()) pUI->dialog()->hide();
 		if (pJavaWrapper) pJavaWrapper->ShowDialog(0, -1, (char*)"", (char*)"", (char*)"", (char*)"");
 		return;
 	}
@@ -266,7 +278,10 @@ void DialogBox(RPCParameters *rpcParams)
 			Button2Show = 1;
 			//MyLog("lol2 %s", szButton2);
 		}
-		//pUI->dialog()->show(wDialogID, style, Encoding::cp2utf(szTitle), Encoding::cp2utf(szMessage), Encoding::cp2utf(szButton1), Encoding::cp2utf(szButton2));
+		pUI->dialog()->show(wDialogID, style, Encoding::cp2utf(szTitle), Encoding::cp2utf(szMessage), Encoding::cp2utf(szButton1), Encoding::cp2utf(szButton2));
+	}
+	else if (pJavaWrapper)
+	{
 		pJavaWrapper->ShowDialog(byteDialogStyle, wDialogID, (char*)Encoding::cp2utf(szTitle).c_str(), (char*) Encoding::cp2utf(szMessage).c_str(), (char*) Encoding::cp2utf(szButton1).c_str(), (char*) Encoding::cp2utf(szButton2).c_str());
 	}
 
@@ -349,7 +364,62 @@ void ClientMessage(RPCParameters *rpcParams)
 
 		if (payload != nullptr)
 		{
-			if (strncmp(payload, "H|", 2) == 0)
+			if (strncmp(payload, "UI|", 3) == 0)
+			{
+				int ver = atoi(payload + 3);
+				if (pUI && pUI->inventory()) {
+					pUI->inventory()->SetServerUIVersion(ver);
+				}
+			}
+			else if (strncmp(payload, "INV|OPEN|", 9) == 0)
+			{
+				float usedKg = 0.0f, maxKg = 80.0f;
+				int usedSlots = 0, maxSlots = 30;
+				if (sscanf(payload + 9, "%f|%f|%d|%d", &usedKg, &maxKg, &usedSlots, &maxSlots) >= 2) {
+					if (pUI && pUI->inventory()) {
+						pUI->inventory()->BeginSync(usedKg, maxKg, usedSlots, maxSlots);
+					}
+				}
+			}
+			else if (strncmp(payload, "INV|SLOT|", 9) == 0)
+			{
+				int slot = -1, itemId = 0, modelId = 0, amount = 0, maxStack = 100, cat = 4, fav = 0, offset = 0;
+				float weight = 0.0f, rx = 0.0f, ry = 0.0f, rz = 0.0f, zoom = 1.0f;
+				if (sscanf(payload + 9, "%d|%d|%d|%d|%d|%f|%d|%d|%f|%f|%f|%f|%n",
+						&slot, &itemId, &modelId, &amount, &maxStack, &weight, &cat, &fav,
+						&rx, &ry, &rz, &zoom, &offset) >= 12 && offset > 0)
+				{
+					std::string nameUtf8 = Encoding::cp2utf(payload + 9 + offset);
+					if (pUI && pUI->inventory()) {
+						pUI->inventory()->AddSyncSlot(slot, itemId, modelId, amount, maxStack,
+							weight, cat, fav != 0, rx, ry, rz, zoom, nameUtf8);
+					}
+				}
+			}
+			else if (strncmp(payload, "INV|HB|", 7) == 0)
+			{
+				int hslot = -1, itemId = 0, modelId = 0, amount = 0, offset = 0;
+				if (sscanf(payload + 7, "%d|%d|%d|%d|%n", &hslot, &itemId, &modelId, &amount, &offset) >= 4 && offset > 0)
+				{
+					std::string nameUtf8 = Encoding::cp2utf(payload + 7 + offset);
+					if (pUI && pUI->inventory()) {
+						pUI->inventory()->SetSyncHotbar(hslot, itemId, modelId, amount, nameUtf8);
+					}
+				}
+			}
+			else if (strcmp(payload, "INV|DONE") == 0)
+			{
+				if (pUI && pUI->inventory()) {
+					pUI->inventory()->FinishSyncAndShow();
+				}
+			}
+			else if (strcmp(payload, "INV|CLOSE") == 0)
+			{
+				if (pUI && pUI->inventory()) {
+					pUI->inventory()->CloseFromServer();
+				}
+			}
+			else if (strncmp(payload, "H|", 2) == 0)
 			{
 				int eat = 0, drink = 0;
 				uint32_t bank = 0;

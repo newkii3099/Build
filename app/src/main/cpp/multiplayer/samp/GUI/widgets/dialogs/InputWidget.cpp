@@ -42,6 +42,11 @@ void InputWidget::setMessage(const std::string& message)
 	m_msgbox->setMessage(message);
 }
 
+void InputWidget::setPassword(bool isPassword)
+{
+	if (m_editbox) m_editbox->setPassword(isPassword);
+}
+
 const std::string& InputWidget::inputString() const
 {
 	return m_editbox->text();

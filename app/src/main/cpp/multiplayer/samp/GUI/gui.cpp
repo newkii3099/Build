@@ -85,6 +85,10 @@ bool UI::initialize()
     m_playerTabList->setMaxSize(UISettings::dialogMaxSize());
     m_playerTabList->setVisible(false);
 
+    m_inventoryUI = new InventoryUI();
+    this->addChild(m_inventoryUI);
+    m_inventoryUI->setVisible(false);
+
     label = new Label(" ", ImColor(1.0f, 1.0f, 1.0f), true, UISettings::fontSize() / 2);
     pUI->addChild(label);
 
@@ -172,6 +176,12 @@ void UI::touchEvent(const ImVec2& pos, TouchType type)
     if (m_dialog->visible() && m_dialog->contains(pos))
     {
         m_dialog->touchEvent(pos, type);
+        return;
+    }
+
+    if (m_inventoryUI && m_inventoryUI->visible())
+    {
+        m_inventoryUI->touchEvent(pos, type);
         return;
     }
 

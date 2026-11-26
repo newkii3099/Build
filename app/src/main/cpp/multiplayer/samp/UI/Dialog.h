@@ -41,6 +41,7 @@ public:
 	DialogTitle();
 
 	void setTitle(const std::string& caption);
+	float minRequiredWidth() const { return m_label ? (m_label->width() + UISettings::padding() * 2.0f) : 0.0f; }
 
 	virtual void performLayout() override;
 	virtual void draw(ImGuiRenderer* renderer) override;
@@ -56,6 +57,10 @@ public:
 
 	void show(int16_t wDialogID, DialogStyle dialog_style, const std::string& title, const std::string& message, const std::string& button1, const std::string& button2);
 	void hide();
+	void confirm();
+
+	static void drawSelectionHighlight(ImGuiRenderer* renderer, const ImVec2& pMin, const ImVec2& pMax);
+	static void handleListRowTap(Widget* panelParent, bool isSelected, bool selectable);
 
 	virtual void performLayout() override;
 	virtual void draw(ImGuiRenderer* renderer) override;

@@ -35,6 +35,7 @@ public class ConfigValidator {
                     sb.append("fps=0\n");
                     sb.append("ChatMaxMessages=6\n");
                     sb.append("FPSLimit=120\n");
+                    sb.append("UIVersion=2\n");
                     fos.write(sb.toString().getBytes());
                     fos.flush();
                     fos.close();
@@ -96,6 +97,45 @@ public class ConfigValidator {
             Wini wini = new Wini(file);
             wini.put("client", "host", host.trim());
             wini.put("client", "port", port);
+            wini.store();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static int getUiVersion(Context context) {
+        if (context == null) return 2;
+        try {
+            File file = GameStorage.getSettingsFile(context);
+            if (!file.exists()) {
+                validateConfigFiles(context);
+            }
+            if (file.exists()) {
+                Wini wini = new Wini(file);
+                String val = wini.get("gui", "UIVersion");
+                if (val != null && !val.trim().isEmpty()) {
+                    int parsed = Integer.parseInt(val.trim());
+                    return (parsed == 1) ? 1 : 2;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        int saved = new SharedPreferenceCore().getInt(context, "UI_VERSION", 2);
+        return (saved == 1) ? 1 : 2;
+    }
+
+    public static void setUiVersion(Context context, int version) {
+        if (context == null) return;
+        int normalized = (version == 1) ? 1 : 2;
+        new SharedPreferenceCore().setInt(context, "UI_VERSION", normalized);
+        try {
+            File file = GameStorage.getSettingsFile(context);
+            if (!file.exists()) {
+                validateConfigFiles(context);
+            }
+            Wini wini = new Wini(file);
+            wini.put("gui", "UIVersion", normalized);
             wini.store();
         } catch (Exception e) {
             e.printStackTrace();

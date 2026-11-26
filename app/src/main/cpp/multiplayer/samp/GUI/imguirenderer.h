@@ -24,7 +24,7 @@ public:
 	void drawConvexPolyFilled(ImVec2* points, int num_points	, const ImColor& color);
 	void drawText(const ImVec2& pos, const ImColor& color, const std::string& text, bool outlined = false, float font_size = 0.0f);
 	void drawTextInline(const ImVec2& pos, const ImColor& color, const char* begin, const char* end = nullptr, bool outlined = false, float font_size = 0.0f);
-	void drawImage(const ImVec2& a, const ImVec2& b, ImTextureID texture);
+	void drawImage(const ImVec2& a, const ImVec2& b, ImTextureID texture, const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f));
 
 	void pushClipRect(const ImVec2& min, const ImVec2& max, bool intersect = false);
 	void popClipRect();

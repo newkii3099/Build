@@ -3,6 +3,8 @@
 
 #include <sstream>
 
+extern UI* pUI;
+
 /* ListWidget */
 
 ListWidget::ListWidget()
@@ -75,6 +77,9 @@ void ListWidget::assemble(const std::string& data)
 	}
 
 	m_itemSize.x = max_width;
+	if (panel()->itemsCount() > 0 && panel()->activeItemIndex() < 0) {
+		panel()->setActiveItemIndex(0);
+	}
 }
 
 /* ListWidget::ItemWidget */
@@ -97,21 +102,20 @@ void ListWidget::ItemWidget::performLayout()
 
 void ListWidget::ItemWidget::draw(ImGuiRenderer* renderer)
 {
-	if (this->selected())
+	bool isSel = this->selected();
+	if (isSel)
 	{
-		ImVec2 pMin = absolutePosition();
-		ImVec2 pMax = absolutePosition() + size();
-		// AAA Electric Blue Reshade Selection Bar
-		renderer->drawRectFilledMulticolor(pMin, pMax,
-			ImColor(0, 140, 230, 175), ImColor(0, 85, 175, 120),
-			ImColor(0, 60, 145, 120), ImColor(0, 110, 200, 175));
-		// Left neon cyan indicator bar
-		renderer->drawRect(pMin, ImVec2(pMin.x + 3.0f, pMax.y), ImColor(0, 245, 255, 255), true);
-		// Top and bottom subtle border lines
-		renderer->drawLine(pMin, ImVec2(pMax.x, pMin.y), ImColor(0, 215, 255, 150), 1.0f);
-		renderer->drawLine(ImVec2(pMin.x, pMax.y), pMax, ImColor(0, 215, 255, 150), 1.0f);
+		Dialog::drawSelectionHighlight(renderer, absolutePosition(), absolutePosition() + size());
+	}
+	for (auto& item : m_itemsData) {
+		item.label->setColor(isSel ? ImColor(18, 18, 22, 255) : ImColor(245, 247, 250, 255));
 	}
 	ListBoxItem::draw(renderer);
+}
+
+void ListWidget::ItemWidget::touchPopEvent()
+{
+	Dialog::handleListRowTap(parent(), this->selected(), true);
 }
 
 void ListWidget::ItemWidget::add(Label* label, float pos_x)

@@ -37,6 +37,7 @@ void Content::setActive(DialogStyle style, const std::string& data)
     {
         InputWidget* input = new InputWidget();
         this->addChild(input);
+        input->setPassword(style == DialogStyle::PASSWORD);
         input->setMessage(data);
         m_activeWidget = input;
         break;
@@ -83,7 +84,8 @@ const std::string& Content::inputString() const
         return dynamic_cast<InputWidget*>(m_activeWidget)->inputString();
     }
 
-    return "";
+    static const std::string s_empty;
+    return s_empty;
 }
 
 int Content::listItem() const

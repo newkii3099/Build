@@ -370,6 +370,8 @@ extern "C" {
 			pJavaWrapper->HideKeyboard();
 		if (pUI && pUI->keyboard() && pUI->keyboard()->visible())
 			pUI->keyboard()->hide();
+		if (pUI && pUI->inventory() && pUI->inventory()->visible())
+			pUI->inventory()->Hide(true);
 	}
 	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_SAMP_sendCommand(JNIEnv *pEnv, jobject thiz, jstring command)
 	{

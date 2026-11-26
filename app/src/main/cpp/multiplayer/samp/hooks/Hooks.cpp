@@ -205,7 +205,12 @@ void Render2dStuff_hook()
         }
     }
 
-    if (pUI) pUI->render();
+    if (pUI) {
+        if (pUI->inventory()) {
+            pUI->inventory()->ProcessSnapshots();
+        }
+        pUI->render();
+    }
 }
 
 /* =============================================================================== */
@@ -511,7 +516,7 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 				break;
 		}
 
-        if (pUI->keyboard()->visible() || pUI->dialog()->visible()) {
+        if (pUI->keyboard()->visible() || pUI->dialog()->visible() || (pUI->inventory() && pUI->inventory()->visible())) {
             AND_TouchEvent(1, 0, 0, 0);
             return;
         }

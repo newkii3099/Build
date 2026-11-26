@@ -245,6 +245,40 @@
                             app:trackTint="#DDD6FE" />
                     </LinearLayout>
 
+                    <!-- 🎨 UI Mod 2.0 Switch -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:paddingHorizontal="12dp"
+                        android:background="@drawable/bg_action_card">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_settings_clean"
+                            android:layout_marginEnd="10dp"
+                            app:tint="#7C3AED" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="โหมด UI 2.0 (มอดกระเป๋า &amp; Dialog ImGui)"
+                            android:textColor="@color/nextcity_text_title"
+                            android:textSize="12.5sp"
+                            android:fontFamily="sans-serif-bold" />
+
+                        <androidx.appcompat.widget.SwitchCompat
+                            android:id="@+id/ui_version_switch"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            app:thumbTint="#7C3AED"
+                            app:trackTint="#DDD6FE" />
+                    </LinearLayout>
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 

@@ -7,6 +7,7 @@ public:
 	virtual void performLayout() override;
 
 	void setMessage(const std::string& message);
+	void setPassword(bool isPassword);
 	const std::string& inputString() const;
 
 private:
