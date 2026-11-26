@@ -792,44 +792,52 @@ void InventoryUI::drawDropdown(ImGuiRenderer* renderer)
 	m_dropdownRect.min = ImVec2(x, y);
 	m_dropdownRect.max = ImVec2(x + dropW, y + dropH);
 
-	// Soft drop shadow + dark glass container matching bag theme
+	// Soft drop shadow + semi-transparent red gradient container
 	renderer->drawRect(ImVec2(x + 2.0f * u, y + 3.0f * u), ImVec2(x + dropW + 2.0f * u, y + dropH + 3.0f * u),
-		ImColor(0, 0, 0, 115), true, 8.0f * u);
-	renderer->drawRect(m_dropdownRect.min, m_dropdownRect.max, ImColor(16, 19, 26, 244), true, 7.0f * u);
-	renderer->drawRect(m_dropdownRect.min, m_dropdownRect.max, ImColor(245, 166, 35, 175), false, 7.0f * u, 1.3f);
+		ImColor(0, 0, 0, 110), true, 2.0f * u);
+	renderer->drawRectFilledMulticolor(
+		m_dropdownRect.min, m_dropdownRect.max,
+		ImColor(172, 22, 34, 198), ImColor(172, 22, 34, 198),
+		ImColor(64, 6, 14, 212), ImColor(64, 6, 14, 212));
+	renderer->drawRect(m_dropdownRect.min, m_dropdownRect.max, ImColor(255, 130, 138, 135), false, 0.0f, 1.2f);
 
 	float cx0 = x + pad;
 	float cx1 = x + dropW - pad;
 	float curY = y + pad;
+	const ImColor kWhiteText(255, 255, 255, 255);
 
-	// Header: Item name + xAmount
+	// Header: Item name + xAmount (pure white)
 	float hdrFontSz = std::max(11.0f, hdrH * 0.62f);
 	char hdrBuf[96];
 	snprintf(hdrBuf, sizeof(hdrBuf), "%s (x%d)", item->nameUtf8.c_str(), item->amount);
 	renderer->pushClipRect(ImVec2(cx0, curY), ImVec2(cx1, curY + hdrH), true);
 	ImVec2 hsz = renderer->calculateTextSize(hdrBuf, hdrFontSz);
 	renderer->drawText(ImVec2(cx0 + 2.0f * u, curY + (hdrH - hsz.y) * 0.5f),
-		ImColor(245, 196, 81, 255), hdrBuf, false, hdrFontSz);
+		kWhiteText, hdrBuf, false, hdrFontSz);
 	renderer->popClipRect();
 	curY += hdrH;
-	renderer->drawLine(ImVec2(cx0, curY), ImVec2(cx1, curY), ImColor(255, 255, 255, 34), 1.0f);
+	renderer->drawLine(ImVec2(cx0, curY), ImVec2(cx1, curY), ImColor(255, 255, 255, 60), 1.0f);
 	curY += gap;
 
 	float btnFontSz = std::max(11.0f, rowH * 0.54f);
-	auto drawActionRow = [&](int idx, const char* label, const ImColor& bg, const ImColor& border, const ImColor& textCol) {
+	auto drawActionRow = [&](int idx, const char* label, const ImColor& bg, const ImColor& border) {
 		m_dropActionRects[idx].min = ImVec2(cx0, curY);
 		m_dropActionRects[idx].max = ImVec2(cx1, curY + rowH);
-		renderer->drawRect(m_dropActionRects[idx].min, m_dropActionRects[idx].max, bg, true, 5.0f * u);
-		renderer->drawRect(m_dropActionRects[idx].min, m_dropActionRects[idx].max, border, false, 5.0f * u, 1.0f);
+		renderer->drawRect(m_dropActionRects[idx].min, m_dropActionRects[idx].max, bg, true, 4.0f * u);
+		renderer->drawRect(m_dropActionRects[idx].min, m_dropActionRects[idx].max, border, false, 4.0f * u, 1.0f);
 		ImVec2 tsz = renderer->calculateTextSize(label, btnFontSz);
 		renderer->drawText(
 			ImVec2(cx0 + (cx1 - cx0 - tsz.x) * 0.5f, curY + (rowH - tsz.y) * 0.5f),
-			textCol, label, false, btnFontSz);
+			kWhiteText, label, false, btnFontSz);
 		curY += rowH + gap;
 	};
 
+	const ImColor rowBg(28, 4, 9, 108);
+	const ImColor rowBgActive(195, 36, 50, 175);
+	const ImColor rowBorder(255, 255, 255, 62);
+
 	// Action 0: Use
-	drawActionRow(0, "ใช้งาน", ImColor(34, 92, 58, 215), ImColor(74, 222, 128, 165), ImColor(240, 253, 244, 255));
+	drawActionRow(0, "ใช้งาน", rowBg, rowBorder);
 
 	// Action 1: Hotbar toggle
 	char hbLabel[64];
@@ -838,9 +846,7 @@ void InventoryUI::drawDropdown(ImGuiRenderer* renderer)
 	} else {
 		snprintf(hbLabel, sizeof(hbLabel), "ใส่คีย์ลัด (1-7) %s", m_dropdownHotbarExpanded ? "▾" : "▸");
 	}
-	drawActionRow(1, hbLabel,
-		m_dropdownHotbarExpanded ? ImColor(36, 56, 86, 230) : ImColor(28, 34, 46, 215),
-		ImColor(96, 165, 250, 155), ImColor(224, 242, 254, 255));
+	drawActionRow(1, hbLabel, m_dropdownHotbarExpanded ? rowBgActive : rowBg, rowBorder);
 
 	// Optional inline 1..7 hotbar strip
 	for (int i = 0; i < 8; i++) m_dropHotbarRects[i] = HitRect{};
@@ -853,38 +859,36 @@ void InventoryUI::drawDropdown(ImGuiRenderer* renderer)
 			m_dropHotbarRects[h].min = ImVec2(hx0, curY);
 			m_dropHotbarRects[h].max = ImVec2(hx0 + hbW, curY + hbNumH);
 			bool isBound = (boundHb == h);
-			bool hasOther = (!isBound && m_hotbar[h].itemId > 0);
-			ImColor hBg = isBound ? ImColor(245, 166, 35, 210) : (hasOther ? ImColor(38, 42, 54, 215) : ImColor(24, 28, 36, 220));
-			ImColor hBd = isBound ? ImColor(253, 224, 71, 240) : ImColor(255, 255, 255, 48);
-			ImColor hTx = isBound ? ImColor(18, 18, 22, 255) : ImColor(245, 247, 250, 245);
-			renderer->drawRect(m_dropHotbarRects[h].min, m_dropHotbarRects[h].max, hBg, true, 4.0f * u);
-			renderer->drawRect(m_dropHotbarRects[h].min, m_dropHotbarRects[h].max, hBd, false, 4.0f * u, 1.0f);
+			ImColor hBg = isBound ? ImColor(215, 42, 56, 225) : ImColor(32, 6, 12, 125);
+			ImColor hBd = isBound ? ImColor(255, 255, 255, 220) : ImColor(255, 255, 255, 68);
+			renderer->drawRect(m_dropHotbarRects[h].min, m_dropHotbarRects[h].max, hBg, true, 3.5f * u);
+			renderer->drawRect(m_dropHotbarRects[h].min, m_dropHotbarRects[h].max, hBd, false, 3.5f * u, 1.0f);
 			char nbuf[4];
 			snprintf(nbuf, sizeof(nbuf), "%d", h + 1);
 			ImVec2 nsz = renderer->calculateTextSize(nbuf, hbFontSz);
-			renderer->drawText(ImVec2(hx0 + (hbW - nsz.x) * 0.5f, curY + (hbNumH - nsz.y) * 0.5f), hTx, nbuf, false, hbFontSz);
+			renderer->drawText(ImVec2(hx0 + (hbW - nsz.x) * 0.5f, curY + (hbNumH - nsz.y) * 0.5f), kWhiteText, nbuf, false, hbFontSz);
 		}
 		curY += hbNumH + gap;
 
 		if (boundHb >= 0) {
 			m_dropHotbarRects[7].min = ImVec2(cx0, curY);
 			m_dropHotbarRects[7].max = ImVec2(cx1, curY + clearBtnH);
-			renderer->drawRect(m_dropHotbarRects[7].min, m_dropHotbarRects[7].max, ImColor(82, 34, 38, 215), true, 4.0f * u);
-			renderer->drawRect(m_dropHotbarRects[7].min, m_dropHotbarRects[7].max, ImColor(248, 113, 113, 150), false, 4.0f * u, 1.0f);
+			renderer->drawRect(m_dropHotbarRects[7].min, m_dropHotbarRects[7].max, rowBg, true, 3.5f * u);
+			renderer->drawRect(m_dropHotbarRects[7].min, m_dropHotbarRects[7].max, rowBorder, false, 3.5f * u, 1.0f);
 			float clrFontSz = std::max(10.0f, clearBtnH * 0.56f);
 			const char* clrTxt = "ถอดออกจากคีย์ลัด";
 			ImVec2 csz = renderer->calculateTextSize(clrTxt, clrFontSz);
 			renderer->drawText(ImVec2(cx0 + (cx1 - cx0 - csz.x) * 0.5f, curY + (clearBtnH - csz.y) * 0.5f),
-				ImColor(254, 226, 226, 255), clrTxt, false, clrFontSz);
+				kWhiteText, clrTxt, false, clrFontSz);
 			curY += clearBtnH + gap;
 		}
 	}
 
 	// Action 2: Drop all
-	drawActionRow(2, "ทิ้งทั้งหมด", ImColor(88, 36, 36, 210), ImColor(248, 113, 113, 150), ImColor(254, 226, 226, 255));
+	drawActionRow(2, "ทิ้งทั้งหมด", rowBg, rowBorder);
 
 	// Action 3: More server dialog options (Give / Sell / Amount / Details)
-	drawActionRow(3, "เพิ่มเติม (มอบ/ขาย/ดู)", ImColor(30, 34, 44, 220), ImColor(255, 255, 255, 55), ImColor(232, 236, 245, 245));
+	drawActionRow(3, "เพิ่มเติม (มอบ/ขาย/ดู)", rowBg, rowBorder);
 }
 
 void InventoryUI::draw(ImGuiRenderer* renderer)
@@ -946,8 +950,8 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 		m_hotbarAnim = std::max(target, m_hotbarAnim - dt * 7.5f);
 	}
 
-	// 1. Far bottom-right arrow toggle button (chevron only, no overlap with hotbar)
-	float arrowBtnSz = 22.0f * u;
+	// 1. Far bottom-right arrow toggle button (+50% larger to match enlarged hotbar)
+	float arrowBtnSz = 33.0f * u;
 	float marginR = 10.0f * u;
 	float marginB = 8.0f * u;
 	m_hudArrowRect.max = ImVec2(disp.x - marginR, disp.y - marginB);
@@ -980,9 +984,9 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 	}
 
 	float ease = 1.0f - (1.0f - m_hotbarAnim) * (1.0f - m_hotbarAnim);
-	float slotSize = 25.0f * u;
-	float gap = 4.0f * u;
-	float dockPad = 4.5f * u;
+	float slotSize = 37.5f * u;
+	float gap = 6.0f * u;
+	float dockPad = 6.5f * u;
 	float dockW = 7.0f * slotSize + 6.0f * gap + dockPad * 2.0f;
 	float dockH = slotSize + dockPad * 2.0f;
 
@@ -998,13 +1002,13 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 	m_hudHotbarDockRect.max = ImVec2(dockX + dockW, dockY + dockH);
 
 	renderer->pushClipRect(ImVec2(0.0f, 0.0f), disp, true);
-	renderer->drawRect(m_hudHotbarDockRect.min, m_hudHotbarDockRect.max, ImColor(12, 14, 18, 165), true, 7.0f * u);
-	renderer->drawRect(m_hudHotbarDockRect.min, m_hudHotbarDockRect.max, ImColor(255, 255, 255, 36), false, 7.0f * u, 1.0f);
+	renderer->drawRect(m_hudHotbarDockRect.min, m_hudHotbarDockRect.max, ImColor(12, 14, 18, 165), true, 8.0f * u);
+	renderer->drawRect(m_hudHotbarDockRect.min, m_hudHotbarDockRect.max, ImColor(255, 255, 255, 36), false, 8.0f * u, 1.0f);
 
 	float startX = dockX + dockPad;
 	float slotY = dockY + dockPad;
-	float numFontSz = std::max(9.0f, slotSize * 0.25f);
-	float qtyFontSz = std::max(9.0f, slotSize * 0.24f);
+	float numFontSz = std::max(12.0f, slotSize * 0.25f);
+	float qtyFontSz = std::max(12.0f, slotSize * 0.24f);
 
 	for (int i = 0; i < 7; i++) {
 		float sx0 = startX + i * (slotSize + gap);
