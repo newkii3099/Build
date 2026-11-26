@@ -514,17 +514,21 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 			}
 
 			if (!pUI->keyboard()->visible() && !pUI->dialog()->visible() && !invOpen) {
-				if (num == 0 && pUI->inventory() && pUI->inventory()->handleHudTouch(ImVec2(posX, posY), ttype)) {
+				if (pUI->inventory() && pUI->inventory()->handleHudTouch(ImVec2(posX, posY), ttype, slot)) {
 					hudConsumed = true;
 				}
 			}
 
-			if (!hudConsumed) {
+			if (!hudConsumed && slot == 0) {
 				pUI->touchEvent(ImVec2(posX, posY), ttype);
 			}
 		}
 
-        if (hudConsumed || pUI->keyboard()->visible() || pUI->dialog()->visible() || invOpen) {
+        if (hudConsumed) {
+            // Consumed by floating hotbar/arrow: return immediately without resetting slot 0 (analog walking stays uninterrupted)
+            return;
+        }
+        if (pUI->keyboard()->visible() || pUI->dialog()->visible() || invOpen) {
             AND_TouchEvent(1, 0, 0, 0);
             return;
         }

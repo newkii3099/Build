@@ -48,7 +48,7 @@ public:
 
 	// Gameplay external hotbar (rendered & touched outside the bag window)
 	void drawHudHotbar(ImGuiRenderer* renderer);
-	bool handleHudTouch(const ImVec2& pos, TouchType type);
+	bool handleHudTouch(const ImVec2& pos, TouchType type, int pointerId = 0);
 
 	// Server sync protocol handlers ($MS|UI|... and $MS|INV|...)
 	void SetServerUIVersion(int version);
@@ -137,7 +137,7 @@ private:
 	HitRect m_hudArrowRect{};
 	HitRect m_hudHotbarDockRect{};
 	HitRect m_hudHotbarSlotRects[7]{};
-	bool m_hudTouchDown = false;
+	int m_hudTouchPointerId = -1;
 	ImVec2 m_hudTouchStart = ImVec2(0, 0);
 	float m_hudDragDist = 0.0f;
 

@@ -482,30 +482,35 @@ void InventoryUI::drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, co
 	float weightFontSz = UISettings::fontSize() * 0.48f;
 
 	ImVec2 hdrMax(panelMax.x, panelMin.y + headerH);
-	renderer->drawRect(panelMin, hdrMax, ImColor(10, 12, 16, 165), true, 10.0f);
-	renderer->drawLine(ImVec2(panelMin.x + 8.0f, hdrMax.y), ImVec2(panelMax.x - 8.0f, hdrMax.y), ImColor(255, 255, 255, 32), 1.0f);
+	renderer->drawRectFilledMulticolor(
+		panelMin, hdrMax,
+		ImColor(172, 22, 34, 200), ImColor(172, 22, 34, 200),
+		ImColor(72, 8, 16, 212), ImColor(72, 8, 16, 212));
+	renderer->drawLine(ImVec2(panelMin.x + 2.0f, hdrMax.y), ImVec2(panelMax.x - 2.0f, hdrMax.y), ImColor(255, 130, 138, 120), 1.0f);
 
 	// Bag icon on top-left
 	float iconSz = headerH * 0.44f;
 	float iconX = panelMin.x + padX;
 	float iconY = panelMin.y + (headerH - iconSz) * 0.5f + 1.0f;
-	renderer->drawRect(ImVec2(iconX, iconY + iconSz * 0.25f), ImVec2(iconX + iconSz, iconY + iconSz), ImColor(240, 244, 250, 240), true, 2.5f);
-	renderer->drawRect(ImVec2(iconX + iconSz * 0.25f, iconY), ImVec2(iconX + iconSz * 0.75f, iconY + iconSz * 0.35f), ImColor(240, 244, 250, 240), false, 2.0f, 1.6f);
+	renderer->drawRect(ImVec2(iconX, iconY + iconSz * 0.25f), ImVec2(iconX + iconSz, iconY + iconSz), ImColor(255, 255, 255, 245), true, 2.5f);
+	renderer->drawRect(ImVec2(iconX + iconSz * 0.25f, iconY), ImVec2(iconX + iconSz * 0.75f, iconY + iconSz * 0.35f), ImColor(255, 255, 255, 245), false, 2.0f, 1.6f);
 
 	// Title: กระเป๋าส่วนตัว
 	std::string titleStr = "กระเป๋าส่วนตัว";
 	ImVec2 titleSz = renderer->calculateTextSize(titleStr, titleFontSz);
 	float titleX = iconX + iconSz + 7.0f * u;
 	float titleY = panelMin.y + (headerH - titleSz.y) * 0.5f;
-	renderer->drawText(ImVec2(titleX, titleY), ImColor(245, 247, 250, 255), titleStr, false, titleFontSz);
+	renderer->drawText(ImVec2(titleX, titleY), ImColor(255, 255, 255, 255), titleStr, false, titleFontSz);
 
-	// Weight: [ 42.20 / 80.00 Kg. ]
-	char weightBuf[64];
-	snprintf(weightBuf, sizeof(weightBuf), "[ %.2f / %.2f Kg. ]", m_usedWeight, m_maxWeight);
-	ImVec2 weightSz = renderer->calculateTextSize(weightBuf, weightFontSz);
-	float weightX = titleX + titleSz.x + 9.0f * u;
-	float weightY = panelMin.y + (headerH - weightSz.y) * 0.5f;
-	renderer->drawText(ImVec2(weightX, weightY), ImColor(215, 220, 228, 225), weightBuf, false, weightFontSz);
+	// Slot count: [ 0 / 30 Slot ] or [ 0 / 90 Slot ]
+	int dispUsed = (int)m_items.size();
+	int dispMax = (m_maxSlots > 0) ? m_maxSlots : 30;
+	char slotBuf[64];
+	snprintf(slotBuf, sizeof(slotBuf), "[ %d / %d Slot ]", dispUsed, dispMax);
+	ImVec2 slotSz = renderer->calculateTextSize(slotBuf, weightFontSz);
+	float slotX = titleX + titleSz.x + 9.0f * u;
+	float slotY = panelMin.y + (headerH - slotSz.y) * 0.5f;
+	renderer->drawText(ImVec2(slotX, slotY), ImColor(255, 255, 255, 238), slotBuf, false, weightFontSz);
 
 	// Right side: [5 Category Icons] + [X Close]
 	float btnSize = headerH * 0.76f;
@@ -520,9 +525,9 @@ void InventoryUI::drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, co
 	m_closeBtnRect.max = ImVec2(closeVisMax.x + closePad, closeVisMax.y + closePad);
 	ImVec2 cCenter = (closeVisMin + closeVisMax) * 0.5f;
 	float xr = btnSize * 0.28f;
-	renderer->drawRect(closeVisMin, closeVisMax, ImColor(255, 255, 255, 18), true, 5.0f);
-	renderer->drawLine(ImVec2(cCenter.x - xr, cCenter.y - xr), ImVec2(cCenter.x + xr, cCenter.y + xr), ImColor(235, 238, 245, 245), 2.1f);
-	renderer->drawLine(ImVec2(cCenter.x + xr, cCenter.y - xr), ImVec2(cCenter.x - xr, cCenter.y + xr), ImColor(235, 238, 245, 245), 2.1f);
+	renderer->drawRect(closeVisMin, closeVisMax, ImColor(255, 255, 255, 26), true, 5.0f);
+	renderer->drawLine(ImVec2(cCenter.x - xr, cCenter.y - xr), ImVec2(cCenter.x + xr, cCenter.y + xr), ImColor(255, 255, 255, 250), 2.1f);
+	renderer->drawLine(ImVec2(cCenter.x + xr, cCenter.y - xr), ImVec2(cCenter.x - xr, cCenter.y + xr), ImColor(255, 255, 255, 250), 2.1f);
 	rightCursor = closeVisMin.x - gap * 1.8f;
 
 	// 5 Category Tabs (from right to left: 4..0)
@@ -532,13 +537,13 @@ void InventoryUI::drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, co
 
 		bool active = (m_activeCategory == t);
 		if (active) {
-			renderer->drawRect(m_tabRects[t].min, m_tabRects[t].max, ImColor(255, 255, 255, 28), true, 5.0f);
+			renderer->drawRect(m_tabRects[t].min, m_tabRects[t].max, ImColor(255, 255, 255, 38), true, 5.0f);
 			renderer->drawLine(
 				ImVec2(m_tabRects[t].min.x + 4.0f, m_tabRects[t].max.y),
 				ImVec2(m_tabRects[t].max.x - 4.0f, m_tabRects[t].max.y),
-				ImColor(245, 166, 35, 255), 2.0f);
+				ImColor(255, 255, 255, 240), 2.0f);
 		}
-		ImColor iconCol = active ? ImColor(255, 255, 255, 255) : ImColor(175, 182, 195, 200);
+		ImColor iconCol = active ? ImColor(255, 255, 255, 255) : ImColor(255, 220, 224, 185);
 		drawCategoryIcon(renderer, t, (m_tabRects[t].min + m_tabRects[t].max) * 0.5f, btnSize * 0.34f, iconCol);
 		rightCursor = m_tabRects[t].min.x - gap;
 	}
@@ -620,12 +625,12 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 
 		if (y1 < gridMin.y || y0 > gridMax.y) continue;
 
-		// Card body (semi-transparent dark glass, gold highlight when dropdown active)
+		// Card body (semi-transparent dark glass, red highlight when dropdown active)
 		bool isDropdownTarget = (m_dropdownOpen && m_dropdownSlot == item->slot);
 		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1),
-			isDropdownTarget ? ImColor(36, 38, 46, 200) : ImColor(24, 26, 32, 162), true, 5.0f);
+			isDropdownTarget ? ImColor(72, 12, 20, 205) : ImColor(24, 26, 32, 162), true, 5.0f);
 		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1),
-			isDropdownTarget ? ImColor(245, 166, 35, 235) : ImColor(255, 255, 255, 24),
+			isDropdownTarget ? ImColor(255, 115, 125, 240) : ImColor(255, 255, 255, 24),
 			false, 5.0f, isDropdownTarget ? 1.8f : 1.0f);
 
 		// Bottom dark footer strip for item name
@@ -634,7 +639,7 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 
 		// Top-left star badge (favorite or in hotbar)
 		if (item->favorite || isItemInHotbar(item->itemId)) {
-			drawStar(renderer, ImVec2(x0 + cardW * 0.13f, y0 + cardH * 0.13f), cardW * 0.075f, ImColor(245, 166, 35, 255));
+			drawStar(renderer, ImVec2(x0 + cardW * 0.13f, y0 + cardH * 0.13f), cardW * 0.075f, ImColor(235, 62, 76, 255));
 		}
 
 		// Top-right quantity badge
@@ -687,7 +692,7 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 		float thumbH = std::max(22.0f * u, trackH * thumbRatio);
 		float scrollFrac = (m_maxScrollY > 0.0f) ? (m_scrollY / m_maxScrollY) : 0.0f;
 		float thumbY = sbTop + (trackH - thumbH) * scrollFrac;
-		ImColor thumbCol = m_draggingScrollbar ? ImColor(245, 166, 35, 240) : ImColor(245, 166, 35, 175);
+		ImColor thumbCol = m_draggingScrollbar ? ImColor(235, 58, 72, 240) : ImColor(195, 36, 50, 195);
 		renderer->drawRect(ImVec2(sbX, thumbY), ImVec2(sbX + sbW, thumbY + thumbH), thumbCol, true, sbW * 0.5f);
 	}
 
@@ -934,7 +939,7 @@ bool InventoryUI::canShowHudHotbar() const
 void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 {
 	if (!canShowHudHotbar()) {
-		m_hudTouchDown = false;
+		m_hudTouchPointerId = -1;
 		return;
 	}
 
@@ -950,23 +955,32 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 		m_hotbarAnim = std::max(target, m_hotbarAnim - dt * 7.5f);
 	}
 
-	// 1. Far bottom-right arrow toggle button (+50% larger to match enlarged hotbar)
+	// 1. Far bottom-right arrow toggle button (keep exact comfortable size, red gradient style)
 	float arrowBtnSz = 33.0f * u;
 	float marginR = 10.0f * u;
 	float marginB = 8.0f * u;
 	m_hudArrowRect.max = ImVec2(disp.x - marginR, disp.y - marginB);
 	m_hudArrowRect.min = ImVec2(m_hudArrowRect.max.x - arrowBtnSz, m_hudArrowRect.max.y - arrowBtnSz);
 
-	ImColor arrowBg = m_hudHotbarOpen ? ImColor(24, 28, 36, 175) : ImColor(14, 16, 20, 150);
-	ImColor arrowBorder = m_hudHotbarOpen ? ImColor(245, 166, 35, 165) : ImColor(255, 255, 255, 48);
-	renderer->drawRect(m_hudArrowRect.min, m_hudArrowRect.max, arrowBg, true, 6.0f * u);
-	renderer->drawRect(m_hudArrowRect.min, m_hudArrowRect.max, arrowBorder, false, 6.0f * u, 1.1f);
+	if (m_hudHotbarOpen) {
+		renderer->drawRectFilledMulticolor(
+			m_hudArrowRect.min, m_hudArrowRect.max,
+			ImColor(172, 22, 34, 200), ImColor(172, 22, 34, 200),
+			ImColor(64, 6, 14, 215), ImColor(64, 6, 14, 215));
+	} else {
+		renderer->drawRectFilledMulticolor(
+			m_hudArrowRect.min, m_hudArrowRect.max,
+			ImColor(120, 14, 24, 170), ImColor(120, 14, 24, 170),
+			ImColor(46, 5, 10, 185), ImColor(46, 5, 10, 185));
+	}
+	ImColor arrowBorder = m_hudHotbarOpen ? ImColor(255, 130, 138, 175) : ImColor(255, 130, 138, 105);
+	renderer->drawRect(m_hudArrowRect.min, m_hudArrowRect.max, arrowBorder, false, 0.0f, 1.2f);
 
 	ImVec2 ac = (m_hudArrowRect.min + m_hudArrowRect.max) * 0.5f;
 	float aw = arrowBtnSz * 0.27f;
 	float ah = arrowBtnSz * 0.16f;
-	ImColor chevronCol = m_hudHotbarOpen ? ImColor(245, 166, 35, 245) : ImColor(245, 247, 250, 235);
-	float stroke = std::max(2.0f, 1.4f * u);
+	ImColor chevronCol(255, 255, 255, 245);
+	float stroke = std::max(2.0f, 1.5f * u);
 	if (!m_hudHotbarOpen) {
 		// Up arrow chevron (^) -> press to slide hotbar up
 		renderer->drawLine(ImVec2(ac.x - aw, ac.y + ah), ImVec2(ac.x, ac.y - ah), chevronCol, stroke);
@@ -977,21 +991,21 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 		renderer->drawLine(ImVec2(ac.x, ac.y + ah), ImVec2(ac.x + aw, ac.y - ah), chevronCol, stroke);
 	}
 
-	// 2. Slide-up external Hotbar 1-7 dock (centered bottom, always left of the far-right arrow)
+	// 2. Slide-up floating Hotbar 1-7 boxes (no outer dock wrapper, red gradient matching dropdown)
 	if (m_hotbarAnim <= 0.01f) {
 		m_hudHotbarDockRect = HitRect{};
+		for (int i = 0; i < 7; i++) m_hudHotbarSlotRects[i] = HitRect{};
 		return;
 	}
 
 	float ease = 1.0f - (1.0f - m_hotbarAnim) * (1.0f - m_hotbarAnim);
-	float slotSize = 37.5f * u;
-	float gap = 6.0f * u;
-	float dockPad = 6.5f * u;
-	float dockW = 7.0f * slotSize + 6.0f * gap + dockPad * 2.0f;
-	float dockH = slotSize + dockPad * 2.0f;
+	float slotSize = 44.0f * u;
+	float gap = 6.5f * u;
+	float dockW = 7.0f * slotSize + 6.0f * gap;
+	float dockH = slotSize;
 
 	float dockX = (disp.x - dockW) * 0.5f;
-	float maxAllowedX = m_hudArrowRect.min.x - dockW - 8.0f * u;
+	float maxAllowedX = m_hudArrowRect.min.x - dockW - 10.0f * u;
 	if (dockX > maxAllowedX) dockX = std::max(8.0f * u, maxAllowedX);
 
 	float hiddenY = disp.y + 4.0f * u;
@@ -1002,13 +1016,11 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 	m_hudHotbarDockRect.max = ImVec2(dockX + dockW, dockY + dockH);
 
 	renderer->pushClipRect(ImVec2(0.0f, 0.0f), disp, true);
-	renderer->drawRect(m_hudHotbarDockRect.min, m_hudHotbarDockRect.max, ImColor(12, 14, 18, 165), true, 8.0f * u);
-	renderer->drawRect(m_hudHotbarDockRect.min, m_hudHotbarDockRect.max, ImColor(255, 255, 255, 36), false, 8.0f * u, 1.0f);
 
-	float startX = dockX + dockPad;
-	float slotY = dockY + dockPad;
-	float numFontSz = std::max(12.0f, slotSize * 0.25f);
-	float qtyFontSz = std::max(12.0f, slotSize * 0.24f);
+	float startX = dockX;
+	float slotY = dockY;
+	float numFontSz = std::max(13.0f, slotSize * 0.25f);
+	float qtyFontSz = std::max(13.0f, slotSize * 0.24f);
 
 	for (int i = 0; i < 7; i++) {
 		float sx0 = startX + i * (slotSize + gap);
@@ -1018,14 +1030,23 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 		const InvHotbarSlot& hb = m_hotbar[i];
 		bool hasItem = (hb.itemId > 0);
 
+		if (hasItem) {
+			renderer->drawRectFilledMulticolor(
+				m_hudHotbarSlotRects[i].min, m_hudHotbarSlotRects[i].max,
+				ImColor(172, 22, 34, 200), ImColor(172, 22, 34, 200),
+				ImColor(64, 6, 14, 215), ImColor(64, 6, 14, 215));
+		} else {
+			renderer->drawRectFilledMulticolor(
+				m_hudHotbarSlotRects[i].min, m_hudHotbarSlotRects[i].max,
+				ImColor(115, 14, 24, 155), ImColor(115, 14, 24, 155),
+				ImColor(45, 5, 10, 175), ImColor(45, 5, 10, 175));
+		}
 		renderer->drawRect(m_hudHotbarSlotRects[i].min, m_hudHotbarSlotRects[i].max,
-			ImColor(24, 26, 32, hasItem ? 180 : 145), true, 5.0f);
-		renderer->drawRect(m_hudHotbarSlotRects[i].min, m_hudHotbarSlotRects[i].max,
-			hasItem ? ImColor(245, 166, 35, 95) : ImColor(255, 255, 255, 24), false, 5.0f, 1.0f);
+			hasItem ? ImColor(255, 130, 138, 175) : ImColor(255, 255, 255, 58), false, 0.0f, 1.1f);
 
 		char numBuf[4];
 		snprintf(numBuf, sizeof(numBuf), "%d", i + 1);
-		renderer->drawText(ImVec2(sx0 + 2.5f * u, slotY + 1.5f * u), ImColor(245, 166, 35, 235), numBuf, false, numFontSz);
+		renderer->drawText(ImVec2(sx0 + 3.0f * u, slotY + 2.0f * u), ImColor(255, 255, 255, 245), numBuf, false, numFontSz);
 
 		if (hasItem) {
 			if (hb.texture && hb.texture->raster) {
@@ -1041,27 +1062,37 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 			snprintf(cntBuf, sizeof(cntBuf), "x%d", hb.amount);
 			ImVec2 csz = renderer->calculateTextSize(cntBuf, qtyFontSz);
 			renderer->drawText(
-				ImVec2(sx0 + slotSize - csz.x - 2.0f * u, slotY + slotSize - csz.y - 1.0f * u),
-				ImColor(240, 244, 250, 240), cntBuf, false, qtyFontSz);
+				ImVec2(sx0 + slotSize - csz.x - 3.0f * u, slotY + slotSize - csz.y - 2.0f * u),
+				ImColor(255, 255, 255, 245), cntBuf, false, qtyFontSz);
 		}
 	}
 	renderer->popClipRect();
 }
 
-bool InventoryUI::handleHudTouch(const ImVec2& pos, TouchType type)
+bool InventoryUI::handleHudTouch(const ImVec2& pos, TouchType type, int pointerId)
 {
 	if (!canShowHudHotbar()) {
-		m_hudTouchDown = false;
+		m_hudTouchPointerId = -1;
 		return false;
 	}
 
 	float u = UISettings::scaleFactor().y;
 
 	if (type == TouchType::push) {
+		if (m_hudTouchPointerId != -1) return false;
+
 		bool hitArrow = m_hudArrowRect.contains(pos);
-		bool hitDock = (m_hudHotbarOpen && m_hotbarAnim > 0.25f && m_hudHotbarDockRect.contains(pos));
-		if (hitArrow || hitDock) {
-			m_hudTouchDown = true;
+		bool hitSlot = false;
+		if (m_hudHotbarOpen && m_hotbarAnim > 0.25f) {
+			for (int h = 0; h < 7; h++) {
+				if (m_hudHotbarSlotRects[h].contains(pos)) {
+					hitSlot = true;
+					break;
+				}
+			}
+		}
+		if (hitArrow || hitSlot) {
+			m_hudTouchPointerId = pointerId;
 			m_hudTouchStart = pos;
 			m_hudDragDist = 0.0f;
 			return true;
@@ -1069,7 +1100,7 @@ bool InventoryUI::handleHudTouch(const ImVec2& pos, TouchType type)
 		return false;
 	}
 
-	if (!m_hudTouchDown) return false;
+	if (m_hudTouchPointerId != pointerId) return false;
 
 	if (type == TouchType::move) {
 		float dx = pos.x - m_hudTouchStart.x;
@@ -1079,8 +1110,8 @@ bool InventoryUI::handleHudTouch(const ImVec2& pos, TouchType type)
 	}
 
 	if (type == TouchType::pop) {
-		m_hudTouchDown = false;
-		if (m_hudDragDist > 16.0f * u) {
+		m_hudTouchPointerId = -1;
+		if (m_hudDragDist > 18.0f * u) {
 			return true;
 		}
 
