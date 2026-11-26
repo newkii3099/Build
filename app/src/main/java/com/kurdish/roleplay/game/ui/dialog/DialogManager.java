@@ -80,6 +80,7 @@ public class DialogManager {
     public boolean isShow;
 
     public native void sendDialogResponse(int i, int i2, int i3, byte[] bArr);
+    public static native void setJavaDialogVisible(boolean visible);
 
     public DialogManager(Activity activity) {
         this.activity = activity;
@@ -141,6 +142,7 @@ public class DialogManager {
             return;
         }
         isShow = true;
+        setJavaDialogVisible(true);
         this.mCurrentDialogId = i;
         this.mDialogStyle = i2;
         this.mCaption = str;
@@ -160,10 +162,12 @@ public class DialogManager {
     }
 
     public void hideWithoutReset() {
+        setJavaDialogVisible(false);
         this.mMainLayout.setVisibility(View.GONE);
     }
 
     public void showWithOldContent() {
+        setJavaDialogVisible(isShow);
         this.mMainLayout.setVisibility(View.VISIBLE);
     }
 
@@ -174,6 +178,7 @@ public class DialogManager {
         }
 
         isShow = false;
+        setJavaDialogVisible(false);
         Util.HideLayout(this.mMainLayout, true);
     }
 

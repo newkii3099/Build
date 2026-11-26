@@ -10,8 +10,11 @@
 #include "gta-reversed/game_sa/Camera.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <cstdio>
+
+extern std::atomic<bool> g_bJavaDialogVisible;
 
 extern CNetGame* pNetGame;
 extern CGame* pGame;
@@ -71,6 +74,7 @@ int InventoryUI::GetEffectiveUIVersion() const
 
 void InventoryUI::BeginSync(float usedWeight, float maxWeight, int usedSlots, int maxSlots)
 {
+	m_syncInProgress = true;
 	m_pendingItems.clear();
 	m_usedWeight = usedWeight;
 	m_maxWeight = (maxWeight > 0.0f) ? maxWeight : 80.0f;
@@ -115,6 +119,13 @@ void InventoryUI::AddSyncSlot(int slot, int itemId, int modelId, int amount, int
 		}
 	}
 
+	// Deduplicate by server slot to keep ordering stable if packets repeat
+	for (auto& existing : m_pendingItems) {
+		if (existing.slot == slot) {
+			existing = std::move(item);
+			return;
+		}
+	}
 	m_pendingItems.push_back(std::move(item));
 }
 
@@ -152,18 +163,34 @@ void InventoryUI::SetSyncHotbar(int hslot, int itemId, int modelId, int amount, 
 	}
 
 	m_pendingHotbar[hslot] = slotData;
-	m_hotbar[hslot] = std::move(slotData);
+	if (!m_syncInProgress) {
+		m_hotbar[hslot] = std::move(slotData);
+	}
 }
 
 void InventoryUI::FinishSyncAndShow()
 {
 	if (!IsMode20()) return;
 
+	m_syncInProgress = false;
+	std::sort(m_pendingItems.begin(), m_pendingItems.end(),
+		[](const InvSlotItem& a, const InvSlotItem& b) {
+			return a.slot < b.slot;
+		});
+
 	m_items = std::move(m_pendingItems);
 	for (int i = 0; i < 7; i++) {
 		m_hotbar[i] = m_pendingHotbar[i];
 	}
-	Show();
+
+	if (m_dropdownOpen && !findItemBySlot(m_dropdownSlot)) {
+		closeDropdown();
+	}
+
+	// Only call Show() if not already visible; avoids flicker & scroll reset on server resyncs
+	if (!visible()) {
+		Show();
+	}
 }
 
 void InventoryUI::CloseFromServer()
@@ -175,6 +202,7 @@ void InventoryUI::Show()
 {
 	if (!IsMode20()) return;
 	m_scrollVel = 0.0f;
+	closeDropdown();
 	performLayout();
 	setVisible(true);
 	if (pGame) {
@@ -189,9 +217,12 @@ void InventoryUI::Hide(bool notifyServer)
 {
 	bool wasVisible = visible();
 	setVisible(false);
+	closeDropdown();
 	m_touchDown = false;
 	m_draggingGrid = false;
 	m_draggingScrollbar = false;
+	m_hasDragged = false;
+	m_touchStartedInDropdown = false;
 	m_scrollVel = 0.0f;
 
 	if (wasVisible && pGame) {
@@ -481,14 +512,18 @@ void InventoryUI::drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, co
 	float gap = 5.0f * u;
 	float rightCursor = panelMax.x - padX;
 
-	// Close button X
-	m_closeBtnRect.min = ImVec2(rightCursor - btnSize, panelMin.y + (headerH - btnSize) * 0.5f);
-	m_closeBtnRect.max = ImVec2(rightCursor, m_closeBtnRect.min.y + btnSize);
-	ImVec2 cCenter = (m_closeBtnRect.min + m_closeBtnRect.max) * 0.5f;
+	// Close button X (expanded hit target for reliable thumb taps)
+	ImVec2 closeVisMin(rightCursor - btnSize, panelMin.y + (headerH - btnSize) * 0.5f);
+	ImVec2 closeVisMax(rightCursor, closeVisMin.y + btnSize);
+	float closePad = 5.0f * u;
+	m_closeBtnRect.min = ImVec2(closeVisMin.x - closePad, closeVisMin.y - closePad);
+	m_closeBtnRect.max = ImVec2(closeVisMax.x + closePad, closeVisMax.y + closePad);
+	ImVec2 cCenter = (closeVisMin + closeVisMax) * 0.5f;
 	float xr = btnSize * 0.28f;
-	renderer->drawLine(ImVec2(cCenter.x - xr, cCenter.y - xr), ImVec2(cCenter.x + xr, cCenter.y + xr), ImColor(225, 230, 238, 240), 2.0f);
-	renderer->drawLine(ImVec2(cCenter.x + xr, cCenter.y - xr), ImVec2(cCenter.x - xr, cCenter.y + xr), ImColor(225, 230, 238, 240), 2.0f);
-	rightCursor = m_closeBtnRect.min.x - gap * 1.5f;
+	renderer->drawRect(closeVisMin, closeVisMax, ImColor(255, 255, 255, 18), true, 5.0f);
+	renderer->drawLine(ImVec2(cCenter.x - xr, cCenter.y - xr), ImVec2(cCenter.x + xr, cCenter.y + xr), ImColor(235, 238, 245, 245), 2.1f);
+	renderer->drawLine(ImVec2(cCenter.x + xr, cCenter.y - xr), ImVec2(cCenter.x - xr, cCenter.y + xr), ImColor(235, 238, 245, 245), 2.1f);
+	rightCursor = closeVisMin.x - gap * 1.8f;
 
 	// 5 Category Tabs (from right to left: 4..0)
 	for (int t = 4; t >= 0; t--) {
@@ -515,16 +550,16 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 	std::vector<const InvSlotItem*> items = getFilteredItems();
 
 	float u = UISettings::scaleFactor().y;
-	float pad = 7.0f * u;
-	float gap = 4.5f * u;
-	float scrollReserve = 10.0f * u;
+	float pad = 8.0f * u;
+	float gap = 5.5f * u;
+	float scrollReserve = 12.0f * u;
 	float availW = (gridMax.x - gridMin.x) - pad - scrollReserve;
 
-	// 10 columns -> smaller, sharper cards leaving roomy vertical layout
-	const int cols = 10;
+	// 6 columns -> comfortable card sizes & real scrollable height for 30+ items
+	const int cols = 6;
 	float cardW = (availW - gap * (cols - 1)) / (float)cols;
-	float cardH = cardW * 1.00f;
-	float footerH = cardH * 0.27f;
+	float cardH = cardW * 0.94f;
+	float footerH = cardH * 0.26f;
 
 	int totalItems = (int)items.size();
 	int rows = (totalItems + cols - 1) / cols;
@@ -585,9 +620,13 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 
 		if (y1 < gridMin.y || y0 > gridMax.y) continue;
 
-		// Card body (semi-transparent dark glass)
-		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1), ImColor(24, 26, 32, 162), true, 5.0f);
-		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1), ImColor(255, 255, 255, 24), false, 5.0f, 1.0f);
+		// Card body (semi-transparent dark glass, gold highlight when dropdown active)
+		bool isDropdownTarget = (m_dropdownOpen && m_dropdownSlot == item->slot);
+		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1),
+			isDropdownTarget ? ImColor(36, 38, 46, 200) : ImColor(24, 26, 32, 162), true, 5.0f);
+		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1),
+			isDropdownTarget ? ImColor(245, 166, 35, 235) : ImColor(255, 255, 255, 24),
+			false, 5.0f, isDropdownTarget ? 1.8f : 1.0f);
 
 		// Bottom dark footer strip for item name
 		float footY = y1 - footerH;
@@ -655,6 +694,199 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 	renderer->popClipRect();
 }
 
+void InventoryUI::closeDropdown()
+{
+	m_dropdownOpen = false;
+	m_dropdownHotbarExpanded = false;
+	m_dropdownSlot = -1;
+	m_dropdownRect = HitRect{};
+	for (int i = 0; i < 4; i++) m_dropActionRects[i] = HitRect{};
+	for (int i = 0; i < 8; i++) m_dropHotbarRects[i] = HitRect{};
+}
+
+const InvSlotItem* InventoryUI::findItemBySlot(int slot) const
+{
+	if (slot < 0) return nullptr;
+	for (const auto& item : m_items) {
+		if (item.slot == slot) return &item;
+	}
+	return nullptr;
+}
+
+int InventoryUI::findHotbarIndexForItem(int itemId) const
+{
+	if (itemId <= 0) return -1;
+	for (int i = 0; i < 7; i++) {
+		if (m_hotbar[i].itemId == itemId) return i;
+	}
+	return -1;
+}
+
+void InventoryUI::assignHotbarLocal(int hotbarIdx, const InvSlotItem* item)
+{
+	if (hotbarIdx < 0 || hotbarIdx >= 7 || !item || item->itemId <= 0) return;
+	clearHotbarForItemLocal(item->itemId);
+
+	InvHotbarSlot hb;
+	hb.hotbarIdx = hotbarIdx;
+	hb.itemId = item->itemId;
+	hb.modelId = item->modelId;
+	hb.amount = item->amount;
+	hb.nameUtf8 = item->nameUtf8;
+	hb.texture = item->texture;
+	hb.isSnapshot = item->isSnapshot;
+	m_hotbar[hotbarIdx] = std::move(hb);
+}
+
+void InventoryUI::clearHotbarForItemLocal(int itemId)
+{
+	if (itemId <= 0) return;
+	for (int i = 0; i < 7; i++) {
+		if (m_hotbar[i].itemId == itemId) {
+			m_hotbar[i] = InvHotbarSlot();
+			m_hotbar[i].hotbarIdx = i;
+		}
+	}
+}
+
+void InventoryUI::drawDropdown(ImGuiRenderer* renderer)
+{
+	if (!m_dropdownOpen || m_dropdownSlot < 0) return;
+
+	const InvSlotItem* item = findItemBySlot(m_dropdownSlot);
+	if (!item) {
+		closeDropdown();
+		return;
+	}
+
+	float u = UISettings::scaleFactor().y;
+	float dropW = 132.0f * u;
+	float pad = 5.5f * u;
+	float hdrH = 20.0f * u;
+	float rowH = 21.5f * u;
+	float gap = 3.0f * u;
+	int boundHb = findHotbarIndexForItem(item->itemId);
+
+	float hbSectionH = 0.0f;
+	float hbNumH = 19.5f * u;
+	float clearBtnH = 18.5f * u;
+	if (m_dropdownHotbarExpanded) {
+		hbSectionH = hbNumH + gap;
+		if (boundHb >= 0) {
+			hbSectionH += clearBtnH + gap;
+		}
+	}
+
+	float dropH = pad * 2.0f + hdrH + gap + 4.0f * rowH + 3.0f * gap + hbSectionH;
+
+	// Smart anchor beside tapped item card (prefer right, flip left if near right edge)
+	float x = m_dropdownAnchorRect.max.x + 5.0f * u;
+	if (x + dropW > m_panelMax.x - 6.0f * u) {
+		x = m_dropdownAnchorRect.min.x - dropW - 5.0f * u;
+	}
+	x = std::clamp(x, m_panelMin.x + 6.0f * u, m_panelMax.x - dropW - 6.0f * u);
+
+	float y = m_dropdownAnchorRect.min.y;
+	y = std::clamp(y, m_gridMin.y + 4.0f * u, std::max(m_gridMin.y + 4.0f * u, m_panelMax.y - dropH - 4.0f * u));
+
+	m_dropdownRect.min = ImVec2(x, y);
+	m_dropdownRect.max = ImVec2(x + dropW, y + dropH);
+
+	// Soft drop shadow + dark glass container matching bag theme
+	renderer->drawRect(ImVec2(x + 2.0f * u, y + 3.0f * u), ImVec2(x + dropW + 2.0f * u, y + dropH + 3.0f * u),
+		ImColor(0, 0, 0, 115), true, 8.0f * u);
+	renderer->drawRect(m_dropdownRect.min, m_dropdownRect.max, ImColor(16, 19, 26, 244), true, 7.0f * u);
+	renderer->drawRect(m_dropdownRect.min, m_dropdownRect.max, ImColor(245, 166, 35, 175), false, 7.0f * u, 1.3f);
+
+	float cx0 = x + pad;
+	float cx1 = x + dropW - pad;
+	float curY = y + pad;
+
+	// Header: Item name + xAmount
+	float hdrFontSz = std::max(11.0f, hdrH * 0.62f);
+	char hdrBuf[96];
+	snprintf(hdrBuf, sizeof(hdrBuf), "%s (x%d)", item->nameUtf8.c_str(), item->amount);
+	renderer->pushClipRect(ImVec2(cx0, curY), ImVec2(cx1, curY + hdrH), true);
+	ImVec2 hsz = renderer->calculateTextSize(hdrBuf, hdrFontSz);
+	renderer->drawText(ImVec2(cx0 + 2.0f * u, curY + (hdrH - hsz.y) * 0.5f),
+		ImColor(245, 196, 81, 255), hdrBuf, false, hdrFontSz);
+	renderer->popClipRect();
+	curY += hdrH;
+	renderer->drawLine(ImVec2(cx0, curY), ImVec2(cx1, curY), ImColor(255, 255, 255, 34), 1.0f);
+	curY += gap;
+
+	float btnFontSz = std::max(11.0f, rowH * 0.54f);
+	auto drawActionRow = [&](int idx, const char* label, const ImColor& bg, const ImColor& border, const ImColor& textCol) {
+		m_dropActionRects[idx].min = ImVec2(cx0, curY);
+		m_dropActionRects[idx].max = ImVec2(cx1, curY + rowH);
+		renderer->drawRect(m_dropActionRects[idx].min, m_dropActionRects[idx].max, bg, true, 5.0f * u);
+		renderer->drawRect(m_dropActionRects[idx].min, m_dropActionRects[idx].max, border, false, 5.0f * u, 1.0f);
+		ImVec2 tsz = renderer->calculateTextSize(label, btnFontSz);
+		renderer->drawText(
+			ImVec2(cx0 + (cx1 - cx0 - tsz.x) * 0.5f, curY + (rowH - tsz.y) * 0.5f),
+			textCol, label, false, btnFontSz);
+		curY += rowH + gap;
+	};
+
+	// Action 0: Use
+	drawActionRow(0, "ใช้งาน", ImColor(34, 92, 58, 215), ImColor(74, 222, 128, 165), ImColor(240, 253, 244, 255));
+
+	// Action 1: Hotbar toggle
+	char hbLabel[64];
+	if (boundHb >= 0) {
+		snprintf(hbLabel, sizeof(hbLabel), "ใส่คีย์ลัด [ช่อง %d] %s", boundHb + 1, m_dropdownHotbarExpanded ? "▾" : "▸");
+	} else {
+		snprintf(hbLabel, sizeof(hbLabel), "ใส่คีย์ลัด (1-7) %s", m_dropdownHotbarExpanded ? "▾" : "▸");
+	}
+	drawActionRow(1, hbLabel,
+		m_dropdownHotbarExpanded ? ImColor(36, 56, 86, 230) : ImColor(28, 34, 46, 215),
+		ImColor(96, 165, 250, 155), ImColor(224, 242, 254, 255));
+
+	// Optional inline 1..7 hotbar strip
+	for (int i = 0; i < 8; i++) m_dropHotbarRects[i] = HitRect{};
+	if (m_dropdownHotbarExpanded) {
+		float hbGap = 2.5f * u;
+		float hbW = ((cx1 - cx0) - hbGap * 6.0f) / 7.0f;
+		float hbFontSz = std::max(10.0f, hbNumH * 0.56f);
+		for (int h = 0; h < 7; h++) {
+			float hx0 = cx0 + h * (hbW + hbGap);
+			m_dropHotbarRects[h].min = ImVec2(hx0, curY);
+			m_dropHotbarRects[h].max = ImVec2(hx0 + hbW, curY + hbNumH);
+			bool isBound = (boundHb == h);
+			bool hasOther = (!isBound && m_hotbar[h].itemId > 0);
+			ImColor hBg = isBound ? ImColor(245, 166, 35, 210) : (hasOther ? ImColor(38, 42, 54, 215) : ImColor(24, 28, 36, 220));
+			ImColor hBd = isBound ? ImColor(253, 224, 71, 240) : ImColor(255, 255, 255, 48);
+			ImColor hTx = isBound ? ImColor(18, 18, 22, 255) : ImColor(245, 247, 250, 245);
+			renderer->drawRect(m_dropHotbarRects[h].min, m_dropHotbarRects[h].max, hBg, true, 4.0f * u);
+			renderer->drawRect(m_dropHotbarRects[h].min, m_dropHotbarRects[h].max, hBd, false, 4.0f * u, 1.0f);
+			char nbuf[4];
+			snprintf(nbuf, sizeof(nbuf), "%d", h + 1);
+			ImVec2 nsz = renderer->calculateTextSize(nbuf, hbFontSz);
+			renderer->drawText(ImVec2(hx0 + (hbW - nsz.x) * 0.5f, curY + (hbNumH - nsz.y) * 0.5f), hTx, nbuf, false, hbFontSz);
+		}
+		curY += hbNumH + gap;
+
+		if (boundHb >= 0) {
+			m_dropHotbarRects[7].min = ImVec2(cx0, curY);
+			m_dropHotbarRects[7].max = ImVec2(cx1, curY + clearBtnH);
+			renderer->drawRect(m_dropHotbarRects[7].min, m_dropHotbarRects[7].max, ImColor(82, 34, 38, 215), true, 4.0f * u);
+			renderer->drawRect(m_dropHotbarRects[7].min, m_dropHotbarRects[7].max, ImColor(248, 113, 113, 150), false, 4.0f * u, 1.0f);
+			float clrFontSz = std::max(10.0f, clearBtnH * 0.56f);
+			const char* clrTxt = "ถอดออกจากคีย์ลัด";
+			ImVec2 csz = renderer->calculateTextSize(clrTxt, clrFontSz);
+			renderer->drawText(ImVec2(cx0 + (cx1 - cx0 - csz.x) * 0.5f, curY + (clearBtnH - csz.y) * 0.5f),
+				ImColor(254, 226, 226, 255), clrTxt, false, clrFontSz);
+			curY += clearBtnH + gap;
+		}
+	}
+
+	// Action 2: Drop all
+	drawActionRow(2, "ทิ้งทั้งหมด", ImColor(88, 36, 36, 210), ImColor(248, 113, 113, 150), ImColor(254, 226, 226, 255));
+
+	// Action 3: More server dialog options (Give / Sell / Amount / Details)
+	drawActionRow(3, "เพิ่มเติม (มอบ/ขาย/ดู)", ImColor(30, 34, 44, 220), ImColor(255, 255, 255, 55), ImColor(232, 236, 245, 245));
+}
+
 void InventoryUI::draw(ImGuiRenderer* renderer)
 {
 	if (!visible() || !IsMode20()) return;
@@ -676,11 +908,15 @@ void InventoryUI::draw(ImGuiRenderer* renderer)
 	m_gridMin = ImVec2(m_panelMin.x + 2.0f, m_panelMin.y + headerH + 2.0f);
 	m_gridMax = ImVec2(m_panelMax.x - 2.0f, m_panelMax.y - 3.0f * u);
 	drawGrid(renderer, m_gridMin, m_gridMax);
+
+	// 4. Floating item action dropdown (drawn above grid)
+	drawDropdown(renderer);
 }
 
 bool InventoryUI::canShowHudHotbar() const
 {
 	if (!IsMode20() || visible()) return false;
+	if (g_bJavaDialogVisible.load()) return false;
 	if (!pNetGame || pNetGame->GetGameState() != GAMESTATE_CONNECTED) return false;
 	if (!pUI) return false;
 	if (pUI->splashscreen() && pUI->splashscreen()->visible()) return false;
@@ -878,16 +1114,24 @@ void InventoryUI::touchEvent(const ImVec2& pos, TouchType type)
 		m_touchStartPos = pos;
 		m_lastTouchPos = pos;
 		m_totalDragDist = 0.0f;
+		m_hasDragged = false;
 		m_scrollVel = 0.0f;
-		m_draggingScrollbar = (m_maxScrollY > 0.5f && m_scrollbarRect.contains(pos));
-		if (m_draggingScrollbar) {
-			float sbH = std::max(1.0f, m_scrollbarRect.max.y - m_scrollbarRect.min.y);
-			float frac = std::clamp((pos.y - m_scrollbarRect.min.y) / sbH, 0.0f, 1.0f);
-			m_scrollY = frac * m_maxScrollY;
+		m_touchStartedInDropdown = (m_dropdownOpen && m_dropdownRect.contains(pos));
+
+		if (m_touchStartedInDropdown) {
+			m_draggingScrollbar = false;
 			m_draggingGrid = false;
 		} else {
-			m_draggingGrid = (pos.x >= m_panelMin.x && pos.x <= m_panelMax.x &&
-				pos.y >= m_gridMin.y && pos.y <= m_panelMax.y);
+			m_draggingScrollbar = (m_maxScrollY > 0.5f && m_scrollbarRect.contains(pos));
+			if (m_draggingScrollbar) {
+				float sbH = std::max(1.0f, m_scrollbarRect.max.y - m_scrollbarRect.min.y);
+				float frac = std::clamp((pos.y - m_scrollbarRect.min.y) / sbH, 0.0f, 1.0f);
+				m_scrollY = frac * m_maxScrollY;
+				m_draggingGrid = false;
+			} else {
+				m_draggingGrid = (pos.x >= m_panelMin.x && pos.x <= m_panelMax.x &&
+					pos.y >= m_gridMin.y && pos.y <= m_panelMax.y);
+			}
 		}
 		return;
 	}
@@ -898,11 +1142,23 @@ void InventoryUI::touchEvent(const ImVec2& pos, TouchType type)
 		float dy = pos.y - m_lastTouchPos.y;
 		m_totalDragDist += std::sqrt(dx * dx + dy * dy);
 
+		float netDx = pos.x - m_touchStartPos.x;
+		float netDy = pos.y - m_touchStartPos.y;
+		float netDist = std::sqrt(netDx * netDx + netDy * netDy);
+
+		// Latch scroll mode once finger moves past deadzone so release never triggers an item tap
+		if (!m_hasDragged && (m_totalDragDist >= 10.0f * u || netDist >= 10.0f * u)) {
+			m_hasDragged = true;
+			if (!m_touchStartedInDropdown && m_dropdownOpen) {
+				closeDropdown();
+			}
+		}
+
 		if (m_draggingScrollbar && m_maxScrollY > 0.5f) {
 			float sbH = std::max(1.0f, m_scrollbarRect.max.y - m_scrollbarRect.min.y);
 			float frac = std::clamp((pos.y - m_scrollbarRect.min.y) / sbH, 0.0f, 1.0f);
 			m_scrollY = frac * m_maxScrollY;
-		} else if (m_draggingGrid) {
+		} else if (m_draggingGrid && m_hasDragged) {
 			m_scrollY -= dy;
 			if (m_scrollY < 0.0f) m_scrollY = 0.0f;
 			if (m_scrollY > m_maxScrollY) m_scrollY = m_maxScrollY;
@@ -917,18 +1173,96 @@ void InventoryUI::touchEvent(const ImVec2& pos, TouchType type)
 	if (type == TouchType::pop) {
 		if (!m_touchDown) return;
 		m_touchDown = false;
-		bool wasTap = !m_draggingScrollbar && (m_totalDragDist < 12.0f * u);
+		bool wasTap = !m_draggingScrollbar && !m_hasDragged && (m_totalDragDist < 14.0f * u);
+		bool startedInDropdown = m_touchStartedInDropdown;
 		m_draggingGrid = false;
 		m_draggingScrollbar = false;
+		m_hasDragged = false;
+		m_touchStartedInDropdown = false;
 		if (!wasTap) return;
 
-		// 1. Tap outside panel closes inventory
-		if (pos.x < m_panelMin.x || pos.x > m_panelMax.x || pos.y < m_panelMin.y || pos.y > m_panelMax.y) {
-			Hide(true);
+		// 1. Handle open dropdown taps first
+		if (m_dropdownOpen) {
+			if (startedInDropdown && m_dropdownRect.contains(pos)) {
+				const InvSlotItem* item = findItemBySlot(m_dropdownSlot);
+				if (!item) {
+					closeDropdown();
+					return;
+				}
+
+				if (m_dropActionRects[0].contains(pos)) {
+					// Use item directly
+					int slot = item->slot;
+					closeDropdown();
+					if (pNetGame) {
+						char cmd[32];
+						snprintf(cmd, sizeof(cmd), "/inv use %d", slot);
+						pNetGame->SendChatCommand(cmd);
+					}
+					return;
+				}
+				if (m_dropActionRects[1].contains(pos)) {
+					// Toggle inline hotbar 1-7 picker
+					m_dropdownHotbarExpanded = !m_dropdownHotbarExpanded;
+					return;
+				}
+				if (m_dropdownHotbarExpanded) {
+					for (int h = 0; h < 7; h++) {
+						if (m_dropHotbarRects[h].contains(pos)) {
+							int slot = item->slot;
+							assignHotbarLocal(h, item);
+							closeDropdown();
+							if (pNetGame) {
+								char cmd[36];
+								snprintf(cmd, sizeof(cmd), "/hotbar set %d %d", slot, h + 1);
+								pNetGame->SendChatCommand(cmd);
+							}
+							return;
+						}
+					}
+					if (m_dropHotbarRects[7].contains(pos)) {
+						int boundHb = findHotbarIndexForItem(item->itemId);
+						clearHotbarForItemLocal(item->itemId);
+						closeDropdown();
+						if (boundHb >= 0 && pNetGame) {
+							char cmd[32];
+							snprintf(cmd, sizeof(cmd), "/hotbar clear %d", boundHb + 1);
+							pNetGame->SendChatCommand(cmd);
+						}
+						return;
+					}
+				}
+				if (m_dropActionRects[2].contains(pos)) {
+					// Drop entire stack
+					int slot = item->slot;
+					closeDropdown();
+					if (pNetGame) {
+						char cmd[32];
+						snprintf(cmd, sizeof(cmd), "/inv drop %d", slot);
+						pNetGame->SendChatCommand(cmd);
+					}
+					return;
+				}
+				if (m_dropActionRects[3].contains(pos)) {
+					// Open full server action dialog (Give / Sell / Drop amount / Details)
+					int slot = item->slot;
+					closeDropdown();
+					if (pNetGame) {
+						char cmd[32];
+						snprintf(cmd, sizeof(cmd), "/_invact %d", slot);
+						pNetGame->SendChatCommand(cmd);
+					}
+					return;
+				}
+				return;
+			}
+
+			// Tap outside dropdown closes only the dropdown (never closes the bag)
+			closeDropdown();
 			return;
 		}
 
-		// 2. Close [X] button
+		// 2. Close [X] button (only intentional close button closes bag; avoids accidental misses near edge)
 		if (m_closeBtnRect.contains(pos)) {
 			Hide(true);
 			return;
@@ -940,17 +1274,19 @@ void InventoryUI::touchEvent(const ImVec2& pos, TouchType type)
 				m_activeCategory = t;
 				m_scrollY = 0.0f;
 				m_scrollVel = 0.0f;
+				closeDropdown();
 				return;
 			}
 		}
 
-		// 4. Grid card tap -> open server item action dialog
+		// 4. Grid card tap -> open ImGui dropdown right beside tapped item
 		for (const auto& card : m_cardHits) {
 			if (card.rect.contains(pos)) {
-				if (card.slot >= 0 && pNetGame) {
-					char cmd[32];
-					snprintf(cmd, sizeof(cmd), "/_invact %d", card.slot);
-					pNetGame->SendChatCommand(cmd);
+				if (card.slot >= 0) {
+					m_dropdownSlot = card.slot;
+					m_dropdownAnchorRect = card.rect;
+					m_dropdownHotbarExpanded = false;
+					m_dropdownOpen = true;
 				}
 				return;
 			}

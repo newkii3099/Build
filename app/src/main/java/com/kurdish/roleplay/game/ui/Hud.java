@@ -104,53 +104,17 @@ public class Hud {
             hudInventoryBtn.setOnClickListener(v -> clickInventoryBag());
         }
 
-        startUpdatingTime();
-        fetchOnline();
-
+        // Permanently hide Java launcher HUD overlay (money, bars, weapon, bag/camera buttons)
         Util.HideLayout(hud_layout, false);
+        hud_layout.setVisibility(View.GONE);
     }
 
     private void startUpdatingTime() {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                updateTime();
-                handler.postDelayed(this, 1000);
-            }
-        });
+        // HUD permanently disabled
     }
 
     private void fetchOnline() {
-        String url = RemoteConfigManager.getString("players");
-        if (!isHttpUrl(url)) {
-            Log.w("Hud", "Skipping online-player request: Remote Config URL is unavailable");
-            scheduleOnlineRefresh(30000);
-            return;
-        }
-
-        StringRequest request = new StringRequest(Request.Method.GET, url,
-                response -> {
-                    try {
-                        int online = Integer.parseInt(response.trim());
-                        textPlayers.setText(String.valueOf(online));
-                    } catch (NumberFormatException e) {
-                        try {
-                            JSONArray array = new JSONArray(response);
-                            int online = array.length();
-                            textPlayers.setText(String.valueOf(online));
-                        } catch (JSONException jsonException) {
-                            Log.e("MainActivity", "JSON parse error: " + jsonException.getMessage());
-                        }
-                    }
-                    scheduleOnlineRefresh(5000);
-                },
-                error -> {
-                    Log.e("Hud", "Online-player request failed: " + error);
-                    scheduleOnlineRefresh(30000);
-                }
-        );
-
-        requestQueue.add(request);
+        // HUD permanently disabled
     }
 
     private boolean isHttpUrl(String value) {
@@ -180,67 +144,29 @@ public class Hud {
     public void UpdateHudInfo(int health, int armour, int weaponid, int ammo, int ammoinclip,
                               int money, int eat, int drink, int bankMoney, int playerid)
     {
-        hud_health.setProgress(health);
-        hud_armour.setProgress(armour);
-        hud_eat.setProgress(eat);
-        hud_drink.setProgress(drink);
-
-        DecimalFormat formatter = new DecimalFormat();
-        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
-        symbols.setGroupingSeparator(' ');
-        formatter.setDecimalFormatSymbols(symbols);
-
-        String sMoney = formatter.format(money);
-        hud_money.setText(String.format("%s $", sMoney));
-
-        String sPlayerid = formatter.format(playerid);
-        PlayerId.setText(String.format("%s", sPlayerid));
-
-        String sBank = formatter.format(bankMoney);
-        bank_money.setText(String.format("%s  $", sBank));
-
-        int id = activity.getResources().getIdentifier(
-                new Formatter().format("weapon_%d", Integer.valueOf(weaponid)).toString(),
-                "drawable",
-                activity.getPackageName());
-        if (id != 0) {
-            hud_weapon.setImageResource(id);
-        }
-        hud_ammo.setText(String.format("%s / %s", ammo, ammoinclip));
+        // HUD permanently disabled
     }
 
     public void ShowHud() {
-        if (paused) {
-            visibilityBeforePause = View.VISIBLE;
-            return;
-        }
-        if (hud_layout != null && hud_layout.getVisibility() != View.VISIBLE) {
-            Util.ShowLayout(hud_layout, true);
+        // HUD permanently disabled
+        if (hud_layout != null && hud_layout.getVisibility() != View.GONE) {
+            hud_layout.setVisibility(View.GONE);
         }
     }
 
     public void HideHud() {
-        if (paused) {
-            visibilityBeforePause = View.GONE;
-            return;
-        }
         if (hud_layout != null && hud_layout.getVisibility() != View.GONE) {
-            Util.HideLayout(hud_layout, true);
+            Util.HideLayout(hud_layout, false);
+            hud_layout.setVisibility(View.GONE);
         }
     }
 
     public void setPaused(boolean pause) {
-        if (paused == pause) {
-            return;
-        }
-
         paused = pause;
-        if (pause) {
-            visibilityBeforePause = hud_layout.getVisibility();
+        visibilityBeforePause = View.GONE;
+        if (hud_layout != null) {
             hud_layout.clearFocus();
             hud_layout.setVisibility(View.GONE);
-        } else {
-            hud_layout.setVisibility(visibilityBeforePause);
         }
     }
 }

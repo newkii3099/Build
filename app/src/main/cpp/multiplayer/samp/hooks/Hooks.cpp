@@ -136,40 +136,11 @@ void ShowHud()
 {
     *(uint8_t*)(g_libGTASA + 0x9F13E8) = 1;
 
-    if (!pNetGame || !pGame) return;
-
-    CPlayerPool *pPlayerPool = pNetGame->GetPlayerPool();
-    if (!pPlayerPool) return;
-
-    CPlayerPed *pPed = pGame->FindPlayerPed();
-    if (!pPed) return;
-
-    CWeapon *pWeapon = pPed->GetCurrentWeaponSlot();
-    if (!pWeapon) return;
-
-    if (!pJavaWrapper) return;
-
-    static uint32_t dwLastHudUpdate = 0;
-    static bool s_bHudRequested = false;
-    uint32_t dwNow = GetTickCount();
-    if (dwNow - dwLastHudUpdate >= 50) {
-        dwLastHudUpdate = dwNow;
-        if (!s_bHudRequested && pNetGame->GetGameState() == GAMESTATE_CONNECTED) {
-            s_bHudRequested = true;
-            pJavaWrapper->ShowHud();
-        }
-        pJavaWrapper->UpdateHudInfo(
-                (int)pPed->GetHealth(),
-                (int)pPed->GetArmour(),
-                pWeapon->dwType,
-                pWeapon->dwAmmoInClip,
-                pWeapon->dwAmmo,
-                pGame->GetLocalMoney(),
-                pUI ? pUI->GetEat() : 0,
-                pUI ? pUI->GetDrink() : 0,
-                pUI ? pUI->GetBankMoney() : 0,
-                (int)pPlayerPool->GetLocalPlayerID()
-        );
+    // Java HUD permanently disabled (money, HP/food/drink bars, fist/weapon, bag & camera buttons)
+    static bool s_bHudForceHidden = false;
+    if (!s_bHudForceHidden && pJavaWrapper) {
+        s_bHudForceHidden = true;
+        pJavaWrapper->HideHud();
     }
 }
 void MainLoop();
@@ -482,6 +453,9 @@ uint32_t CHudColours__GetIntColour(uintptr* thiz, uint8 colour_id)
 
 /* =============================================================================== */
 
+#include <atomic>
+extern std::atomic<bool> g_bJavaDialogVisible;
+
 void (*AND_TouchEvent)(int type, int num, int posX, int posY);
 void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 {
@@ -490,6 +464,12 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 
 	if (pGame->IsGamePaused())
 		return AND_TouchEvent(type, num, posX, posY);
+
+	// Block any touch leak through GLSurfaceView while Java DialogManager is visible
+	if (g_bJavaDialogVisible.load()) {
+		AND_TouchEvent(1, 0, 0, 0);
+		return;
+	}
 
 	if (pNetGame && pNetGame->GetTextDrawPool())
 	{
@@ -501,13 +481,20 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 
 	if (pUI != nullptr)
 	{
+		bool invOpen = (pUI->inventory() && pUI->inventory()->visible());
+		if (invOpen && num != 0) {
+			// Ignore secondary multi-touch fingers when bag is open so scroll delta/drag distance stay clean
+			AND_TouchEvent(1, 0, 0, 0);
+			return;
+		}
+
 		bool hudConsumed = false;
 		if (type == 1 || type == 2 || type == 3)
 		{
 			TouchType ttype = (type == 2) ? TouchType::push : ((type == 3) ? TouchType::move : TouchType::pop);
 
-			if (!pUI->keyboard()->visible() && !pUI->dialog()->visible() && !(pUI->inventory() && pUI->inventory()->visible())) {
-				if (pUI->inventory() && pUI->inventory()->handleHudTouch(ImVec2(posX, posY), ttype)) {
+			if (!pUI->keyboard()->visible() && !pUI->dialog()->visible() && !invOpen) {
+				if (num == 0 && pUI->inventory() && pUI->inventory()->handleHudTouch(ImVec2(posX, posY), ttype)) {
 					hudConsumed = true;
 				}
 			}
@@ -517,7 +504,7 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 			}
 		}
 
-        if (hudConsumed || pUI->keyboard()->visible() || pUI->dialog()->visible() || (pUI->inventory() && pUI->inventory()->visible())) {
+        if (hudConsumed || pUI->keyboard()->visible() || pUI->dialog()->visible() || invOpen) {
             AND_TouchEvent(1, 0, 0, 0);
             return;
         }

@@ -172,7 +172,6 @@ void CScoreBoard::Close() {
     pNetGame->GetPlayerPool()->GetLocalPlayer()->GetPlayerPed()->TogglePlayerControllable(true);
     pUI->buttonpanel()->setVisible(true);
     pGame->DisplayHUD(true);
-    pJavaWrapper->ShowHud();
 
     if (m_pPlayers)
     {

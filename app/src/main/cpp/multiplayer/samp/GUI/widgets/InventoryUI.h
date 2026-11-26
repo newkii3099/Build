@@ -84,6 +84,12 @@ private:
 	void drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, const ImVec2& panelMax);
 	void drawCategoryIcon(ImGuiRenderer* renderer, int tabIndex, const ImVec2& center, float radius, const ImColor& col);
 	void drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const ImVec2& gridMax);
+	void drawDropdown(ImGuiRenderer* renderer);
+	void closeDropdown();
+	const InvSlotItem* findItemBySlot(int slot) const;
+	int findHotbarIndexForItem(int itemId) const;
+	void assignHotbarLocal(int hotbarIdx, const InvSlotItem* item);
+	void clearHotbarForItemLocal(int itemId);
 	void drawStar(ImGuiRenderer* renderer, const ImVec2& center, float r, const ImColor& col);
 	RwTexture* getOrCreateModelSnapshot(int modelId, const CVector& rot, float zoom);
 	RwTexture* getCustomItemTexture(int itemId);
@@ -95,6 +101,7 @@ private:
 	float m_maxWeight = 80.0f;
 	int m_usedSlots = 0;
 	int m_maxSlots = 30;
+	bool m_syncInProgress = false;
 
 	std::vector<InvSlotItem> m_pendingItems;
 	std::vector<InvSlotItem> m_items;
@@ -114,6 +121,15 @@ private:
 	HitRect m_closeBtnRect{};
 	HitRect m_tabRects[5]{};
 	HitRect m_scrollbarRect{};
+
+	// ImGui item action dropdown (anchored beside tapped item card)
+	bool m_dropdownOpen = false;
+	bool m_dropdownHotbarExpanded = false;
+	int m_dropdownSlot = -1;
+	HitRect m_dropdownAnchorRect{};
+	HitRect m_dropdownRect{};
+	HitRect m_dropActionRects[4]{}; // 0=Use, 1=Hotbar toggle, 2=Drop all, 3=More server options
+	HitRect m_dropHotbarRects[8]{}; // 0..6=slots 1..7, 7=clear hotbar
 
 	// External HUD hotbar (outside bag)
 	bool m_hudHotbarOpen = false;
@@ -136,6 +152,8 @@ private:
 	bool m_touchDown = false;
 	bool m_draggingGrid = false;
 	bool m_draggingScrollbar = false;
+	bool m_hasDragged = false;
+	bool m_touchStartedInDropdown = false;
 	ImVec2 m_touchStartPos = ImVec2(0, 0);
 	ImVec2 m_lastTouchPos = ImVec2(0, 0);
 	float m_totalDragDist = 0.0f;

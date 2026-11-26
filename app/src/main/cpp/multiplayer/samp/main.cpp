@@ -1,6 +1,10 @@
 #include <jni.h>
 #include <pthread.h>
 #include <syscall.h>
+#include <atomic>
+#include <mutex>
+#include <vector>
+#include <string>
 
 #include "main.h"
 #include "samp/Multiplayer/Multiplayer.h"
@@ -373,18 +377,55 @@ extern "C" {
 		if (pUI && pUI->inventory() && pUI->inventory()->visible())
 			pUI->inventory()->Hide(true);
 	}
+std::atomic<bool> g_bJavaDialogVisible{false};
+
+namespace {
+struct PendingDialogResp {
+	int dialogId;
+	int buttonId;
+	int listItem;
+	std::string input;
+};
+std::mutex g_netQueueMutex;
+std::vector<std::string> g_pendingCommands;
+std::vector<PendingDialogResp> g_pendingDialogResponses;
+
+void DrainPendingJavaNetQueue()
+{
+	std::vector<std::string> cmds;
+	std::vector<PendingDialogResp> resps;
+	{
+		std::lock_guard<std::mutex> lock(g_netQueueMutex);
+		if (g_pendingCommands.empty() && g_pendingDialogResponses.empty()) return;
+		cmds.swap(g_pendingCommands);
+		resps.swap(g_pendingDialogResponses);
+	}
+	if (!pNetGame) return;
+	for (const auto& cmd : cmds) {
+		if (!cmd.empty()) {
+			if (cmd[0] == '/') pNetGame->SendChatCommand(cmd.c_str());
+			else pNetGame->SendChatMessage(cmd.c_str());
+		}
+	}
+	for (const auto& r : resps) {
+		pNetGame->SendDialogResponse(r.dialogId, r.buttonId, r.listItem, (char*)r.input.c_str());
+	}
+}
+}
+
 	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_SAMP_sendCommand(JNIEnv *pEnv, jobject thiz, jstring command)
 	{
-		if (!pNetGame || !command) return;
+		if (!command) return;
 		const char *cmd = pEnv->GetStringUTFChars(command, NULL);
 		if (cmd) {
-			if (cmd[0] == '/') {
-				pNetGame->SendChatCommand(cmd);
-			} else {
-				pNetGame->SendChatMessage(cmd);
-			}
+			std::lock_guard<std::mutex> lock(g_netQueueMutex);
+			g_pendingCommands.emplace_back(cmd);
 			pEnv->ReleaseStringUTFChars(command, cmd);
 		}
+	}
+	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_ui_dialog_DialogManager_setJavaDialogVisible(JNIEnv* pEnv, jclass clazz, jboolean visible)
+	{
+		g_bJavaDialogVisible.store(visible == JNI_TRUE);
 	}
 	JNIEXPORT void JNICALL Java_com_kurdish_roleplay_game_ui_dialog_DialogManager_sendDialogResponse(JNIEnv* pEnv, jobject thiz, jint i3, jint i, jint i2, jbyteArray str)
 	{
@@ -394,10 +435,10 @@ extern "C" {
 		jsize length = pEnv->GetArrayLength(str);
 
 		std::string szStr((char*)pMsg, length);
-		
-		if(pNetGame) {
-			pNetGame->SendDialogResponse(i, i3, i2, (char*)szStr.c_str());
-			//pGame->FindPlayerPed()->TogglePlayerControllableWithoutLock(true);
+
+		{
+			std::lock_guard<std::mutex> lock(g_netQueueMutex);
+			g_pendingDialogResponses.push_back({i, i3, i2, std::move(szStr)});
 		}
 
 		pEnv->ReleaseByteArrayElements(str, pMsg, JNI_ABORT);
@@ -459,6 +500,8 @@ void MainLoop()
 	ProcessFPSFixFrame();
 
 	DoInitStuff();
+
+	DrainPendingJavaNetQueue();
 
 	if (bDebug) {
 		DoDebugLoop();

@@ -603,7 +603,7 @@ bool CLocalPlayer::Spawn()
 	}
 
     *(uint8_t*)(g_libGTASA + 0x9F13E8) = 0;
-    pJavaWrapper->ShowHud();
+    pJavaWrapper->HideHud();
     pJavaWrapper->HideSpeed();
 
     if (!m_bMayesSyncSent && pNetGame) {

@@ -6,6 +6,7 @@
     android:id="@+id/gamehud"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:visibility="gone"
     android:clipChildren="false">
 
     <!-- 🌟 Main Floating Glass HUD Card (Top Right) -->
