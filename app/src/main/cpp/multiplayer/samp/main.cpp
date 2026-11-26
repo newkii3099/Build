@@ -318,7 +318,7 @@ void DoInitStuff()
 		}
 		InitFPSFix(fpsLimit);
 
-		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "43.255.241.29";
+		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "157.254.192.108";
 		int iPort = (pSettings && pSettings->Get().iPort > 0) ? pSettings->Get().iPort : 7777;
 		const char* szNick = (pSettings && pSettings->Get().szNickName[0] != '\0') ? pSettings->Get().szNickName : "MAYES_Player";
 		const char* szPass = (pSettings) ? pSettings->Get().szPassword : "";
