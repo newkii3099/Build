@@ -90,7 +90,9 @@ void InventoryUI::AddSyncSlot(int slot, int itemId, int modelId, int amount, int
 	item.weight = weight;
 	item.category = (category >= 1 && category <= 4) ? category : 4;
 	item.favorite = favorite;
-	item.vecRot = { rotX, rotY, rotZ };
+	item.vecRot.x = rotX;
+	item.vecRot.y = rotY;
+	item.vecRot.z = rotZ;
 	item.zoom = (zoom > 0.05f) ? zoom : 1.0f;
 	item.nameUtf8 = nameUtf8;
 
@@ -172,7 +174,8 @@ void InventoryUI::Hide(bool notifyServer)
 
 void InventoryUI::performLayout()
 {
-	ImVec2 disp = pUI ? pUI->displaySize() : ImVec2(1920.0f, 1080.0f);
+	ImVec2 disp = (parent() && parent()->width() > 0.0f) ? parent()->size() : ImGui::GetIO().DisplaySize;
+	if (disp.x <= 0.0f || disp.y <= 0.0f) disp = ImVec2(1920.0f, 1080.0f);
 	setPosition(ImVec2(0.0f, 0.0f));
 	setFixedSize(disp);
 
@@ -244,7 +247,8 @@ void InventoryUI::ProcessSnapshots()
 		InvHotbarSlot& hb = m_hotbar[i];
 		if (hb.itemId <= 0 || hb.texture || hb.snapAttempts >= 2 || hb.modelId <= 0) continue;
 		hb.snapAttempts++;
-		CVector defaultRot = { 0.0f, 0.0f, 0.0f };
+		CVector defaultRot{};
+		defaultRot.x = defaultRot.y = defaultRot.z = 0.0f;
 		RwTexture* tex = getOrCreateModelSnapshot(hb.modelId, defaultRot, 1.0f);
 		if (tex) {
 			hb.texture = tex;

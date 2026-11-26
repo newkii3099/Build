@@ -16,7 +16,7 @@ struct InvSlotItem
 	float weight = 0.0f;
 	int category = 0; // 1=Food/Drink, 2=Material, 3=Weapon/Equip, 4=Other
 	bool favorite = false;
-	CVector vecRot = { 0.0f, 0.0f, 0.0f };
+	CVector vecRot{};
 	float zoom = 1.0f;
 	std::string nameUtf8;
 	RwTexture* texture = nullptr;
