@@ -1164,7 +1164,9 @@ void InventoryUI::touchEvent(const ImVec2& pos, TouchType type)
 			if (m_scrollY > m_maxScrollY) m_scrollY = m_maxScrollY;
 
 			float dt = std::max(ImGui::GetIO().DeltaTime, 0.008f);
-			m_scrollVel = (-dy / dt) * 0.45f;
+			if (std::abs(dy) > 0.1f) {
+				m_scrollVel = (-dy / dt) * 0.50f;
+			}
 		}
 		m_lastTouchPos = pos;
 		return;

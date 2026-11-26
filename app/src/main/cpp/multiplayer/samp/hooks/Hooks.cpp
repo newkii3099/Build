@@ -459,14 +459,18 @@ extern std::atomic<bool> g_bJavaDialogVisible;
 void (*AND_TouchEvent)(int type, int num, int posX, int posY);
 void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 {
-	// imgui
-	//bool bRet = pUI->OnTouchEvent(type, num, posX, posY);
+	// libGame.so's Java_..._implOnTouchMove calls AND_TouchEvent with type == 2 (same as TouchStart).
+	// Track active down state per pointer slot so move events properly dispatch TouchType::move.
+	static bool s_touchDown[4] = { false, false, false, false };
 
-	if (pGame->IsGamePaused())
+	if (pGame->IsGamePaused()) {
+		for (int i = 0; i < 4; i++) s_touchDown[i] = false;
 		return AND_TouchEvent(type, num, posX, posY);
+	}
 
 	// Block any touch leak through GLSurfaceView while Java DialogManager is visible
 	if (g_bJavaDialogVisible.load()) {
+		for (int i = 0; i < 4; i++) s_touchDown[i] = false;
 		AND_TouchEvent(1, 0, 0, 0);
 		return;
 	}
@@ -474,6 +478,7 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 	if (pNetGame && pNetGame->GetTextDrawPool())
 	{
 		if (!pNetGame->GetTextDrawPool()->onTouchEvent(type, num, posX, posY)) {
+			for (int i = 0; i < 4; i++) s_touchDown[i] = false;
 			AND_TouchEvent(1, 0, 0, 0);
 			return;
 		}
@@ -481,17 +486,32 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 
 	if (pUI != nullptr)
 	{
+		int slot = (num >= 0 && num < 4) ? num : 0;
 		bool invOpen = (pUI->inventory() && pUI->inventory()->visible());
 		if (invOpen && num != 0) {
 			// Ignore secondary multi-touch fingers when bag is open so scroll delta/drag distance stay clean
+			if (type == 1 || type == 4) s_touchDown[slot] = false;
 			AND_TouchEvent(1, 0, 0, 0);
 			return;
 		}
 
 		bool hudConsumed = false;
-		if (type == 1 || type == 2 || type == 3)
+		if (type == 1 || type == 2 || type == 3 || type == 4)
 		{
-			TouchType ttype = (type == 2) ? TouchType::push : ((type == 3) ? TouchType::move : TouchType::pop);
+			TouchType ttype = TouchType::pop;
+			if (type == 2) {
+				if (s_touchDown[slot]) {
+					ttype = TouchType::move;
+				} else {
+					s_touchDown[slot] = true;
+					ttype = TouchType::push;
+				}
+			} else if (type == 3) {
+				ttype = TouchType::move;
+			} else {
+				s_touchDown[slot] = false;
+				ttype = TouchType::pop;
+			}
 
 			if (!pUI->keyboard()->visible() && !pUI->dialog()->visible() && !invOpen) {
 				if (num == 0 && pUI->inventory() && pUI->inventory()->handleHudTouch(ImVec2(posX, posY), ttype)) {
