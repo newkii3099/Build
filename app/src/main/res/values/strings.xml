@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MAYES!</string>
+    <string name="app_name">CRYZEN CITY 2.0</string>
     <string name="action_settings">ตั้งค่า</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">หน้าหลัก</string>
@@ -7,7 +7,7 @@
     <string name="next">ถัดไป</string>
     <string name="previous">ย้อนกลับ</string>
 
-    <string name="hello_first_fragment">ยินดีต้อนรับสู่ MAYES!</string>
+    <string name="hello_first_fragment">ยินดีต้อนรับสู่ CRYZEN CITY 2.0</string>
     <string name="hello_second_fragment">หน้าต่าง: %1$s</string>
 
     <string name="basic_settings">การตั้งค่าทั่วไป</string>

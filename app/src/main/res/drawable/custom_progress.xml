@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Background of progress bar -->
+    <!-- Background track -->
     <item android:id="@android:id/background">
         <shape>
             <corners android:radius="8dp" />
-            <solid android:color="#E2E8F0" />
+            <solid android:color="#331E295E" />
+            <stroke android:width="0.5dp" android:color="#3300D4FF" />
         </shape>
     </item>
 
-    <!-- Progress of progress bar -->
+    <!-- Cryzen Neon Progress -->
     <item android:id="@android:id/progress">
         <clip>
             <shape>
                 <corners android:radius="8dp" />
                 <gradient
                     android:angle="0"
-                    android:startColor="#8B5CF6"
+                    android:startColor="#00D4FF"
+                    android:centerColor="#8B5CF6"
                     android:endColor="#EC4899" />
             </shape>
         </clip>

@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".launcher.MainActivity">
 
-    <!-- 🌅 NextCity Anime Coastal City Background -->
+    <!-- 🌃 CRYZEN Neon City Background -->
     <ImageView
         android:id="@+id/bgLauncher"
         android:layout_width="match_parent"
@@ -15,11 +15,11 @@
         android:scaleType="centerCrop"
         android:src="@drawable/bg_launcher" />
 
-    <!-- 🌌 Soft Glass Tint Overlay -->
+    <!-- 🌌 Midnight Indigo Scrim -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#660F172A" />
+        android:background="#6606081A" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/gpu"
@@ -31,155 +31,150 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 🎴 NextCity Modern Update Card -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="480dp"
+    <!-- 🎴 CRYZEN Cyber-Glass Update Card -->
+    <LinearLayout
+        android:layout_width="490dp"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="12dp"
-        app:cardBackgroundColor="#F8FAFC"
-        app:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/bg_card_white"
+        android:elevation="12dp"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="28dp"
+        android:paddingVertical="22dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent">
 
+        <!-- App Logo & Title Row -->
         <LinearLayout
-            android:layout_width="match_parent"
+            android:id="@+id/appNameLayout"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal"
-            android:paddingHorizontal="28dp"
-            android:paddingVertical="24dp">
+            android:layout_marginBottom="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-            <!-- App Logo & Title Row -->
+            <ImageView
+                android:id="@+id/appLogo"
+                android:layout_width="126dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_app_logo" />
+
             <LinearLayout
-                android:id="@+id/appNameLayout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="6dp">
-
-                <ImageView
-                    android:id="@+id/appLogo"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:src="@drawable/ic_app_logo"
-                    android:layout_marginEnd="10dp" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="MAYES!"
-                        android:textSize="18sp"
-                        android:fontFamily="sans-serif-black"
-                        android:textStyle="bold"
-                        android:textColor="#0F172A" />
-
-                    <TextView
-                        android:id="@+id/taglineText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="ระบบติดตั้งและอัปเดตข้อมูลเกมอัตโนมัติ"
-                        android:textColor="#64748B"
-                        android:textSize="10.5sp"
-                        android:fontFamily="sans-serif-medium" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#E2E8F0"
-                android:layout_marginVertical="12dp" />
-
-            <!-- Status Header -->
-            <TextView
-                android:id="@+id/installation_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="กำลังตรวจสอบข้อมูลเกม..."
-                android:textColor="#1E293B"
-                android:fontFamily="sans-serif-bold"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:layout_marginBottom="12dp" />
-
-            <!-- File Info Box -->
-            <LinearLayout
-                android:id="@+id/updateStatusContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/bg_action_card"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="12dp"
-                android:layout_marginBottom="16dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="6dp">
-
-                    <TextView
-                        android:id="@+id/fileName"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="กำลังเตรียมดาวน์โหลด..."
-                        android:textSize="12sp"
-                        android:fontFamily="sans-serif-bold"
-                        android:textStyle="bold"
-                        android:textColor="#334155"
-                        android:singleLine="true"
-                        android:ellipsize="end" />
-
-                    <TextView
-                        android:id="@+id/fileProgressPercent"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0%"
-                        android:fontFamily="sans-serif-black"
-                        android:textStyle="bold"
-                        android:textColor="#8B5CF6"
-                        android:textSize="13sp" />
-                </LinearLayout>
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/fileCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0 MB / 0 MB"
-                    android:textColor="#64748B"
-                    android:textSize="11sp"
-                    android:fontFamily="sans-serif-medium" />
+                    android:fontFamily="sans-serif-black"
+                    android:text="อัปเดตทรัพยากรเกม"
+                    android:textColor="#F8FAFC"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/taglineText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="CRYZEN CITY 2.0 • v2.0.0-cryzen"
+                    android:textColor="#00D4FF"
+                    android:textSize="10.5sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="12dp"
+            android:background="#2600D4FF" />
+
+        <!-- Status Header -->
+        <TextView
+            android:id="@+id/installation_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:fontFamily="sans-serif-bold"
+            android:text="กำลังตรวจสอบข้อมูลเกม..."
+            android:textColor="#F8FAFC"
+            android:textSize="13.5sp"
+            android:textStyle="bold" />
+
+        <!-- File Info Box -->
+        <LinearLayout
+            android:id="@+id/updateStatusContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:background="@drawable/bg_action_card"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/fileName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-bold"
+                    android:singleLine="true"
+                    android:text="กำลังเตรียมดาวน์โหลด..."
+                    android:textColor="#E2E8F0"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/fileProgressPercent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-black"
+                    android:text="0%"
+                    android:textColor="#00D4FF"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Modern NextCity Gradient Progress Bar -->
-            <ProgressBar
-                android:id="@+id/download_progress"
-                style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="10dp"
-                android:progressDrawable="@drawable/custom_progress"
-                android:layout_marginBottom="6dp" />
-
             <TextView
+                android:id="@+id/fileCount"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="กรุณาอย่าปิดแอปพลิเคชันระหว่างดาวน์โหลด"
-                android:textColor="#94A3B8"
-                android:textSize="10sp"
-                android:fontFamily="sans-serif" />
-
+                android:fontFamily="sans-serif-medium"
+                android:text="0 MB / 0 MB"
+                android:textColor="#C7D2FE"
+                android:textSize="11sp" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+
+        <!-- Cryzen Neon Progress Bar -->
+        <ProgressBar
+            android:id="@+id/download_progress"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:layout_marginBottom="8dp"
+            android:progressDrawable="@drawable/custom_progress" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:text="กรุณาอย่าปิดแอปพลิเคชันระหว่างดาวน์โหลด"
+            android:textColor="#94A3B8"
+            android:textSize="10sp" />
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

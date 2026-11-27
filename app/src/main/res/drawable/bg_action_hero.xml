@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="#40FFFFFF">
+    android:color="#4000D4FF">
     <item>
         <selector>
             <item android:state_pressed="true">
@@ -8,10 +8,10 @@
                     <corners android:radius="18dp" />
                     <gradient
                         android:angle="135"
-                        android:startColor="#7C3AED"
-                        android:centerColor="#9333EA"
+                        android:startColor="#00B8E6"
+                        android:centerColor="#7C3AED"
                         android:endColor="#DB2777" />
-                    <stroke android:width="1.5dp" android:color="#B3FFFFFF" />
+                    <stroke android:width="1.5dp" android:color="#CCFFFFFF" />
                 </shape>
             </item>
             <item>
@@ -19,10 +19,10 @@
                     <corners android:radius="18dp" />
                     <gradient
                         android:angle="135"
-                        android:startColor="#8B5CF6"
-                        android:centerColor="#A855F7"
+                        android:startColor="#00D4FF"
+                        android:centerColor="#8B5CF6"
                         android:endColor="#EC4899" />
-                    <stroke android:width="1.5dp" android:color="#99FFFFFF" />
+                    <stroke android:width="1.5dp" android:color="#B3FFFFFF" />
                 </shape>
             </item>
         </selector>

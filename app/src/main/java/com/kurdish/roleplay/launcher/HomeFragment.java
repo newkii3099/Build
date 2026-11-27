@@ -34,17 +34,18 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
 
-    public static final String LOCKED_SERVER_HOST = "43.255.241.29";
+    public static final String LOCKED_SERVER_HOST = "157.254.192.108";
     public static final int LOCKED_SERVER_PORT = 7777;
 
     private Animation scaleDown;
     private Animation scaleUp;
     private TextView tvHeaderPlayerNick;
     private TextView tvPlayerNickSubtitle;
-    private TextView tvHeaderUiVersion;
 
     private TextView tvServerLiveStatus;
+    private TextView tvBottomServerStatus;
     private TextView tvServerHostname;
+    private TextView tvServerIp;
     private TextView tvServerRealPlayers;
     private TextView tvServerRealPing;
     private SampQueryAPI.ServerInfo lastServerInfo;
@@ -60,60 +61,51 @@ public class HomeFragment extends Fragment {
         initAnimations();
 
         // 🎯 Header Actions
-        View btnNotification = view.findViewById(R.id.btnNotification);
         View btnSettingsTop = view.findViewById(R.id.btnSettingsTop);
         View btnQuickNickname = view.findViewById(R.id.btnQuickNickname);
-        View btnQuickUiVersion = view.findViewById(R.id.btnQuickUiVersion);
         tvHeaderPlayerNick = view.findViewById(R.id.tvHeaderPlayerNick);
-        tvHeaderUiVersion = view.findViewById(R.id.tvHeaderUiVersion);
 
-        // ◀️ Left Column Actions
-        View btnPlay = view.findViewById(R.id.btnPlay);
+        // ◀️ Server Showcase & Live Stats
+        tvServerLiveStatus = view.findViewById(R.id.tvServerLiveStatus);
+        tvBottomServerStatus = view.findViewById(R.id.tvBottomServerStatus);
+        tvServerHostname = view.findViewById(R.id.tvServerHostname);
+        tvServerIp = view.findViewById(R.id.tvServerIp);
+        tvServerRealPlayers = view.findViewById(R.id.tvServerRealPlayers);
+        tvServerRealPing = view.findViewById(R.id.tvServerRealPing);
+        View btnRefreshServerStats = view.findViewById(R.id.btnRefreshServerStats);
+        View serverItemCryzen = view.findViewById(R.id.serverItemCryzen);
+
+        if (tvServerIp != null) {
+            tvServerIp.setText("IP: " + LOCKED_SERVER_HOST + ":" + LOCKED_SERVER_PORT);
+        }
+
+        // ▶️ Right Column Actions & Play CTA
+        View btnProfileNick = view.findViewById(R.id.btnProfileNick);
         tvPlayerNickSubtitle = view.findViewById(R.id.tvPlayerNickSubtitle);
+        View btnPlay = view.findViewById(R.id.btnPlay);
         View btnActionServers = view.findViewById(R.id.btnActionServers);
         View btnActionSettings = view.findViewById(R.id.btnActionSettings);
         View btnActionDiscord = view.findViewById(R.id.btnActionDiscord);
         View btnActionFacebook = view.findViewById(R.id.btnActionFacebook);
-        View btnActionAnnouncement = view.findViewById(R.id.btnActionAnnouncement);
 
-        // ▶️ Right Column Cards & Live Server Card
-        tvServerLiveStatus = view.findViewById(R.id.tvServerLiveStatus);
-        tvServerHostname = view.findViewById(R.id.tvServerHostname);
-        tvServerRealPlayers = view.findViewById(R.id.tvServerRealPlayers);
-        tvServerRealPing = view.findViewById(R.id.tvServerRealPing);
-        View btnRefreshServerStats = view.findViewById(R.id.btnRefreshServerStats);
-        View serverItemNextCity = view.findViewById(R.id.serverItemNextCity);
-
-        View cardTeamAnnouncement = view.findViewById(R.id.cardTeamAnnouncement);
-        View btnViewAllNews = view.findViewById(R.id.btnViewAllNews);
-
-        // ⚡ Bottom Navigation Shortcuts
-        View navReviews = view.findViewById(R.id.navReviews);
-        View navEvents = view.findViewById(R.id.navEvents);
-        View navRankings = view.findViewById(R.id.navRankings);
+        // ⚡ Bottom Bar Support Action
         View navSupport = view.findViewById(R.id.navSupport);
 
         // Attach touch feedback animations
         attachTouchAnimation(btnPlay);
+        attachTouchAnimation(btnProfileNick);
         attachTouchAnimation(btnActionServers);
         attachTouchAnimation(btnActionSettings);
         attachTouchAnimation(btnActionDiscord);
         attachTouchAnimation(btnActionFacebook);
-        attachTouchAnimation(btnActionAnnouncement);
-        attachTouchAnimation(btnNotification);
         attachTouchAnimation(btnSettingsTop);
         attachTouchAnimation(btnQuickNickname);
-        attachTouchAnimation(btnQuickUiVersion);
 
         // 0. Quick Nickname Edit
-        if (btnQuickNickname != null) {
-            btnQuickNickname.setOnClickListener(v -> showChangeNicknameDialog());
-        }
-        if (btnQuickUiVersion != null) {
-            btnQuickUiVersion.setOnClickListener(v -> toggleUiVersionQuick());
-        }
+        View.OnClickListener nickClickListener = v -> showChangeNicknameDialog();
+        if (btnQuickNickname != null) btnQuickNickname.setOnClickListener(nickClickListener);
+        if (btnProfileNick != null) btnProfileNick.setOnClickListener(nickClickListener);
         refreshPlayerNickname();
-        refreshUiVersionBadge();
 
         // 1. Play Button Click -> Launch SAMP Game
         if (btnPlay != null) {
@@ -131,16 +123,10 @@ public class HomeFragment extends Fragment {
 
         // 3. Discord
         if (btnActionDiscord != null) {
-            btnActionDiscord.setOnClickListener(v -> {
-                String link = RemoteConfigManager.getString("discord");
-                if (link == null || link.trim().isEmpty()) {
-                    link = "https://discord.gg/nextcity";
-                }
-                openUrl(link);
-            });
+            btnActionDiscord.setOnClickListener(v -> openDiscordLink());
         }
 
-        // 4. Facebook
+        // 4. Facebook / Website
         if (btnActionFacebook != null) {
             btnActionFacebook.setOnClickListener(v -> {
                 String link = RemoteConfigManager.getString("website");
@@ -151,7 +137,7 @@ public class HomeFragment extends Fragment {
             });
         }
 
-        // 5. Dedicated Server Section (Locked to 168.222.20.88:7777, Live Query)
+        // 5. Live Server Stats Query
         if (btnRefreshServerStats != null) {
             btnRefreshServerStats.setOnClickListener(v -> {
                 Toast.makeText(getContext(), "กำลังรีเฟรชข้อมูลเซิร์ฟเวอร์...", Toast.LENGTH_SHORT).show();
@@ -161,88 +147,34 @@ public class HomeFragment extends Fragment {
 
         View.OnClickListener showServerStatusListener = v -> showServerStatusDialog();
         if (btnActionServers != null) btnActionServers.setOnClickListener(showServerStatusListener);
-        if (serverItemNextCity != null) {
-            serverItemNextCity.setOnClickListener(showServerStatusListener);
-        }
+        if (serverItemCryzen != null) serverItemCryzen.setOnClickListener(showServerStatusListener);
 
         fetchRealServerStats();
 
-        // 6. Announcements Section
-        View.OnClickListener showAnnouncementListener = v -> showAnnouncementDialog();
-        if (btnActionAnnouncement != null) btnActionAnnouncement.setOnClickListener(showAnnouncementListener);
-        if (btnViewAllNews != null) btnViewAllNews.setOnClickListener(showAnnouncementListener);
-        if (cardTeamAnnouncement != null) cardTeamAnnouncement.setOnClickListener(showAnnouncementListener);
-
-        // 7. Notification Button
-        if (btnNotification != null) {
-            btnNotification.setOnClickListener(v -> showNotificationDialog());
-        }
-
-        // 8. Bottom Shortcuts
-        if (navReviews != null) {
-            navReviews.setOnClickListener(v -> showModernDialog(
-                    "⭐ รีวิวเซิร์ฟเวอร์",
-                    R.drawable.ic_star_shortcut,
-                    "คะแนนเฉลี่ยจากผู้เล่น: 4.9 / 5.0 (15,280 รีวิว)\n\n" +
-                            "• 'เซิร์ฟเวอร์เล่นลื่น ระบบคอมมูนิตี้ดีมาก แอดมินดูแลทั่วถึง!' - PlayerTH\n" +
-                            "• 'ภาพสวย บรรยากาศเมืองโมเดิร์น ไม่เหมือนใคร' - CityGamer\n\n" +
-                            "ร่วมส่งคะแนนรีวิวของคุณเพื่อรับของรางวัลในเกมประจำสัปดาห์!",
-                    "เขียนรีวิว",
-                    () -> Toast.makeText(getContext(), "ขอบคุณสำหรับข้อเสนอแนะและรีวิวครับ!", Toast.LENGTH_SHORT).show()
-            ));
-        }
-
-        if (navEvents != null) {
-            navEvents.setOnClickListener(v -> showModernDialog(
-                    "🎁 กิจกรรมพิเศษ",
-                    R.drawable.ic_gift_shortcut,
-                    "🎉 กิจกรรมเทศกาลต้อนรับผู้เล่นใหม่ & ฮาโลวีน ไนท์\n\n" +
-                            "1. คูณ EXP และเงินในเกม x2 ตลอดสุดสัปดาห์นี้\n" +
-                            "2. ล็อกอินสะสมครบ 7 วัน รับสกินรถลิมิเต็ดฟรี!\n" +
-                            "3. เควสภารกิจล่ารางวัลในเมือง MAYES! รับกล่องสุ่มแรร์\n\n" +
-                            "ระยะเวลากิจกรรม: วันนี้ - 15 พ.ย. 2568",
-                    "ดูรายละเอียด",
-                    null
-            ));
-        }
-
-        if (navRankings != null) {
-            navRankings.setOnClickListener(v -> showModernDialog(
-                    "🏆 จัดอันดับผู้เล่น (Leaderboard)",
-                    R.drawable.ic_trophy_shortcut,
-                    "อันดับผู้เล่นยอดเยี่ยมประจำซีซั่น:\n\n" +
-                            "🥇 อันดับ 1: Alex_Rider (เลเวล 85 · ทรัพย์สิน 45.2M)\n" +
-                            "🥈 อันดับ 2: Sakura_Miku (เลเวล 79 · ทรัพย์สิน 38.6M)\n" +
-                            "🥉 อันดับ 3: Kenji_Sato (เลเวล 74 · ทรัพย์สิน 31.9M)\n" +
-                            "4. Cross_Fire (เลเวล 70)\n" +
-                            "5. Jimmy_V (เลเวล 68)\n\n" +
-                            "รีเซ็ตอันดับและแจกรางวัลทุกสิ้นเดือน!",
-                    "ปิด",
-                    null
-            ));
-        }
-
+        // 6. Support Contact
         if (navSupport != null) {
             navSupport.setOnClickListener(v -> showModernDialog(
-                    "🎧 ติดต่อทีมงาน",
+                    "ติดต่อทีมงาน CRYZEN CITY 2.0",
                     R.drawable.ic_headset_shortcut,
-                    "หากพบปัญหาในการเล่น การติดตั้ง หรือต้องการแจ้งบัค:\n\n" +
-                            "• Discord Support: เปิด Ticket ได้ตลอด 24 ชม.\n" +
-                            "• Fanpage: Facebook.com/MAYES\n" +
-                            "• เวลาทำการทีมงานแอดมิน: ทุกวัน 10:00 - 02:00 น.\n\n" +
-                            "เราพร้อมดูแลและช่วยเหลือผู้เล่นทุกท่านเสมอครับ ❤️",
-                    "เปิด Discord Ticket",
-                    () -> {
-                        String link = RemoteConfigManager.getString("discord");
-                        if (link == null || link.trim().isEmpty()) {
-                            link = "https://discord.gg/nextcity";
-                        }
-                        openUrl(link);
-                    }
+                    "หากพบปัญหาในการเข้าเล่น การติดตั้ง หรือต้องการแจ้งบั๊ก:\n\n" +
+                            "• สามารถเปิด Ticket สอบถามทีมงานได้ทาง Discord ทางการ\n" +
+                            "• เวอร์ชันตัวเกม: 2.0.0-cryzen (64-bit)\n" +
+                            "• แพ็กเกจระบบ: com.newlab.cryzen",
+                    "เปิด Discord",
+                    this::openDiscordLink
             ));
         }
 
         return view;
+    }
+
+    private void openDiscordLink() {
+        String link = RemoteConfigManager.getString("discord");
+        if (link == null || link.trim().isEmpty()) {
+            Toast.makeText(getContext(), "ยังไม่ได้ตั้งค่าลิงก์ Discord ของเซิร์ฟเวอร์", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        openUrl(link);
     }
 
     private void launchGame() {
@@ -347,7 +279,10 @@ public class HomeFragment extends Fragment {
     private void fetchRealServerStats() {
         if (tvServerLiveStatus != null) {
             tvServerLiveStatus.setText("กำลังตรวจสอบ...");
-            tvServerLiveStatus.setTextColor(Color.parseColor("#D97706"));
+            tvServerLiveStatus.setTextColor(Color.parseColor("#FBBF24"));
+        }
+        if (tvBottomServerStatus != null) {
+            tvBottomServerStatus.setText("เซิร์ฟเวอร์ : กำลังตรวจสอบ...");
         }
 
         new Thread(() -> {
@@ -359,11 +294,14 @@ public class HomeFragment extends Fragment {
                     if (info.isOnline) {
                         if (tvServerLiveStatus != null) {
                             tvServerLiveStatus.setText("🟢 ออนไลน์");
-                            tvServerLiveStatus.setTextColor(Color.parseColor("#16A34A"));
+                            tvServerLiveStatus.setTextColor(Color.parseColor("#4ADE80"));
+                        }
+                        if (tvBottomServerStatus != null) {
+                            tvBottomServerStatus.setText("เซิร์ฟเวอร์ : ออนไลน์ (" + info.players + "/" + info.maxPlayers + ")");
                         }
                         if (tvServerHostname != null) {
                             String hn = (info.hostname != null) ? info.hostname.trim() : "";
-                            tvServerHostname.setText(hn.isEmpty() ? "MAYES! Roleplay" : hn);
+                            tvServerHostname.setText(hn.isEmpty() ? "CRYZEN CITY 2.0" : hn);
                         }
                         if (tvServerRealPlayers != null) {
                             tvServerRealPlayers.setText(info.players + " / " + info.maxPlayers + " คน");
@@ -371,20 +309,23 @@ public class HomeFragment extends Fragment {
                         if (tvServerRealPing != null) {
                             tvServerRealPing.setText(info.ping + " ms");
                             if (info.ping < 60) {
-                                tvServerRealPing.setTextColor(Color.parseColor("#059669"));
+                                tvServerRealPing.setTextColor(Color.parseColor("#4ADE80"));
                             } else if (info.ping < 120) {
-                                tvServerRealPing.setTextColor(Color.parseColor("#D97706"));
+                                tvServerRealPing.setTextColor(Color.parseColor("#FBBF24"));
                             } else {
-                                tvServerRealPing.setTextColor(Color.parseColor("#DC2626"));
+                                tvServerRealPing.setTextColor(Color.parseColor("#FB7185"));
                             }
                         }
                     } else {
                         if (tvServerLiveStatus != null) {
                             tvServerLiveStatus.setText("🔴 ออฟไลน์");
-                            tvServerLiveStatus.setTextColor(Color.parseColor("#DC2626"));
+                            tvServerLiveStatus.setTextColor(Color.parseColor("#FB7185"));
+                        }
+                        if (tvBottomServerStatus != null) {
+                            tvBottomServerStatus.setText("เซิร์ฟเวอร์ : ไม่สามารถติดต่อได้");
                         }
                         if (tvServerRealPlayers != null) {
-                            tvServerRealPlayers.setText("ไม่สามารถติดต่อเซิร์ฟเวอร์");
+                            tvServerRealPlayers.setText("-- / --");
                         }
                         if (tvServerRealPing != null) {
                             tvServerRealPing.setText("-");
@@ -400,51 +341,20 @@ public class HomeFragment extends Fragment {
         String statusText = (lastServerInfo != null && lastServerInfo.isOnline) ? "🟢 ออนไลน์ (ปกติ)" : "🔴 ไม่สามารถติดต่อได้";
         String playersText = (lastServerInfo != null && lastServerInfo.isOnline) ? (lastServerInfo.players + " / " + lastServerInfo.maxPlayers + " คน") : "ไม่สามารถติดต่อได้";
         String pingText = (lastServerInfo != null && lastServerInfo.isOnline) ? (lastServerInfo.ping + " ms") : "-";
-        String hostName = (lastServerInfo != null && !lastServerInfo.hostname.isEmpty()) ? lastServerInfo.hostname : "MAYES! Roleplay";
+        String hostName = (lastServerInfo != null && !lastServerInfo.hostname.isEmpty()) ? lastServerInfo.hostname : "CRYZEN CITY 2.0";
 
         showModernDialog(
-                "🏢 " + hostName,
+                hostName,
                 R.drawable.ic_server_database,
-                "ข้อมูลเซิร์ฟเวอร์ทางการ MAYES!:\n\n" +
+                "ข้อมูลเซิร์ฟเวอร์ CRYZEN CITY 2.0:\n\n" +
                         "• สถานะ: " + statusText + "\n" +
                         "• ที่อยู่ IP: " + LOCKED_SERVER_HOST + ":" + LOCKED_SERVER_PORT + "\n" +
                         "• ผู้เล่นออนไลน์จริง: " + playersText + "\n" +
                         "• ค่าความหน่วง (Ping): " + pingText + "\n" +
-                        "• เวอร์ชันระบบ: SAMP Mobile 2.11 (64-bit)\n\n" +
+                        "• เวอร์ชัน Launcher: 2.0.0-cryzen (UI 2.0)\n\n" +
                         "กดปุ่มด้านล่างเพื่อเข้าเล่นเกม!",
                 "กดเข้าเล่นเกม",
                 this::launchGame
-        );
-    }
-
-    private void showAnnouncementDialog() {
-        showModernDialog(
-                "📢 ประกาศจากทีมงาน MAYES!",
-                R.drawable.ic_megaphone_clean,
-                "ยินดีต้อนรับสู่ MAYES! 🎉\n\n" +
-                        "ขอบคุณผู้เล่นทุกท่านที่เข้ามาเป็นส่วนหนึ่งของคอมมูนิตี้ของเรา!\n\n" +
-                        "📌 อัพเดทแพทช์ล่าสุด 2.11.335:\n" +
-                        "1. ปรับปรุงหน้าตา UI ใหม่ทั้งหมด สไตล์ Modern MAYES!\n" +
-                        "2. เพิ่มประสิทธิภาพการเชื่อมต่อเซิร์ฟเวอร์ให้รวดเร็วและลื่นไหลยิ่งขึ้น\n" +
-                        "3. ระบบออโต้ดาวน์โหลดไฟล์ผ่าน Cloudflare R2 ความเร็วสูงพิเศษ\n" +
-                        "4. ปรับปรุงเสถียรภาพและระบบเสียงเกม\n\n" +
-                        "🕒 วันที่ประกาศ: 17 พ.ย. 2569",
-                "เข้าใจแล้ว",
-                null
-        );
-    }
-
-    private void showNotificationDialog() {
-        showModernDialog(
-                "🔔 ศูนย์การแจ้งเตือน",
-                R.drawable.ic_bell_clean,
-                "การแจ้งเตือนล่าสุดของคุณ:\n\n" +
-                        "🟢 [ระบบ] เซิร์ฟเวอร์ MAYES! ออนไลน์ปกติ พร้อมให้บริการ\n" +
-                        "🎁 [รางวัล] คุณมีของขวัญประจำวันรอรับอยู่ในกระเป๋า!\n" +
-                        "⚡ [กิจกรรม] กิจกรรม EXP x2 เริ่มต้นแล้ว อย่าลืมชวนเพื่อนมาร่วมสนุก\n" +
-                        "🛡️ [ความปลอดภัย] แนะนำให้ตั้งรหัสผ่านที่ปลอดภัยในเมนูตั้งค่าเกม",
-                "รับทราบ",
-                null
         );
     }
 
@@ -487,32 +397,7 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         refreshPlayerNickname();
-        refreshUiVersionBadge();
         fetchRealServerStats();
-    }
-
-    private void refreshUiVersionBadge() {
-        if (getContext() == null || tvHeaderUiVersion == null) return;
-        int ver = ConfigValidator.getUiVersion(getContext());
-        if (ver == 2) {
-            tvHeaderUiVersion.setText("UI 2.0 MOD");
-            tvHeaderUiVersion.setTextColor(Color.parseColor("#F59E0B"));
-        } else {
-            tvHeaderUiVersion.setText("UI 1.0 เดิม");
-            tvHeaderUiVersion.setTextColor(Color.parseColor("#94A3B8"));
-        }
-    }
-
-    private void toggleUiVersionQuick() {
-        if (getContext() == null) return;
-        int cur = ConfigValidator.getUiVersion(getContext());
-        int next = (cur == 2) ? 1 : 2;
-        ConfigValidator.setUiVersion(getContext(), next);
-        refreshUiVersionBadge();
-        String msg = (next == 2)
-                ? "สลับเป็นโหมด UI 2.0 (มอดกระเป๋า ImGui) แล้ว"
-                : "สลับเป็นโหมด UI 1.0 (คลาสสิก) แล้ว";
-        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     private void refreshPlayerNickname() {

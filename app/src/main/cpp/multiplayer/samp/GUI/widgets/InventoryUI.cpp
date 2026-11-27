@@ -55,20 +55,12 @@ void InventoryUI::clearSnapshotCache()
 
 void InventoryUI::SetServerUIVersion(int version)
 {
-	m_serverUIVersion = (version == 1 || version == 2) ? version : 0;
-	if (m_serverUIVersion == 1 && visible()) {
-		Hide(false);
-	}
+	// CRYZEN CITY 2.0 is strictly 2.0
+	m_serverUIVersion = 2;
 }
 
 int InventoryUI::GetEffectiveUIVersion() const
 {
-	if (m_serverUIVersion == 1 || m_serverUIVersion == 2) {
-		return m_serverUIVersion;
-	}
-	if (pSettings) {
-		return (pSettings->Get().iUIVersion == 1) ? 1 : 2;
-	}
 	return 2;
 }
 
@@ -484,9 +476,9 @@ void InventoryUI::drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, co
 	ImVec2 hdrMax(panelMax.x, panelMin.y + headerH);
 	renderer->drawRectFilledMulticolor(
 		panelMin, hdrMax,
-		ImColor(172, 22, 34, 200), ImColor(172, 22, 34, 200),
-		ImColor(72, 8, 16, 212), ImColor(72, 8, 16, 212));
-	renderer->drawLine(ImVec2(panelMin.x + 2.0f, hdrMax.y), ImVec2(panelMax.x - 2.0f, hdrMax.y), ImColor(255, 130, 138, 120), 1.0f);
+		ImColor(0, 152, 232, 215), ImColor(152, 54, 224, 215),
+		ImColor(18, 22, 62, 228), ImColor(38, 16, 78, 228));
+	renderer->drawLine(ImVec2(panelMin.x + 2.0f, hdrMax.y), ImVec2(panelMax.x - 2.0f, hdrMax.y), ImColor(0, 212, 255, 165), 1.0f);
 
 	// Bag icon on top-left
 	float iconSz = headerH * 0.44f;
@@ -543,7 +535,7 @@ void InventoryUI::drawHeader(ImGuiRenderer* renderer, const ImVec2& panelMin, co
 				ImVec2(m_tabRects[t].max.x - 4.0f, m_tabRects[t].max.y),
 				ImColor(255, 255, 255, 240), 2.0f);
 		}
-		ImColor iconCol = active ? ImColor(255, 255, 255, 255) : ImColor(255, 220, 224, 185);
+		ImColor iconCol = active ? ImColor(255, 255, 255, 255) : ImColor(200, 230, 255, 195);
 		drawCategoryIcon(renderer, t, (m_tabRects[t].min + m_tabRects[t].max) * 0.5f, btnSize * 0.34f, iconCol);
 		rightCursor = m_tabRects[t].min.x - gap;
 	}
@@ -625,21 +617,21 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 
 		if (y1 < gridMin.y || y0 > gridMax.y) continue;
 
-		// Card body (semi-transparent dark glass, red highlight when dropdown active)
+		// Card body (semi-transparent dark glass, cyan-violet highlight when dropdown active)
 		bool isDropdownTarget = (m_dropdownOpen && m_dropdownSlot == item->slot);
 		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1),
-			isDropdownTarget ? ImColor(72, 12, 20, 205) : ImColor(24, 26, 32, 162), true, 5.0f);
+			isDropdownTarget ? ImColor(40, 22, 92, 210) : ImColor(16, 20, 48, 172), true, 5.0f);
 		renderer->drawRect(ImVec2(x0, y0), ImVec2(x1, y1),
-			isDropdownTarget ? ImColor(255, 115, 125, 240) : ImColor(255, 255, 255, 24),
+			isDropdownTarget ? ImColor(0, 212, 255, 240) : ImColor(167, 139, 250, 42),
 			false, 5.0f, isDropdownTarget ? 1.8f : 1.0f);
 
 		// Bottom dark footer strip for item name
 		float footY = y1 - footerH;
-		renderer->drawRect(ImVec2(x0, footY), ImVec2(x1, y1), ImColor(12, 14, 18, 188), true, 4.0f);
+		renderer->drawRect(ImVec2(x0, footY), ImVec2(x1, y1), ImColor(10, 13, 34, 198), true, 4.0f);
 
 		// Top-left star badge (favorite or in hotbar)
 		if (item->favorite || isItemInHotbar(item->itemId)) {
-			drawStar(renderer, ImVec2(x0 + cardW * 0.13f, y0 + cardH * 0.13f), cardW * 0.075f, ImColor(235, 62, 76, 255));
+			drawStar(renderer, ImVec2(x0 + cardW * 0.13f, y0 + cardH * 0.13f), cardW * 0.075f, ImColor(255, 90, 195, 255));
 		}
 
 		// Top-right quantity badge
@@ -692,7 +684,7 @@ void InventoryUI::drawGrid(ImGuiRenderer* renderer, const ImVec2& gridMin, const
 		float thumbH = std::max(22.0f * u, trackH * thumbRatio);
 		float scrollFrac = (m_maxScrollY > 0.0f) ? (m_scrollY / m_maxScrollY) : 0.0f;
 		float thumbY = sbTop + (trackH - thumbH) * scrollFrac;
-		ImColor thumbCol = m_draggingScrollbar ? ImColor(235, 58, 72, 240) : ImColor(195, 36, 50, 195);
+		ImColor thumbCol = m_draggingScrollbar ? ImColor(0, 212, 255, 245) : ImColor(139, 92, 246, 210);
 		renderer->drawRect(ImVec2(sbX, thumbY), ImVec2(sbX + sbW, thumbY + thumbH), thumbCol, true, sbW * 0.5f);
 	}
 
@@ -797,14 +789,14 @@ void InventoryUI::drawDropdown(ImGuiRenderer* renderer)
 	m_dropdownRect.min = ImVec2(x, y);
 	m_dropdownRect.max = ImVec2(x + dropW, y + dropH);
 
-	// Soft drop shadow + semi-transparent red gradient container
+	// Soft drop shadow + semi-transparent Cryzen cyan-violet-midnight gradient container
 	renderer->drawRect(ImVec2(x + 2.0f * u, y + 3.0f * u), ImVec2(x + dropW + 2.0f * u, y + dropH + 3.0f * u),
-		ImColor(0, 0, 0, 110), true, 2.0f * u);
+		ImColor(0, 0, 0, 120), true, 2.0f * u);
 	renderer->drawRectFilledMulticolor(
 		m_dropdownRect.min, m_dropdownRect.max,
-		ImColor(172, 22, 34, 198), ImColor(172, 22, 34, 198),
-		ImColor(64, 6, 14, 212), ImColor(64, 6, 14, 212));
-	renderer->drawRect(m_dropdownRect.min, m_dropdownRect.max, ImColor(255, 130, 138, 135), false, 0.0f, 1.2f);
+		ImColor(68, 42, 196, 212), ImColor(158, 46, 192, 212),
+		ImColor(14, 18, 54, 228), ImColor(28, 14, 68, 228));
+	renderer->drawRect(m_dropdownRect.min, m_dropdownRect.max, ImColor(0, 212, 255, 165), false, 0.0f, 1.2f);
 
 	float cx0 = x + pad;
 	float cx1 = x + dropW - pad;
@@ -837,9 +829,9 @@ void InventoryUI::drawDropdown(ImGuiRenderer* renderer)
 		curY += rowH + gap;
 	};
 
-	const ImColor rowBg(28, 4, 9, 108);
-	const ImColor rowBgActive(195, 36, 50, 175);
-	const ImColor rowBorder(255, 255, 255, 62);
+	const ImColor rowBg(16, 20, 52, 135);
+	const ImColor rowBgActive(139, 92, 246, 195);
+	const ImColor rowBorder(0, 212, 255, 85);
 
 	// Action 0: Use
 	drawActionRow(0, "ใช้งาน", rowBg, rowBorder);
@@ -864,8 +856,8 @@ void InventoryUI::drawDropdown(ImGuiRenderer* renderer)
 			m_dropHotbarRects[h].min = ImVec2(hx0, curY);
 			m_dropHotbarRects[h].max = ImVec2(hx0 + hbW, curY + hbNumH);
 			bool isBound = (boundHb == h);
-			ImColor hBg = isBound ? ImColor(215, 42, 56, 225) : ImColor(32, 6, 12, 125);
-			ImColor hBd = isBound ? ImColor(255, 255, 255, 220) : ImColor(255, 255, 255, 68);
+			ImColor hBg = isBound ? ImColor(236, 72, 153, 225) : ImColor(20, 24, 60, 140);
+			ImColor hBd = isBound ? ImColor(0, 212, 255, 235) : ImColor(167, 139, 250, 82);
 			renderer->drawRect(m_dropHotbarRects[h].min, m_dropHotbarRects[h].max, hBg, true, 3.5f * u);
 			renderer->drawRect(m_dropHotbarRects[h].min, m_dropHotbarRects[h].max, hBd, false, 3.5f * u, 1.0f);
 			char nbuf[4];
@@ -907,8 +899,8 @@ void InventoryUI::draw(ImGuiRenderer* renderer)
 
 	// 1. Main semi-transparent glassmorphic container (no hotbar inside bag)
 	float rounding = 10.0f;
-	renderer->drawRect(m_panelMin, m_panelMax, ImColor(14, 16, 20, 148), true, rounding);
-	renderer->drawRect(m_panelMin, m_panelMax, ImColor(255, 255, 255, 34), false, rounding, 1.1f);
+	renderer->drawRect(m_panelMin, m_panelMax, ImColor(11, 14, 38, 185), true, rounding);
+	renderer->drawRect(m_panelMin, m_panelMax, ImColor(0, 212, 255, 90), false, rounding, 1.2f);
 
 	// 2. Header bar
 	drawHeader(renderer, m_panelMin, m_panelMax);
@@ -955,7 +947,7 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 		m_hotbarAnim = std::max(target, m_hotbarAnim - dt * 7.5f);
 	}
 
-	// 1. Far bottom-right arrow toggle button (keep exact comfortable size, red gradient style)
+	// 1. Far bottom-right arrow toggle button (Cryzen cyan-violet-pink gradient style)
 	float arrowBtnSz = 33.0f * u;
 	float marginR = 10.0f * u;
 	float marginB = 8.0f * u;
@@ -965,15 +957,15 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 	if (m_hudHotbarOpen) {
 		renderer->drawRectFilledMulticolor(
 			m_hudArrowRect.min, m_hudArrowRect.max,
-			ImColor(172, 22, 34, 200), ImColor(172, 22, 34, 200),
-			ImColor(64, 6, 14, 215), ImColor(64, 6, 14, 215));
+			ImColor(0, 168, 240, 210), ImColor(156, 56, 232, 210),
+			ImColor(18, 22, 62, 225), ImColor(36, 16, 74, 225));
 	} else {
 		renderer->drawRectFilledMulticolor(
 			m_hudArrowRect.min, m_hudArrowRect.max,
-			ImColor(120, 14, 24, 170), ImColor(120, 14, 24, 170),
-			ImColor(46, 5, 10, 185), ImColor(46, 5, 10, 185));
+			ImColor(46, 36, 118, 185), ImColor(96, 34, 148, 185),
+			ImColor(14, 18, 48, 200), ImColor(24, 14, 58, 200));
 	}
-	ImColor arrowBorder = m_hudHotbarOpen ? ImColor(255, 130, 138, 175) : ImColor(255, 130, 138, 105);
+	ImColor arrowBorder = m_hudHotbarOpen ? ImColor(0, 212, 255, 205) : ImColor(167, 139, 250, 125);
 	renderer->drawRect(m_hudArrowRect.min, m_hudArrowRect.max, arrowBorder, false, 0.0f, 1.2f);
 
 	ImVec2 ac = (m_hudArrowRect.min + m_hudArrowRect.max) * 0.5f;
@@ -991,7 +983,7 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 		renderer->drawLine(ImVec2(ac.x, ac.y + ah), ImVec2(ac.x + aw, ac.y - ah), chevronCol, stroke);
 	}
 
-	// 2. Slide-up floating Hotbar 1-7 boxes (no outer dock wrapper, red gradient matching dropdown)
+	// 2. Slide-up floating Hotbar 1-7 boxes (Cryzen neon cyan-violet-pink gradient)
 	if (m_hotbarAnim <= 0.01f) {
 		m_hudHotbarDockRect = HitRect{};
 		for (int i = 0; i < 7; i++) m_hudHotbarSlotRects[i] = HitRect{};
@@ -1033,16 +1025,16 @@ void InventoryUI::drawHudHotbar(ImGuiRenderer* renderer)
 		if (hasItem) {
 			renderer->drawRectFilledMulticolor(
 				m_hudHotbarSlotRects[i].min, m_hudHotbarSlotRects[i].max,
-				ImColor(172, 22, 34, 200), ImColor(172, 22, 34, 200),
-				ImColor(64, 6, 14, 215), ImColor(64, 6, 14, 215));
+				ImColor(0, 168, 240, 210), ImColor(156, 56, 232, 210),
+				ImColor(18, 22, 62, 225), ImColor(36, 16, 74, 225));
 		} else {
 			renderer->drawRectFilledMulticolor(
 				m_hudHotbarSlotRects[i].min, m_hudHotbarSlotRects[i].max,
-				ImColor(115, 14, 24, 155), ImColor(115, 14, 24, 155),
-				ImColor(45, 5, 10, 175), ImColor(45, 5, 10, 175));
+				ImColor(38, 28, 100, 165), ImColor(78, 26, 128, 165),
+				ImColor(12, 16, 44, 185), ImColor(22, 12, 54, 185));
 		}
 		renderer->drawRect(m_hudHotbarSlotRects[i].min, m_hudHotbarSlotRects[i].max,
-			hasItem ? ImColor(255, 130, 138, 175) : ImColor(255, 255, 255, 58), false, 0.0f, 1.1f);
+			hasItem ? ImColor(0, 212, 255, 200) : ImColor(167, 139, 250, 82), false, 0.0f, 1.1f);
 
 		char numBuf[4];
 		snprintf(numBuf, sizeof(numBuf), "%d", i + 1);

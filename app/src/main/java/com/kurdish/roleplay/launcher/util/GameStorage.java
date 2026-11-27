@@ -5,7 +5,7 @@ import android.content.Context;
 import java.io.File;
 
 public final class GameStorage {
-    private static final String PACKAGE_DIR = "com.newlab.mayes";
+    private static final String PACKAGE_DIR = "com.newlab.cryzen";
     private static final String SAMP_DIR = "SAMP";
 
     private GameStorage() {

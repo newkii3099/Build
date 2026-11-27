@@ -24,10 +24,10 @@ public class ConfigValidator {
                     FileOutputStream fos = new FileOutputStream(file);
                     StringBuilder sb = new StringBuilder();
                     sb.append("[client]\n");
-                    sb.append("name=MAYES_Player\n");
+                    sb.append("name=CRYZEN_Player\n");
                     sb.append("password=\n");
                     sb.append("version=0.3.7\n");
-                    sb.append("host=43.255.241.29\n");
+                    sb.append("host=157.254.192.108\n");
                     sb.append("port=7777\n\n");
                     sb.append("[gui]\n");
                     sb.append("androidkeyboard=false\n");
@@ -47,7 +47,7 @@ public class ConfigValidator {
     }
 
     public static String getNickName(Context context) {
-        if (context == null) return "MAYES_Player";
+        if (context == null) return "CRYZEN_Player";
         try {
             File file = GameStorage.getSettingsFile(context);
             if (!file.exists()) {
@@ -67,7 +67,7 @@ public class ConfigValidator {
         if (saved != null && !saved.trim().isEmpty()) {
             return saved.trim();
         }
-        return "MAYES_Player";
+        return "CRYZEN_Player";
     }
 
     public static void setNickName(Context context, String nickname) {
@@ -104,30 +104,13 @@ public class ConfigValidator {
     }
 
     public static int getUiVersion(Context context) {
-        if (context == null) return 2;
-        try {
-            File file = GameStorage.getSettingsFile(context);
-            if (!file.exists()) {
-                validateConfigFiles(context);
-            }
-            if (file.exists()) {
-                Wini wini = new Wini(file);
-                String val = wini.get("gui", "UIVersion");
-                if (val != null && !val.trim().isEmpty()) {
-                    int parsed = Integer.parseInt(val.trim());
-                    return (parsed == 1) ? 1 : 2;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        int saved = new SharedPreferenceCore().getInt(context, "UI_VERSION", 2);
-        return (saved == 1) ? 1 : 2;
+        // CRYZEN CITY 2.0 strictly runs UI 2.0
+        return 2;
     }
 
     public static void setUiVersion(Context context, int version) {
         if (context == null) return;
-        int normalized = (version == 1) ? 1 : 2;
+        int normalized = 2;
         new SharedPreferenceCore().setInt(context, "UI_VERSION", normalized);
         try {
             File file = GameStorage.getSettingsFile(context);

@@ -167,16 +167,11 @@ void InitGame(RPCParameters* rpcParams)
 		pUI->voicebutton()->setVisible(true);
 	}
 
-	// Auto-sync Launcher's selected UI version (1.0 Classic / 2.0 Mod ImGui) to server
-	if (pSettings) {
-		int uiVer = (pSettings->Get().iUIVersion == 1) ? 1 : 2;
-		if (pUI && pUI->inventory()) {
-			pUI->inventory()->SetServerUIVersion(uiVer);
-		}
-		char uiSyncCmd[32];
-		snprintf(uiSyncCmd, sizeof(uiSyncCmd), "/_uimode %d", uiVer);
-		pNetGame->SendChatCommand(uiSyncCmd);
+	// Auto-sync UI 2.0 mode to server (CRYZEN CITY 2.0 is strictly 2.0)
+	if (pUI && pUI->inventory()) {
+		pUI->inventory()->SetServerUIVersion(2);
 	}
+	pNetGame->SendChatCommand("/_uimode 2");
 
 	/*if (pVoice && pVoice->recorder()->active())
 	{

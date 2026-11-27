@@ -64,7 +64,7 @@ bool ImGuiWrapper::initialize()
     std::string sampPromptFont = BuildStoragePath("SAMP/fonts/Prompt-Regular.ttf");
     const char* baseFontCandidates[] = {
         sampPromptFont.c_str(),
-        "/data/data/com.newlab.mayes/files/Prompt-Regular.ttf",
+        "/data/data/com.newlab.cryzen/files/Prompt-Regular.ttf",
         m_fontPath.c_str(),
         "/system/fonts/Roboto-Regular.ttf",
         nullptr
@@ -120,7 +120,7 @@ bool ImGuiWrapper::initialize()
         "/system/fonts/NotoSansLao-Regular.ttf",
         "/system/fonts/NotoSansLaoUI-Regular.ttf",
         sampLaoFont.c_str(),
-        "/data/data/com.newlab.mayes/files/NotoSansLao-Regular.ttf",
+        "/data/data/com.newlab.cryzen/files/NotoSansLao-Regular.ttf",
         nullptr
     };
     for (int l = 0; laoFontPaths[l]; l++) {

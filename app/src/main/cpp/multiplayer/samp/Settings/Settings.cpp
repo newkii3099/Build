@@ -24,10 +24,10 @@ CSettings::CSettings()
 	// client
 	size_t length = 0;
 	char fallbackName[0x7F];
-	sprintf(fallbackName, "MAYES_%d", rand() % 1000);
+	sprintf(fallbackName, "CRYZEN_%d", rand() % 1000);
 	length = reader.Get("client", "name", fallbackName).copy(m_Settings.szNickName, 24);
 	m_Settings.szNickName[length] = '\0';
-	length = reader.Get("client", "host", "43.255.241.29").copy(m_Settings.szHost, MAX_SETTINGS_STRING);
+	length = reader.Get("client", "host", "157.254.192.108").copy(m_Settings.szHost, MAX_SETTINGS_STRING);
 	m_Settings.szHost[length] = '\0';
 	m_Settings.iPort = reader.GetInteger("client", "port", 7777);
 	length = reader.Get("client", "password", "").copy(m_Settings.szPassword, MAX_SETTINGS_STRING);
@@ -74,8 +74,7 @@ CSettings::CSettings()
 	m_Settings.fPassengerTextureY = reader.GetReal("gui", "PassengerTexturePosY", 430.0f);
 
 	m_Settings.iDialog = reader.GetBoolean("gui", "Dialog", true);
-	m_Settings.iUIVersion = reader.GetInteger("gui", "UIVersion", 2);
-	if (m_Settings.iUIVersion != 1) m_Settings.iUIVersion = 2;
+	m_Settings.iUIVersion = 2;
 
 	m_Settings.bVoiceChatEnable = reader.GetBoolean("gui", "VoiceChatEnable", false);
 	m_Settings.iVoiceChatKey = reader.GetInteger("gui", "VoiceChatKey", 66);

@@ -102,10 +102,11 @@
 
                 <ImageView
                     android:id="@+id/app_logo"
-                    android:layout_width="25dp"
-                    android:layout_height="25dp"
+                    android:layout_width="68dp"
+                    android:layout_height="26dp"
                     android:layout_marginStart="250dp"
                     android:layout_marginTop="12dp"
+                    android:scaleType="fitCenter"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintHorizontal_bias="0.302"
                     app:layout_constraintStart_toStartOf="parent"
@@ -120,21 +121,21 @@
                     android:layout_marginEnd="56dp"
                     android:fontFamily="@font/montserrat_bold"
                     android:gravity="center_vertical"
-                    android:text="ผู้เล่น: 100/1000"
-                    android:textColor="#0284C7"
+                    android:text="ผู้เล่น: 0/100"
+                    android:textColor="#7C3AED"
                     android:textSize="10sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
-                    android:layout_width="95dp"
+                    android:layout_width="130dp"
                     android:layout_height="21dp"
                     android:layout_marginTop="12dp"
-                    android:layout_marginEnd="212dp"
+                    android:layout_marginEnd="200dp"
                     android:fontFamily="@font/montserrat_bold"
                     android:gravity="center_vertical"
-                    android:text="MAYES!"
-                    android:textColor="#0284C7"
+                    android:text="CRYZEN CITY 2.0"
+                    android:textColor="#7C3AED"
                     android:textSize="10sp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

@@ -184,7 +184,7 @@ public abstract class GameActivityBase extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         handler = new Handler();
-        // Resolve storage paths (point to Android/data/com.newlab.mayes/files where GTA SA files reside)
+        // Resolve storage paths (point to Android/data/com.newlab.cryzen/files where GTA SA files reside)
         File gameBaseDir = GameStorage.getGameBaseDirectory(this);
         String storagePath = gameBaseDir.getAbsolutePath();
 

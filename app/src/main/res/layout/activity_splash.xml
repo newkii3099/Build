@@ -4,18 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- 🌅 Anime Coastal City Background -->
+    <!-- 🌃 CRYZEN Neon Cyber-Candy City Background -->
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
         android:src="@drawable/bg_launcher" />
 
-    <!-- 🌌 Dark Translucent Vignette -->
+    <!-- 🌌 Deep Midnight Indigo Scrim -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#33000000" />
+        android:background="#5906081A" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -29,115 +29,111 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- 📦 Modern Center Welcome Card -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="380dp"
+        <!-- 🎴 Cryzen Center Cyber-Glass Welcome Card -->
+        <LinearLayout
+            android:layout_width="410dp"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="20dp"
-            app:cardElevation="10dp"
-            app:cardBackgroundColor="#F8FAFC"
-            app:layout_constraintTop_toTopOf="parent"
+            android:background="@drawable/bg_card_white"
+            android:elevation="12dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="28dp"
+            android:paddingVertical="22dp"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toTopOf="parent">
 
+            <!-- Transparent In-App Logo -->
+            <ImageView
+                android:id="@+id/appLogo"
+                android:layout_width="230dp"
+                android:layout_height="88dp"
+                android:layout_marginBottom="8dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_app_logo" />
+
+            <!-- Edition Pill -->
             <LinearLayout
-                android:layout_width="match_parent"
+                android:id="@+id/appNameLayout"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
                 android:gravity="center"
-                android:paddingHorizontal="24dp"
-                android:paddingVertical="24dp">
+                android:orientation="vertical">
 
-                <!-- App Logo -->
-                <ImageView
-                    android:id="@+id/appLogo"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_marginBottom="12dp"
-                    android:src="@drawable/ic_app_logo"
-                    android:elevation="4dp" />
-
-                <!-- App Name -->
-                <LinearLayout
-                    android:id="@+id/appNameLayout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-black"
-                        android:letterSpacing="0.06"
-                        android:text="MAYES!"
-                        android:textColor="@color/nextcity_text_title"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="sans-serif-bold"
-                        android:letterSpacing="0.18"
-                        android:text="PLAY • CONNECT • ENJOY"
-                        android:textColor="#7C3AED"
-                        android:textSize="10sp" />
-                </LinearLayout>
-
-                <!-- Thai Tagline -->
                 <TextView
-                    android:id="@+id/taglineText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:text="ยินดีต้อนรับสู่โลกเสมือนจริง MAYES!"
-                    android:textColor="@color/nextcity_text_body"
-                    android:textSize="12sp"
-                    android:fontFamily="sans-serif-medium" />
-
-                <!-- Loading Animation Area -->
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <ImageView
-                        android:id="@+id/loadingIcon"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_marginEnd="8dp"
-                        android:src="@drawable/ic_loading"
-                        app:tint="#7C3AED" />
-
-                    <TextView
-                        android:id="@+id/checkingText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="กำลังตรวจสอบข้อมูลและเตรียมระบบ..."
-                        android:textColor="@color/nextcity_text_muted"
-                        android:textSize="11.5sp" />
-                </LinearLayout>
-
+                    android:background="@drawable/bg_tag_purple"
+                    android:fontFamily="sans-serif-black"
+                    android:letterSpacing="0.16"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="4dp"
+                    android:text="CRYZEN CITY 2.0 • SAMP"
+                    android:textColor="#00D4FF"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+
+            <!-- Thai Tagline -->
+            <TextView
+                android:id="@+id/taglineText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="sans-serif-medium"
+                android:text="ยินดีต้อนรับสู่โลกเสมือนจริง CRYZEN CITY 2.0"
+                android:textColor="#E2E8F0"
+                android:textSize="12sp" />
+
+            <!-- Accent Divider -->
+            <View
+                android:layout_width="180dp"
+                android:layout_height="1.5dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/button_red_rectangle" />
+
+            <!-- Loading Animation Area -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/loadingIcon"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic_loading"
+                    app:tint="#00D4FF" />
+
+                <TextView
+                    android:id="@+id/checkingText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="กำลังตรวจสอบไฟล์เกมและเตรียมระบบ..."
+                    android:textColor="#C7D2FE"
+                    android:textSize="11.5sp" />
+            </LinearLayout>
+
+        </LinearLayout>
 
         <!-- Version Pill at Bottom -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_pill_status"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="4dp"
-            android:text="เวอร์ชัน 2.11.313 (64-bit ARM)"
-            android:textColor="#FFFFFF"
+            android:fontFamily="sans-serif-bold"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="5dp"
+            android:text="เวอร์ชัน 2.0.0-cryzen • 64-bit ARM"
+            android:textColor="#C7D2FE"
             android:textSize="9.5sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

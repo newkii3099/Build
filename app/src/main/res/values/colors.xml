@@ -40,13 +40,13 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
-    <color name="gradient1">#ffce0e03</color>
-    <color name="gradient2">#FF3636</color>
+    <color name="gradient1">#FF00D4FF</color>
+    <color name="gradient2">#FFEC4899</color>
     <color name="white6">#14ffffff</color>
     <color name="black20">#33000000</color>
     <color name="color_0F0F0F">#ff0f0f0f</color>
     <color name="menuTextDisable">#ffffffff</color>
-    <color name="menuTextEnable">#ffde2a09</color>
+    <color name="menuTextEnable">#FF00D4FF</color>
     <color name="white15">#40ffffff</color>
     <color name="black30">#40000000</color>
     <color name="black60">#99000000</color>
@@ -55,16 +55,16 @@
     <color name="black_75_transparency">#bf000000</color>
     <color name="blue">#ff3ea2ff</color>
     <color name="gray">#ff666666</color>
-    <color name="colorAccent">#ffed4319</color>
-    <color name="colorPrimary">#ff000000</color>
-    <color name="colorPrimaryDark">#ff000000</color>
-    <color name="red_7">#ff250000</color>
-    <color name="red_bg_queue_smi_dialog">#ffe2310c</color>
-    <color name="red_bg_queue_smi_dialog_15">#26e2310c</color>
-    <color name="red_bg_queue_smi_dialog_25">#40e2310c</color>
-    <color name="red_bg_queue_smi_dialog_50">#80e2310c</color>
-    <color name="red_bg_queue_smi_dialog_75">#bfe2310c</color>
-    <color name="red_diagnostics">#ffff4b25</color>
+    <color name="colorAccent">#FF00D4FF</color>
+    <color name="colorPrimary">#FF0A0E27</color>
+    <color name="colorPrimaryDark">#FF070A1F</color>
+    <color name="red_7">#FF121638</color>
+    <color name="red_bg_queue_smi_dialog">#FF7C3AED</color>
+    <color name="red_bg_queue_smi_dialog_15">#267C3AED</color>
+    <color name="red_bg_queue_smi_dialog_25">#407C3AED</color>
+    <color name="red_bg_queue_smi_dialog_50">#807C3AED</color>
+    <color name="red_bg_queue_smi_dialog_75">#BF7C3AED</color>
+    <color name="red_diagnostics">#FF00D4FF</color>
     <color name="inv_background">#94000000</color>
     <color name="inv_background_dialog_apply">#cc151515</color>
     <color name="inv_background_item_in_ivn">#73000000</color>
@@ -222,32 +222,46 @@
     <color name="wanted_red_light">#33FF4365</color>
     <color name="dialog_bg_color">#E608140E</color>
 
-    <!-- Modern NextCity Launcher Theme Colors -->
+    <!-- CRYZEN CITY 2.0 Neon Cyber-Candy Palette -->
+    <color name="cryzen_bg_deep">#E6090B22</color>
+    <color name="cryzen_card_dark">#D9111536</color>
+    <color name="cryzen_card_light">#261A2050</color>
+    <color name="cryzen_cyan">#00D4FF</color>
+    <color name="cryzen_blue">#3B82F6</color>
+    <color name="cryzen_violet">#8B5CF6</color>
+    <color name="cryzen_pink">#EC4899</color>
+    <color name="cryzen_text_primary">#F8FAFC</color>
+    <color name="cryzen_text_secondary">#C7D2FE</color>
+    <color name="cryzen_text_muted">#94A3B8</color>
+    <color name="cryzen_border_cyan">#4D00D4FF</color>
+    <color name="cryzen_border_violet">#4D8B5CF6</color>
+
+    <!-- Modern CRYZEN Launcher Theme Colors -->
     <color name="brand_purple">#8B5CF6</color>
     <color name="brand_purple_dark">#7C3AED</color>
     <color name="brand_magenta">#C026D3</color>
     <color name="brand_pink">#EC4899</color>
-    <color name="brand_purple_light">#F3E8FF</color>
-    <color name="brand_purple_border">#DDD6FE</color>
+    <color name="brand_purple_light">#268B5CF6</color>
+    <color name="brand_purple_border">#4D8B5CF6</color>
 
-    <color name="nextcity_card_bg">#F2FFFFFF</color>
-    <color name="nextcity_card_pressed">#E2E8F0</color>
-    <color name="nextcity_card_border">#E2E8F0</color>
+    <color name="nextcity_card_bg">#D9111536</color>
+    <color name="nextcity_card_pressed">#E61C2252</color>
+    <color name="nextcity_card_border">#4D00D4FF</color>
 
-    <color name="nextcity_text_title">#0F172A</color>
-    <color name="nextcity_text_body">#334155</color>
-    <color name="nextcity_text_muted">#64748B</color>
-    <color name="nextcity_text_submuted">#94A3B8</color>
+    <color name="nextcity_text_title">#F8FAFC</color>
+    <color name="nextcity_text_body">#CBD5E1</color>
+    <color name="nextcity_text_muted">#94A3B8</color>
+    <color name="nextcity_text_submuted">#64748B</color>
 
-    <color name="nextcity_online_green">#16A34A</color>
-    <color name="nextcity_online_green_bg">#DCFCE7</color>
-    <color name="nextcity_online_green_dot">#22C55E</color>
-    <color name="nextcity_badge_red">#EF4444</color>
+    <color name="nextcity_online_green">#22C55E</color>
+    <color name="nextcity_online_green_bg">#2622C55E</color>
+    <color name="nextcity_online_green_dot">#4ADE80</color>
+    <color name="nextcity_badge_red">#EC4899</color>
 
-    <color name="nextcity_bottom_bar_bg">#B30F172A</color>
-    <color name="nextcity_bottom_bar_border">#1AFFFFFF</color>
+    <color name="nextcity_bottom_bar_bg">#CC090B22</color>
+    <color name="nextcity_bottom_bar_border">#3300D4FF</color>
     <color name="nextcity_bottom_bar_text">#E2E8F0</color>
-    <color name="nextcity_bottom_bar_highlight">#FBBF24</color>
+    <color name="nextcity_bottom_bar_highlight">#00D4FF</color>
 
     <color name="brand_discord">#5865F2</color>
     <color name="brand_facebook">#1877F2</color>

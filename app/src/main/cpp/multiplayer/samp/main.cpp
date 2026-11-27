@@ -38,7 +38,7 @@ Peerapol Unarak
 JavaVM* javaVM;
 
 
-static std::string g_storagePath = "/storage/emulated/0/Android/data/com.newlab.mayes/files/";
+static std::string g_storagePath = "/storage/emulated/0/Android/data/com.newlab.cryzen/files/";
 char* g_pszStorage = const_cast<char*>(g_storagePath.c_str());
 
 UI* pUI = nullptr;
@@ -318,9 +318,9 @@ void DoInitStuff()
 		}
 		InitFPSFix(fpsLimit);
 
-		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "43.255.241.29";
+		const char* szHost = (pSettings && pSettings->Get().szHost[0] != '\0') ? pSettings->Get().szHost : "157.254.192.108";
 		int iPort = (pSettings && pSettings->Get().iPort > 0) ? pSettings->Get().iPort : 7777;
-		const char* szNick = (pSettings && pSettings->Get().szNickName[0] != '\0') ? pSettings->Get().szNickName : "MAYES_Player";
+		const char* szNick = (pSettings && pSettings->Get().szNickName[0] != '\0') ? pSettings->Get().szNickName : "CRYZEN_Player";
 		const char* szPass = (pSettings) ? pSettings->Get().szPassword : "";
 
 		FLog("Starting CNetGame with Host: %s:%d, NickName: %s", szHost, iPort, szNick);
