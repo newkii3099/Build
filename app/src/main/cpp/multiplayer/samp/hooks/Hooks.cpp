@@ -1841,61 +1841,77 @@ bool RwResourcesFreeResEntry_hook(void* entry)
     return result;
 }
 
-static uint32_t dwRLEDecompressSourceSize = 0;
+static thread_local const void* t_pLastRLEBuffer = nullptr;
+static thread_local uint32_t t_dwRLEDecompressSourceSize = 0;
 
-size_t (*OS_FileRead)(OSFile a1, void *buffer, size_t numBytes);
-size_t OS_FileRead_hook(OSFile a1, void *buffer, size_t numBytes)
+int (*OS_FileRead)(OSFile a1, void *buffer, int numBytes);
+int OS_FileRead_hook(OSFile a1, void *buffer, int numBytes)
 {
-    //dwRLEDecompressSourceSize = numBytes;
+    if (buffer != nullptr && numBytes > 0) {
+        t_pLastRLEBuffer = buffer;
+        t_dwRLEDecompressSourceSize = static_cast<uint32_t>(numBytes);
+    }
 
     return OS_FileRead(a1, buffer, numBytes);
 }
 
-void (*RLEDecompress)(uint8_t* pDest, size_t uiDestSize, uint8_t const* pSrc, size_t uiSegSize, uint32_t uiEscape);
-void RLEDecompress_hook(uint8_t* pDest, size_t uiDestSize, const uint8_t* pSrc, size_t uiSegSize, uint32_t uiEscape) {
+void (*RLEDecompress)(uint8_t* pDest, uint32_t uiDestSize, uint8_t const* pSrc, uint32_t uiSegSize, uint32_t uiEscape);
+void RLEDecompress_hook(uint8_t* pDest, uint32_t uiDestSize, const uint8_t* pSrc, uint32_t uiSegSize, uint32_t uiEscape) {
+    const void* lastBuf = t_pLastRLEBuffer;
+    const uint32_t srcSize = t_dwRLEDecompressSourceSize;
+    t_pLastRLEBuffer = nullptr;
+    t_dwRLEDecompressSourceSize = 0;
 
     if (!pDest || !pSrc || uiDestSize == 0 || uiSegSize == 0) {
-        // Обработка некорректных входных данных или размеров
-        // Здесь можно сгенерировать исключение или вернуть код ошибки
+        return;
+    }
+
+    if (pSrc != lastBuf || srcSize == 0) {
+        if (RLEDecompress) {
+            RLEDecompress(pDest, uiDestSize, pSrc, uiSegSize, uiEscape);
+        }
         return;
     }
 
     const uint8_t* pTempSrc = pSrc;
+    const uint8_t* const pEndOfSrc = pSrc + srcSize;
+    uint8_t* pCurDest = pDest;
     const uint8_t* const pEndOfDest = pDest + uiDestSize;
-    const uint8_t* const pEndOfSrc = pSrc + dwRLEDecompressSourceSize; // Предполагается, что dwRLEDecompressSourceSize определено правильно
 
-    try {
-        while (pDest < pEndOfDest && pTempSrc < pEndOfSrc) {
-            if (*pTempSrc == uiEscape) {
-                if (pTempSrc + 1 >= pEndOfSrc || pTempSrc[1] == 0 || pTempSrc + 2 + uiSegSize > pEndOfSrc) {
-                    // Обработка ошибки, неверное значение ucCurSeg или недостаточно данных в исходном буфере
-                    throw std::runtime_error("rled error 1");
-                }
-
-                uint8_t ucCurSeg = pTempSrc[1];
-                while (ucCurSeg--) {
-                    if (pDest + uiSegSize > pEndOfDest) {
-                        // Обработка ошибки, недостаточно места в целевом буфере
-                        throw std::runtime_error("rled error 2");
-                    }
-                    memcpy(pDest, pTempSrc + 2, uiSegSize);
-                    pDest += uiSegSize;
-                }
-                pTempSrc += 2 + uiSegSize;
-            } else {
-                if (pDest + uiSegSize > pEndOfDest || pTempSrc + uiSegSize > pEndOfSrc) {
-                    // Обработка ошибки, недостаточно данных в исходном буфере или недостаточно места в целевом буфере
-                    throw std::runtime_error("rled error 3");
-                }
-                memcpy(pDest, pTempSrc, uiSegSize);
-                pDest += uiSegSize;
-                pTempSrc += uiSegSize;
+    while (pCurDest < pEndOfDest && pTempSrc < pEndOfSrc) {
+        if (*pTempSrc == uiEscape) {
+            if (pTempSrc + 2 + uiSegSize > pEndOfSrc) {
+                break;
             }
-        }
 
-        dwRLEDecompressSourceSize = 0;
-    } catch (const std::exception& e) {
-        FLog("%s", e.what());
+            uint8_t ucCurSeg = pTempSrc[1];
+            if (ucCurSeg == 0) {
+                pTempSrc += 2 + uiSegSize;
+                continue;
+            }
+
+            while (ucCurSeg-- && pCurDest < pEndOfDest) {
+                size_t copyLen = static_cast<size_t>(pEndOfDest - pCurDest);
+                if (copyLen > uiSegSize) {
+                    copyLen = uiSegSize;
+                }
+                memcpy(pCurDest, pTempSrc + 2, copyLen);
+                pCurDest += uiSegSize;
+            }
+            pTempSrc += 2 + uiSegSize;
+        } else {
+            if (pTempSrc + uiSegSize > pEndOfSrc) {
+                break;
+            }
+
+            size_t copyLen = static_cast<size_t>(pEndOfDest - pCurDest);
+            if (copyLen > uiSegSize) {
+                copyLen = uiSegSize;
+            }
+            memcpy(pCurDest, pTempSrc, copyLen);
+            pCurDest += uiSegSize;
+            pTempSrc += uiSegSize;
+        }
     }
 }
 
@@ -2178,9 +2194,8 @@ void InstallSpecialHooks()
 
     CHook::RET("_ZN4CPed31RemoveWeaponWhenEnteringVehicleEi"); // CPed::RemoveWeaponWhenEnteringVehicle
 
-    //CHook::InstallPLT(g_libGTASA + 0x840708, &RLEDecompress_hook, &RLEDecompress);
-
-   // CHook::InlineHook("_Z11OS_FileReadPvS_i", &OS_FileRead_hook, &OS_FileRead);
+    CHook::InstallPLT(g_libGTASA + 0x83F3D8, &OS_FileRead_hook, &OS_FileRead);
+    CHook::InlineHook("_Z13RLEDecompressPhjPKhjj", &RLEDecompress_hook, &RLEDecompress);
 
 	//CHook::InlineHook("_Z32_rxOpenGLDefaultAllInOneRenderCBP10RwResEntryPvhj", &rxOpenGLDefaultAllInOneRenderCB_hook, &rxOpenGLDefaultAllInOneRenderCB);
 	//CHook::InlineHook("_ZN25CCustomBuildingDNPipeline18CustomPipeRenderCBEP10RwResEntryPvhj", &CCustomBuildingDNPipeline__CustomPipeRenderCB_hook, &CCustomBuildingDNPipeline__CustomPipeRenderCB);
