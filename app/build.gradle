@@ -23,8 +23,8 @@ android {
         applicationId "com.newlab.cryzen"
         minSdk 28
         targetSdk 36
-        versionCode 4234800
-        versionName "2.0.0-cryzen"
+        versionCode 4234801
+        versionName "2.0.1-cryzen"
 
         multiDexEnabled true
 

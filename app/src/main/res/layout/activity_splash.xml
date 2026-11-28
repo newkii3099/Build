@@ -128,7 +128,7 @@
             android:fontFamily="sans-serif-bold"
             android:paddingHorizontal="14dp"
             android:paddingVertical="5dp"
-            android:text="เวอร์ชัน 2.0.0-cryzen • 64-bit ARM"
+            android:text="เวอร์ชัน 2.0.1-cryzen • 64-bit ARM"
             android:textColor="#C7D2FE"
             android:textSize="9.5sp"
             app:layout_constraintBottom_toBottomOf="parent"

@@ -67,6 +67,47 @@ bool CSnapShotHelper::EnsureSceneReady()
     return true;
 }
 
+static void RestoreMainRenderWareCamera()
+{
+    CCamera* pTheCamera = reinterpret_cast<CCamera*>(g_libGTASA + 0x9F86F8);
+    if (pTheCamera && pTheCamera->m_pRwCamera) {
+        CVisibilityPlugins::SetRenderWareCamera(pTheCamera->m_pRwCamera);
+    }
+}
+
+bool CSnapShotHelper::BeginCameraSnapshot(RwRaster* raster, uint32_t dwColor, bool bObjectFlags)
+{
+    m_camera->frameBuffer = raster;
+    CVisibilityPlugins::SetRenderWareCamera(m_camera);
+    RwCameraClear(m_camera, reinterpret_cast<RwRGBA*>(&dwColor), 3);
+
+    if (!RwCameraBeginUpdate((RwCamera*)m_camera)) {
+        m_camera->frameBuffer = nullptr;
+        RestoreMainRenderWareCamera();
+        return false;
+    }
+
+    RpWorldAddLight(Scene.m_pRpWorld, m_light);
+    RwRenderStateSet(rwRENDERSTATEZTESTENABLE, (void*)true);
+    RwRenderStateSet(rwRENDERSTATEZWRITEENABLE, (void*)true);
+    RwRenderStateSet(rwRENDERSTATESHADEMODE, (void*)rwSHADEMODEGOURAUD);
+    if (bObjectFlags) {
+        RwRenderStateSet(rwRENDERSTATEALPHATESTFUNCTIONREF, (void*)0);
+        RwRenderStateSet(rwRENDERSTATECULLMODE, (void*)rwCULLMODENACULLMODE);
+    }
+    RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)false);
+    DefinedState();
+    return true;
+}
+
+void CSnapShotHelper::EndCameraSnapshot()
+{
+    RwCameraEndUpdate((RwCamera*)m_camera);
+    RpWorldRemoveLight(Scene.m_pRpWorld, m_light);
+    m_camera->frameBuffer = nullptr;
+    RestoreMainRenderWareCamera();
+}
+
 // 0.3.7
 RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, CVector* vecRot, float fZoom)
 {
@@ -131,22 +172,13 @@ RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, C
             RwFrameRotate(parent, &axisZ, vecRot->z, rwCOMBINEPRECONCAT);
         }
     }
-    m_camera->frameBuffer = raster;
-    CVisibilityPlugins::SetRenderWareCamera(m_camera);
-    RwCameraClear(m_camera, reinterpret_cast<RwRGBA *>(&dwColor), 3);
-    RwCameraBeginUpdate((RwCamera*)m_camera);
-    RpWorldAddLight(Scene.m_pRpWorld, m_light);
-    RwRenderStateSet(rwRENDERSTATEZTESTENABLE, (void*)true);
-    RwRenderStateSet(rwRENDERSTATEZWRITEENABLE, (void*)true);
-    RwRenderStateSet(rwRENDERSTATESHADEMODE, (void*)rwSHADEMODEGOURAUD);
-    RwRenderStateSet(rwRENDERSTATEALPHATESTFUNCTIONREF, (void*)0);
-    RwRenderStateSet(rwRENDERSTATECULLMODE, (void*)rwCULLMODENACULLMODE);
-    RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)false);
-    // DefinedState
-    DefinedState();
+    if (!BeginCameraSnapshot(raster, dwColor, true)) {
+        RwTextureDestroy(bufferTexture);
+        DestroyAtomicOrClump(reinterpret_cast<uintptr_t>(pRwObject));
+        return nullptr;
+    }
     RenderClumpOrAtomic((uintptr_t)pRwObject);
-    RwCameraEndUpdate(m_camera);
-    RpWorldRemoveLight(Scene.m_pRpWorld, m_light);
+    EndCameraSnapshot();
     DestroyAtomicOrClump(reinterpret_cast<uintptr_t>(pRwObject));
     return bufferTexture;
 }
@@ -201,30 +233,19 @@ RwTexture* CSnapShotHelper::CreatePedSnapShot(int iModel, uint32_t dwColor, CVec
 
     pPed->m_pPed->SetMatrix((CMatrix&)mat);
 
-    // set camera frame buffer //
-    m_camera->frameBuffer = raster;
-    // CVisibilityPlugins::SetRenderWareCamera
-    CVisibilityPlugins::SetRenderWareCamera(m_camera);
-
-    RwCameraClear(m_camera, reinterpret_cast<RwRGBA *>(&dwColor), 3);
-    RwCameraBeginUpdate((RwCamera*)m_camera);
-    RpWorldAddLight(Scene.m_pRpWorld, m_light);
-
-    RwRenderStateSet(rwRENDERSTATEZTESTENABLE, (void*)true);
-    RwRenderStateSet(rwRENDERSTATEZWRITEENABLE, (void*)true);
-    RwRenderStateSet(rwRENDERSTATESHADEMODE, (void*)rwSHADEMODEGOURAUD);
-    RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)false);
-
-    DefinedState();
+    if (!BeginCameraSnapshot(raster, dwColor, false)) {
+        delete pPed;
+        RwTextureDestroy(bufferTexture);
+        CStreaming::RemoveModelIfNoRefs(iModel);
+        return nullptr;
+    }
 
     pPed->m_pPed->Add();
 
     RpAnimBlendClumpUpdateAnimations(pPed->m_pPed->m_pRwClump, 100.0f, 1);
     RenderEntity(pPed->m_pPed);
 
-    RwCameraEndUpdate((RwCamera*)m_camera);
-
-    RpWorldRemoveLight(Scene.m_pRpWorld, m_light);
+    EndCameraSnapshot();
 
     pPed->m_pPed->Remove();
 
@@ -296,22 +317,15 @@ RwTexture* CSnapShotHelper::CreateVehicleSnapShot(int iModel, uint32_t dwColor, 
 
     pVehicle->m_pVehicle->SetMatrix((CMatrix&)mat);
     pVehicle->m_pVehicle->UpdateRW();
-    m_camera->frameBuffer = raster;
-    CVisibilityPlugins::SetRenderWareCamera(m_camera);
-    RwCameraClear(m_camera, reinterpret_cast<RwRGBA *>(&dwColor), 3);
-    RwCameraBeginUpdate((RwCamera*)m_camera);
-    RpWorldAddLight(Scene.m_pRpWorld, m_light);
-    RwRenderStateSet(rwRENDERSTATEZTESTENABLE, (void*)true);
-    RwRenderStateSet(rwRENDERSTATEZWRITEENABLE, (void*)true);
-    RwRenderStateSet(rwRENDERSTATESHADEMODE, (void*)rwSHADEMODEGOURAUD);
-    RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)false);
-
-    DefinedState();
+    if (!BeginCameraSnapshot(raster, dwColor, false)) {
+        delete pVehicle;
+        RwTextureDestroy(bufferTexture);
+        return nullptr;
+    }
     pVehicle->m_pVehicle->Add();
 
     RenderEntity(pVehicle->m_pVehicle);
-    RwCameraEndUpdate((RwCamera*)m_camera);
-    RpWorldRemoveLight(Scene.m_pRpWorld, m_light);
+    EndCameraSnapshot();
     pVehicle->m_pVehicle->Remove();
     delete pVehicle;
 

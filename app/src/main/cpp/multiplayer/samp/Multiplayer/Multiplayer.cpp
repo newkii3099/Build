@@ -9,6 +9,7 @@
 #include "gta-reversed/game_sa/TxdStore.h"
 #include "gta-reversed/game_sa/VisibilityPlugins.h"
 #include "samp/Network/Network.h"
+#include "samp/GUI/gui.h"
 #include "CrossHair.h"
 #include "gta-reversed/game_sa/Pickups.h"
 #include "gta-reversed/game_sa/Models/ModelInfo.h"
@@ -843,6 +844,16 @@ void CGame::Process() {
                 pUI->buttonpanel()->m_bH->setCaption("H");
         }
 
+        // Render offscreen 3D model snapshots before RsCameraBeginUpdate(Scene.m_pRwCamera)
+        // so RwCameraBeginUpdate(m_camera) does not collide with the active main frame FBO.
+        CTextDrawPool* pTextDrawPool = pNetGame->GetTextDrawPool();
+        if (pTextDrawPool) {
+            pTextDrawPool->SnapshotProcess();
+        }
+    }
+
+    if (pUI && pUI->inventory()) {
+        pUI->inventory()->ProcessSnapshots();
     }
 
     ProcessMainThreadTasks();

@@ -364,16 +364,16 @@ bool CTextDraw::SnapshotProcess()
         return false;
     }
 
+    if (!pSnapShotHelper) {
+        return false;
+    }
+
     uint32_t dwNow = GetTickCount();
     if (dwNow - m_dwLastSnapshotAttempt < 1500) {
         return false;
     }
     m_dwLastSnapshotAttempt = dwNow;
     m_byteSnapshotAttempts++;
-
-    if (!pSnapShotHelper) {
-        return false;
-    }
 
     if (m_TextDrawData.wModelID == 0 || m_TextDrawData.wModelID == 31278 || m_TextDrawData.wModelID == 0xFFFF) {
         m_byteSnapshotAttempts = 3;

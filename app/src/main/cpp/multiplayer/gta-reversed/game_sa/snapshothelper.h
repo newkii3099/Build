@@ -12,6 +12,8 @@ public:
 private:
     void SetUpScene();
     bool EnsureSceneReady();
+    bool BeginCameraSnapshot(RwRaster* raster, uint32_t dwColor, bool bObjectFlags);
+    void EndCameraSnapshot();
     //void ProcessCamera(uintptr_t pRwObject, uint32_t dwColor);
 
     RwCamera* m_camera;

@@ -159,8 +159,6 @@ void Render2dStuff_hook()
     if (pNetGame) {
         CTextDrawPool* pTextDrawPool = pNetGame->GetTextDrawPool();
         if (pTextDrawPool) {
-            pTextDrawPool->SnapshotProcess();
-
             RwRenderStateSet(rwRENDERSTATEZTESTENABLE, (void*)FALSE);
             RwRenderStateSet(rwRENDERSTATEZWRITEENABLE, (void*)FALSE);
             RwRenderStateSet(rwRENDERSTATEVERTEXALPHAENABLE, (void*)TRUE);
@@ -177,9 +175,6 @@ void Render2dStuff_hook()
     }
 
     if (pUI) {
-        if (pUI->inventory()) {
-            pUI->inventory()->ProcessSnapshots();
-        }
         pUI->render();
     }
 }
