@@ -158,7 +158,7 @@ public class HomeFragment extends Fragment {
                     R.drawable.ic_headset_shortcut,
                     "หากพบปัญหาในการเข้าเล่น การติดตั้ง หรือต้องการแจ้งบั๊ก:\n\n" +
                             "• สามารถเปิด Ticket สอบถามทีมงานได้ทาง Discord ทางการ\n" +
-                            "• เวอร์ชันตัวเกม: 2.0.2-cryzen (64-bit)\n" +
+                            "• เวอร์ชันตัวเกม: 2.0.3-cryzen (64-bit)\n" +
                             "• แพ็กเกจระบบ: com.newlab.cryzen",
                     "เปิด Discord",
                     this::openDiscordLink
@@ -351,7 +351,7 @@ public class HomeFragment extends Fragment {
                         "• ที่อยู่ IP: " + LOCKED_SERVER_HOST + ":" + LOCKED_SERVER_PORT + "\n" +
                         "• ผู้เล่นออนไลน์จริง: " + playersText + "\n" +
                         "• ค่าความหน่วง (Ping): " + pingText + "\n" +
-                        "• เวอร์ชัน Launcher: 2.0.2-cryzen (UI 2.0)\n\n" +
+                        "• เวอร์ชัน Launcher: 2.0.3-cryzen (UI 2.0)\n\n" +
                         "กดปุ่มด้านล่างเพื่อเข้าเล่นเกม!",
                 "กดเข้าเล่นเกม",
                 this::launchGame

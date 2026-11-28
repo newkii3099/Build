@@ -55,7 +55,7 @@
                 android:fontFamily="sans-serif-bold"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
-                android:text="v2.0.2-cryzen"
+                android:text="v2.0.3-cryzen"
                 android:textColor="#00D4FF"
                 android:textSize="10sp"
                 android:textStyle="bold" />

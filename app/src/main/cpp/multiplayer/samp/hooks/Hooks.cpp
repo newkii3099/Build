@@ -166,6 +166,8 @@ void Render2dStuff_hook()
             RwRenderStateSet(rwRENDERSTATEDESTBLEND, (void*)rwBLENDINVSRCALPHA);
             RwRenderStateSet(rwRENDERSTATEFOGENABLE, (void*)rwRENDERSTATENARENDERSTATE);
             RwRenderStateSet(rwRENDERSTATECULLMODE, (void*)rwCULLMODECULLNONE);
+            RwRenderStateSet(rwRENDERSTATEALPHATESTFUNCTION, (void*)rwALPHATESTFUNCTIONGREATER);
+            RwRenderStateSet(rwRENDERSTATEALPHATESTFUNCTIONREF, (void*)2);
 
             pTextDrawPool->Draw();
 
@@ -2064,16 +2066,13 @@ void CPlaceable_InitMatrixArray_hook(void)
     // CMatrixLinkList::Init
     ((void (*)(uintptr_t, size_t))(g_libGTASA + 0x4AC048))(g_libGTASA + 0xA01668, 10000);
 }
-int (*_RwTextureDestroy)(int a1);
-int _RwTextureDestroy_hook(int a1)
+int (*_RwTextureDestroy)(RwTexture* texture);
+int _RwTextureDestroy_hook(RwTexture* texture)
 {
-    int result; // r0
-
-    if ( (unsigned int)(a1 + 1) >= 2 )
-        result = _RwTextureDestroy(a1);
-    else
-        result = 0;
-    return result;
+    uintptr_t ptr = reinterpret_cast<uintptr_t>(texture);
+    if (ptr + 1 >= 2)
+        return _RwTextureDestroy(texture);
+    return 0;
 }
 
 

@@ -1624,7 +1624,9 @@ void ApplyPatches_level0()
     CHook::Redirect("_ZN10CPlayerPed29GetPlayerInfoForThisPlayerPedEv", &GetPlayerInfoForThisPlayerPed);
 
 
-    CHook::WriteMemory(g_libGTASA + 0x77584C, (uintptr_t)"\x22\x00\x80\x52", 4);
+    // Force GL_RGBA (colorType = 1) at _rwOpenGLRasterCreate+0xC0 (0x775848: mov w2, wzr -> mov w2, #1),
+    // preserving 0x77584C (mov w3, #1) so depthType stays 1 and offscreen camera FBOs remain complete.
+    CHook::WriteMemory(g_libGTASA + 0x775848, (uintptr_t)"\x22\x00\x80\x52", 4);
 
 
 /* 32-bit-only patch removed for 64-bit build. */

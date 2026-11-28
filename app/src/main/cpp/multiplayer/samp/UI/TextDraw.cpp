@@ -304,15 +304,31 @@ void CTextDraw::DrawTextured()
             0.0f, 1.0f,
             1.0f, 1.0f };
 
+    uintptr_t tex = TextDrawTexture[m_TextDrawData.iTextureSlot];
+    if (m_TextDrawData.dwStyle == 5 && tex != 0) {
+        static uintptr_t s_loggedSlotTex[200] = {};
+        if (s_loggedSlotTex[m_TextDrawData.iTextureSlot] != tex) {
+            s_loggedSlotTex[m_TextDrawData.iTextureSlot] = tex;
+            RwTexture* rwTex = reinterpret_cast<RwTexture*>(tex);
+            RwRaster* raster = rwTex->raster;
+            FLog("TextDraw draw style5: model=%d slot=%d tex=0x%lx raster=%p size=(%dx%d) type=%d fmt=%d area=(%.1f,%.1f,%.1f,%.1f)",
+                 m_TextDrawData.wModelID, m_TextDrawData.iTextureSlot,
+                 (unsigned long)tex, raster,
+                 raster ? raster->width : -1, raster ? raster->height : -1,
+                 raster ? raster->cType : -1, raster ? raster->cFormat : -1,
+                 m_rectArea.left, m_rectArea.bottom, m_rectArea.right, m_rectArea.top);
+        }
+    }
+
     if (m_bHovered) {
         uint32_t dwReversed = __builtin_bswap32(m_dwHoverColor | (0x000000FF));
-        if (TextDrawTexture[m_TextDrawData.iTextureSlot] != 0)
-            DrawTextureUV(TextDrawTexture[m_TextDrawData.iTextureSlot], &m_rectArea, dwReversed,
+        if (tex != 0)
+            DrawTextureUV(tex, &m_rectArea, dwReversed,
                           m_TextDrawData.dwStyle == 5 ? uv_reflected : uv_normal);
     }
     else {
-        if (TextDrawTexture[m_TextDrawData.iTextureSlot] != 0)
-            DrawTextureUV(TextDrawTexture[m_TextDrawData.iTextureSlot], &m_rectArea, m_TextDrawData.dwLetterColor,
+        if (tex != 0)
+            DrawTextureUV(tex, &m_rectArea, m_TextDrawData.dwLetterColor,
                           m_TextDrawData.dwStyle == 5 ? uv_reflected : uv_normal);
     }
 }
