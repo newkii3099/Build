@@ -77,6 +77,7 @@ public:
     }
 
     virtual void touchEvent(const ImVec2& pos, TouchType type) override;
+    bool shouldConsumeTouchInSelectMode(const ImVec2& pos) const;
 
     bool OnTouchEvent(int type, bool multi, int x, int y);
 

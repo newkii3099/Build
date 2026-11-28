@@ -82,6 +82,11 @@ bool CSnapShotHelper::BeginCameraSnapshot(RwRaster* raster, uint32_t dwColor, bo
     RwCameraClear(m_camera, reinterpret_cast<RwRGBA*>(&dwColor), 3);
 
     if (!RwCameraBeginUpdate((RwCamera*)m_camera)) {
+        FLog("Snapshot BeginCameraSnapshot failed: cam=%p beginUpdate=%p frame=%p fb=%p zb=%p world=%p",
+             m_camera,
+             m_camera ? reinterpret_cast<void*>(m_camera->beginUpdate) : nullptr,
+             m_camera ? m_camera->object.object.parent : nullptr,
+             raster, m_zBuffer, Scene.m_pRpWorld);
         m_camera->frameBuffer = nullptr;
         RestoreMainRenderWareCamera();
         return false;
@@ -112,24 +117,30 @@ void CSnapShotHelper::EndCameraSnapshot()
 RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, CVector* vecRot, float fZoom)
 {
     if (iModel <= 0 || iModel >= 20000 || !EnsureSceneReady()) {
+        FLog("Object snapshot failed: bad model or scene not ready (model=%d cam=%p world=%p)",
+             iModel, m_camera, Scene.m_pRpWorld);
         return nullptr;
     }
     if (!CStreaming::TryLoadModel(iModel)) {
+        FLog("Object snapshot failed: TryLoadModel false (model=%d)", iModel);
         return nullptr;
     }
 
     auto pRwObject = ModelInfoCreateInstance(iModel);
     if (pRwObject == nullptr) {
+        FLog("Object snapshot failed: ModelInfoCreateInstance null (model=%d)", iModel);
         return nullptr;
     }
 
     RwRaster* raster = RwRasterCreate(256, 256, 32, rwRASTERFORMAT8888 | rwRASTERTYPECAMERATEXTURE);
     if (!raster) {
+        FLog("Object snapshot failed: RwRasterCreate null (model=%d)", iModel);
         DestroyAtomicOrClump(reinterpret_cast<uintptr_t>(pRwObject));
         return nullptr;
     }
     RwTexture* bufferTexture = RwTextureCreate(raster);
     if (!bufferTexture) {
+        FLog("Object snapshot failed: RwTextureCreate null (model=%d)", iModel);
         RwRasterDestroy(raster);
         DestroyAtomicOrClump(reinterpret_cast<uintptr_t>(pRwObject));
         return nullptr;
@@ -173,6 +184,7 @@ RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, C
         }
     }
     if (!BeginCameraSnapshot(raster, dwColor, true)) {
+        FLog("Object snapshot failed BeginCameraSnapshot: model=%d", iModel);
         RwTextureDestroy(bufferTexture);
         DestroyAtomicOrClump(reinterpret_cast<uintptr_t>(pRwObject));
         return nullptr;
@@ -185,12 +197,16 @@ RwTexture* CSnapShotHelper::CreateObjectSnapShot(int iModel, uint32_t dwColor, C
 // 0.3.7
 RwTexture* CSnapShotHelper::CreatePedSnapShot(int iModel, uint32_t dwColor, CVector* vecRot, float fZoom)
 {
-    if (!EnsureSceneReady()) return nullptr;
+    if (!EnsureSceneReady()) {
+        FLog("Ped snapshot failed: EnsureSceneReady false (model=%d cam=%p world=%p)",
+             iModel, m_camera, Scene.m_pRpWorld);
+        return nullptr;
+    }
     FLog("Ped snapshot: %d", iModel);
 
     RwRaster* raster = RwRasterCreate(256, 256, 32, rwRASTERFORMAT8888 | rwRASTERTYPECAMERATEXTURE);
     // RwTextureCreate
-    RwTexture* bufferTexture = RwTextureCreate(raster);
+    RwTexture* bufferTexture = raster ? RwTextureCreate(raster) : nullptr;
 
     CPlayerPed* pPed = nullptr;
     try {
@@ -200,6 +216,8 @@ RwTexture* CSnapShotHelper::CreatePedSnapShot(int iModel, uint32_t dwColor, CVec
     }
 
     if (!raster || !bufferTexture || !pPed || !pPed->m_pPed) {
+        FLog("Ped snapshot failed init: model=%d raster=%p tex=%p pPed=%p m_pPed=%p",
+             iModel, raster, bufferTexture, pPed, pPed ? pPed->m_pPed : nullptr);
         if (pPed) delete pPed;
         if (bufferTexture) RwTextureDestroy(bufferTexture);
         else if (raster) RwRasterDestroy(raster);
@@ -232,8 +250,11 @@ RwTexture* CSnapShotHelper::CreatePedSnapShot(int iModel, uint32_t dwColor, CVec
     }
 
     pPed->m_pPed->SetMatrix((CMatrix&)mat);
+    pPed->m_pPed->UpdateRW();
+    pPed->m_pPed->UpdateRwFrame();
 
     if (!BeginCameraSnapshot(raster, dwColor, false)) {
+        FLog("Ped snapshot failed BeginCameraSnapshot: model=%d", iModel);
         delete pPed;
         RwTextureDestroy(bufferTexture);
         CStreaming::RemoveModelIfNoRefs(iModel);
@@ -258,10 +279,15 @@ RwTexture* CSnapShotHelper::CreatePedSnapShot(int iModel, uint32_t dwColor, CVec
 
 RwTexture* CSnapShotHelper::CreateVehicleSnapShot(int iModel, uint32_t dwColor, CVector* vecRot, float fZoom, uint32_t dwColor1, uint32_t dwColor2)
 {
-    if (!EnsureSceneReady()) return nullptr;
+    if (!EnsureSceneReady()) {
+        FLog("Vehicle snapshot failed: EnsureSceneReady false (model=%d cam=%p world=%p)",
+             iModel, m_camera, Scene.m_pRpWorld);
+        return nullptr;
+    }
+    FLog("Vehicle snapshot: %d", iModel);
     RwRaster* raster = RwRasterCreate(256, 256, 32, rwRASTERFORMAT8888 | rwRASTERTYPECAMERATEXTURE);
     // RwTextureCreate
-    RwTexture* bufferTexture = RwTextureCreate(raster);
+    RwTexture* bufferTexture = raster ? RwTextureCreate(raster) : nullptr;
 
     if (iModel == 570) {
         iModel = 538;
@@ -318,6 +344,7 @@ RwTexture* CSnapShotHelper::CreateVehicleSnapShot(int iModel, uint32_t dwColor, 
     pVehicle->m_pVehicle->SetMatrix((CMatrix&)mat);
     pVehicle->m_pVehicle->UpdateRW();
     if (!BeginCameraSnapshot(raster, dwColor, false)) {
+        FLog("Vehicle snapshot failed BeginCameraSnapshot: model=%d", iModel);
         delete pVehicle;
         RwTextureDestroy(bufferTexture);
         return nullptr;

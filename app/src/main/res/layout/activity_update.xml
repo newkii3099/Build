@@ -82,7 +82,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="sans-serif-medium"
-                    android:text="CRYZEN CITY 2.0 • v2.0.1-cryzen"
+                    android:text="CRYZEN CITY 2.0 • v2.0.2-cryzen"
                     android:textColor="#00D4FF"
                     android:textSize="10.5sp" />
             </LinearLayout>

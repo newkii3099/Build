@@ -422,10 +422,21 @@ bool CTextDraw::SnapshotProcess()
         if (slot >= 0 && slot < 200) {
             m_TextDrawData.iTextureSlot = slot;
             TextDrawTexture[slot] = snapshot;
+            FLog("TextDraw snapshot OK: model=%d slot=%d tex=0x%lx color=0x%08X bg=0x%08X rect=(%.1f,%.1f,%.1f,%.1f)",
+                 m_TextDrawData.wModelID, slot, (unsigned long)snapshot,
+                 m_TextDrawData.dwLetterColor, m_TextDrawData.dwBackgroundColor,
+                 m_TextDrawData.fX, m_TextDrawData.fY,
+                 m_TextDrawData.fLineWidth, m_TextDrawData.fLineHeight);
         } else {
+            FLog("TextDraw snapshot no free slot: model=%d slot=%d tex=0x%lx",
+                 m_TextDrawData.wModelID, slot, (unsigned long)snapshot);
             RwTextureDestroy(reinterpret_cast<RwTexture*>(snapshot));
             m_TextDrawData.iTextureSlot = -1;
         }
+    } else {
+        FLog("TextDraw snapshot returned NULL: model=%d attempt=%u bg=0x%08X zoom=%.2f",
+             m_TextDrawData.wModelID, m_byteSnapshotAttempts,
+             m_TextDrawData.dwBackgroundColor, m_TextDrawData.fZoom);
     }
 
     CCamera* pTheCamera = reinterpret_cast<CCamera*>(g_libGTASA + 0x9F86F8);

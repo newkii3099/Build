@@ -457,23 +457,78 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 	// libGame.so's Java_..._implOnTouchMove calls AND_TouchEvent with type == 2 (same as TouchStart).
 	// Track active down state per pointer slot so move events properly dispatch TouchType::move.
 	static bool s_touchDown[4] = { false, false, false, false };
+	static bool s_uiCaptureInSelect[4] = { false, false, false, false };
 
 	if (pGame->IsGamePaused()) {
-		for (int i = 0; i < 4; i++) s_touchDown[i] = false;
+		for (int i = 0; i < 4; i++) {
+			s_touchDown[i] = false;
+			s_uiCaptureInSelect[i] = false;
+		}
 		return AND_TouchEvent(type, num, posX, posY);
 	}
 
 	// Block any touch leak through GLSurfaceView while Java DialogManager is visible
 	if (g_bJavaDialogVisible.load()) {
-		for (int i = 0; i < 4; i++) s_touchDown[i] = false;
+		for (int i = 0; i < 4; i++) {
+			s_touchDown[i] = false;
+			s_uiCaptureInSelect[i] = false;
+		}
 		AND_TouchEvent(1, 0, 0, 0);
 		return;
+	}
+
+	int slot = (num >= 0 && num < 4) ? num : 0;
+	bool selectMode = (pNetGame && pNetGame->GetTextDrawPool() && pNetGame->GetTextDrawPool()->GetState());
+
+	TouchType ttype = TouchType::pop;
+	bool hasTouchType = (type == 1 || type == 2 || type == 3 || type == 4);
+	if (hasTouchType) {
+		if (type == 2) {
+			if (s_touchDown[slot]) {
+				ttype = TouchType::move;
+			} else {
+				s_touchDown[slot] = true;
+				ttype = TouchType::push;
+			}
+		} else if (type == 3) {
+			ttype = TouchType::move;
+		} else {
+			s_touchDown[slot] = false;
+			ttype = TouchType::pop;
+		}
+	}
+
+	// While SelectTextDraw is active, keep interactive HUD overlays (floating ButtonPanel,
+	// Chat box/tabs/toggle, Keyboard, Dialogs, VoiceButton) responsive without leaking to game input.
+	if (!selectMode) {
+		for (int i = 0; i < 4; i++) s_uiCaptureInSelect[i] = false;
+	} else if (pUI != nullptr && hasTouchType) {
+		ImVec2 touchPos((float)posX, (float)posY);
+		bool capturedByUI = s_uiCaptureInSelect[slot];
+		if (!capturedByUI && ttype == TouchType::push && pUI->shouldConsumeTouchInSelectMode(touchPos)) {
+			capturedByUI = true;
+			s_uiCaptureInSelect[slot] = true;
+		}
+
+		if (capturedByUI) {
+			if (ttype == TouchType::pop) {
+				s_uiCaptureInSelect[slot] = false;
+			}
+			if (slot == 0) {
+				pUI->touchEvent(touchPos, ttype);
+			}
+			AND_TouchEvent(1, 0, 0, 0);
+			return;
+		}
 	}
 
 	if (pNetGame && pNetGame->GetTextDrawPool())
 	{
 		if (!pNetGame->GetTextDrawPool()->onTouchEvent(type, num, posX, posY)) {
-			for (int i = 0; i < 4; i++) s_touchDown[i] = false;
+			for (int i = 0; i < 4; i++) {
+				s_touchDown[i] = false;
+				s_uiCaptureInSelect[i] = false;
+			}
 			AND_TouchEvent(1, 0, 0, 0);
 			return;
 		}
@@ -481,7 +536,6 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 
 	if (pUI != nullptr)
 	{
-		int slot = (num >= 0 && num < 4) ? num : 0;
 		bool invOpen = (pUI->inventory() && pUI->inventory()->visible());
 		if (invOpen && num != 0) {
 			// Ignore secondary multi-touch fingers when bag is open so scroll delta/drag distance stay clean
@@ -491,23 +545,8 @@ void AND_TouchEvent_hook(int type, int num, int posX, int posY)
 		}
 
 		bool hudConsumed = false;
-		if (type == 1 || type == 2 || type == 3 || type == 4)
+		if (hasTouchType)
 		{
-			TouchType ttype = TouchType::pop;
-			if (type == 2) {
-				if (s_touchDown[slot]) {
-					ttype = TouchType::move;
-				} else {
-					s_touchDown[slot] = true;
-					ttype = TouchType::push;
-				}
-			} else if (type == 3) {
-				ttype = TouchType::move;
-			} else {
-				s_touchDown[slot] = false;
-				ttype = TouchType::pop;
-			}
-
 			if (!pUI->keyboard()->visible() && !pUI->dialog()->visible() && !invOpen) {
 				if (pUI->inventory() && pUI->inventory()->handleHudTouch(ImVec2(posX, posY), ttype, slot)) {
 					hudConsumed = true;

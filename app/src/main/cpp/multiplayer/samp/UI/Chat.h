@@ -53,6 +53,7 @@ public:
 
     void toggleVisibility();
     bool isVisible() const { return m_showingChat; }
+    bool hitTest(const ImVec2& pos) const;
 
     void switchTab(int tab);
     int activeTab() const { return m_activeTab; }

@@ -119,7 +119,8 @@ CPlayerPed::CPlayerPed(int iNum, int iSkin, float fX, float fY, float fZ, float 
 
 CPlayerPed::~CPlayerPed()
 {
-    auto modelId = m_pPed->m_nModelIndex;
+    auto modelId = m_pPed ? m_pPed->m_nModelIndex : 0;
+    (void)modelId;
     FLog("Destroying PlayerPed(%d)", m_bytePlayerNumber);
 
     memset(&RemotePlayerKeys[m_bytePlayerNumber], 0, sizeof(PAD_KEYS));

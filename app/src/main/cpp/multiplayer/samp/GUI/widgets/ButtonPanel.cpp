@@ -166,3 +166,28 @@ void ButtonPanel::draw(ImGuiRenderer* renderer)
 
     Layout::draw(renderer);
 }
+
+bool ButtonPanel::hitTest(const ImVec2& pos) const
+{
+    if (!visible()) {
+        return false;
+    }
+
+    const auto& kids = const_cast<ButtonPanel*>(this)->children();
+    for (Widget* child : kids) {
+        if (!child || !child->visible()) {
+            continue;
+        }
+        if (!OpenButton) {
+            if (child != m_bOpen && child != m_bTab) {
+                continue;
+            }
+        } else if (child == m_bOpen) {
+            continue;
+        }
+        if (child->contains(pos)) {
+            return true;
+        }
+    }
+    return false;
+}

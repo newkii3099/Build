@@ -583,6 +583,22 @@ static bool pointInRect(const ImVec2& p, const ImVec2& minR, const ImVec2& maxR)
            p.y >= minR.y && p.y <= maxR.y;
 }
 
+bool Chat::hitTest(const ImVec2& pos) const
+{
+    if (!visible()) {
+        return false;
+    }
+    if (pointInRect(pos, m_toggleMin, m_toggleMax)) {
+        return true;
+    }
+    if (!m_showingChat) {
+        return false;
+    }
+    return contains(pos) ||
+           pointInRect(pos, m_tabChatMin, m_tabChatMax) ||
+           pointInRect(pos, m_tabSmsMin, m_tabSmsMax);
+}
+
 void Chat::touchEvent(const ImVec2& pos, TouchType type)
 {
     markActivity();

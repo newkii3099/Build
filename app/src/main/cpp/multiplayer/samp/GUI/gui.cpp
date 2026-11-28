@@ -104,7 +104,7 @@ bool UI::initialize()
     // mem
     Label* d_label1;
 
-    d_label1 = new Label(cryptor::create("CRYZEN CITY 2.0 | ARM64 v2.0.1-cryzen").decrypt(), ImColor(1.0f, 1.0f, 1.0f), true, UISettings::fontSize() / 3);
+    d_label1 = new Label(cryptor::create("CRYZEN CITY 2.0 | ARM64 v2.0.2-cryzen").decrypt(), ImColor(1.0f, 1.0f, 1.0f), true, UISettings::fontSize() / 3);
     this->addChild(d_label1);
     d_label1->setPosition(ImVec2(3.0, 3.0));
 
@@ -159,6 +159,39 @@ void UI::drawList()
 
     if (pNetGame && pNetGame->GetMenuPool())
         pNetGame->GetMenuPool()->Render(renderer());
+}
+
+extern CSettings* pSettings;
+
+bool UI::shouldConsumeTouchInSelectMode(const ImVec2& pos) const
+{
+    if (!visible()) {
+        return false;
+    }
+
+    if ((m_keyboard && m_keyboard->visible()) ||
+        (m_dialog && m_dialog->visible()) ||
+        (m_playerTabList && m_playerTabList->visible()) ||
+        (m_inventoryUI && m_inventoryUI->visible()))
+    {
+        return true;
+    }
+
+    if (m_buttonPanel && m_buttonPanel->hitTest(pos)) {
+        return true;
+    }
+
+    if (m_chat && m_chat->hitTest(pos)) {
+        return true;
+    }
+
+    if (m_voiceButton && m_voiceButton->visible() && pSettings &&
+        pSettings->Get().bVoiceChatEnable && m_voiceButton->contains(pos))
+    {
+        return true;
+    }
+
+    return false;
 }
 
 void UI::touchEvent(const ImVec2& pos, TouchType type)
